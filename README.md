@@ -8,11 +8,15 @@ page, and an educational arbitrage/flash-loan learning center.
 
 This app is wired to two addresses, both configured via environment variables:
 
-- **Factory** (`NEXT_PUBLIC_FACTORY_ADDRESS`) - the contract that deploys/tracks round windows.
-  Its own ABI wasn't provided, so it is only displayed/linked for reference; no calls are made to it.
-- **Window** (`NEXT_PUBLIC_WINDOW_ADDRESS`) - the current/latest round window contract. All reads
-  and writes in this app (`begin`, `chargeAccount`, `getMainBulkInfo`, `getUserBulkInfo`, ...) target
-  this address, using the ABI in `contracts/roundWindowAbi.ts`.
+- **Factory** (`NEXT_PUBLIC_FACTORY_ADDRESS`) - the `SmartContract` contract (source:
+  `SmartContract.sol` + `DataStorage.sol` + `WindowFactory.sol`). Deploys/tracks round windows and
+  holds per-user registration data. Read directly via `contracts/factoryAbi.ts` for registration
+  status (`userAddrExists`, `addrToId`), current tier (`getUserData`), remaining earnable cap
+  (`getUserPeriodEarnable`) and the tier cap formula (`entranceCap`).
+- **Window** (`NEXT_PUBLIC_WINDOW_ADDRESS`) - the current/latest round window contract (source:
+  `Window.sol`, deployed as `SmartContractWindow`). All the round-window reads and writes in this
+  app (`begin`, `chargeAccount`, `getMainBulkInfo`, `getUserBulkInfo`, ...) target this address,
+  using the ABI in `contracts/roundWindowAbi.ts`.
 
 The window contract exposes `LatestWindow()`, which is used to detect and warn when a newer window
 has been deployed than the one configured in `NEXT_PUBLIC_WINDOW_ADDRESS`.
@@ -31,12 +35,25 @@ the front-end shows.
 breadth-first ("heap") order: index `0` is the root, and the children of node `i` are at `2i+1` and
 `2i+2`. This matches the binary direct/referral placement used elsewhere in the contract.
 
-### Note on Registration "packages"
+### Note on Registration packages
 
-The ABI has no package/price registry (`begin` just takes a raw `startBox` and a free-form payment
-amount). The Register page therefore does **not** claim to read packages from the chain. Instead it
-offers three named, editable local presets (stored in your browser only) that prefill the start box
-and payment amount - clearly labeled as your own saved shortcuts, not on-chain package data.
+`begin`/`chargeAccount` only accept `startBox`/`targetBox` values of 10, 50 or 100 - `Window.sol`'s
+`_calculateEntryRequirements` reverts with `InvalidStartBox` for any other value, and charges exactly
+`startBox * 1.1` USDT. The three package cards (Starter $11 / Professional $55 / Enterprise $110) are
+this exact formula applied to those three fixed values from the contract source - not invented
+prices. Payment can be made directly in USDT (approve + the contract's `safeTransferFrom`) or in BNB
+(sent as `msg.value`, swapped for the exact USDT amount via PancakeSwap V3 inside the contract, with
+any unused BNB refunded automatically); the BNB amount shown is an off-chain estimate from the live
+price feed plus a small buffer, since there is no on-chain quote getter to read it from directly.
+
+Top-ups only allow real upgrades: `Window.sol`'s `_upgradeUserLevel` requires the target tier to be
+strictly higher than the wallet's current tier, except the $110 tier, which may renew itself while
+under its own earnable cap. The Charge Account page reads the wallet's current tier
+(`factory.getUserData`) and cap (`factory.entranceCap` / `getUserPeriodEarnable`) to enable only the
+tiers that would actually succeed on-chain, with the reason shown for any that are disabled.
+
+If a wallet is already registered, `/register` automatically shows a redirect to `/charge` instead
+(and vice versa if it isn't registered yet) - both checked live via `factory.userAddrExists`.
 
 ### Note on the Activity/History panel
 
@@ -105,8 +122,8 @@ public BNB Smart Chain endpoints (`lib/rpcEndpoints.ts`) if one is slow or unava
 | Route | Description |
 | --- | --- |
 | `/` | Dashboard: round id, latest window, point value, token addresses, contract status, live price ticker, network growth chart, recent activity |
-| `/register` | `begin(startBox, direct, referral)`, with local saved presets and referral-link auto-fill |
-| `/charge` | `chargeAccount(targetBox)` |
+| `/register` | Starter/Professional/Enterprise packages ($11/$55/$110, real `startBox` 10/50/100), USDT or BNB payment, `begin(startBox, direct, referral)`, referral-link auto-fill, auto-redirects to Charge Account if already registered |
+| `/charge` | Only shows valid on-chain upgrade tiers for the wallet's current package, `chargeAccount(targetBox)`, USDT or BNB payment |
 | `/statistics` | `getMainBulkInfo(roundsAgo)` |
 | `/user` | `getUserBulkInfo(wallet)` with wallet search |
 | `/history` | `getUserRoundInfo(...)` charts: points, direct/binary/flash income |
@@ -116,6 +133,7 @@ public BNB Smart Chain endpoints (`lib/rpcEndpoints.ts`) if one is slow or unava
 | `/learn/simulator` | Fully simulated borrow/swap/repay profit calculator |
 | `/products` | Honest status overview of every module in this app, plus educational-only entries (no pricing, no purchase flow) |
 | `/news` | Real changelog of shipped features (not market/investment news), with a clearly-labeled "coming soon" video slot |
+| `/contract-actions` | Every write function on the window contract in one BscScan-style console: params, gas estimate, live tx status, explorer link |
 | `/account` | `voteShutdown`, `terminateAccount`, `resetWalletAddress` |
 | `/admin` | Owner-gated: `distributeMatchingBonuses`, `init`, wallet lookup, CSV export, analytics |
 

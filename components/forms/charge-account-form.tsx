@@ -1,22 +1,24 @@
 "use client";
 
-import * as React from "react";
-import { parseEther } from "viem";
-import { useAccount } from "wagmi";
+import { useAccount, useBalance } from "wagmi";
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { TxProgress } from "@/components/shared/tx-progress";
+import { PaymentMethodPanel } from "@/components/registration/payment-method-panel";
 import { useContractWrite } from "@/hooks/useContractWrite";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { useTokenPayment } from "@/hooks/useTokenPayment";
+import { WINDOW_ADDRESS } from "@/contracts/addresses";
+import { tierCostUsd } from "@/lib/packages";
 
-const UINT24_MAX = 16_777_215;
-
-export function ChargeAccountForm() {
+export function ChargeAccountForm({ entrance }: { entrance: number | undefined }) {
   const { address } = useAccount();
-  const [targetBox, setTargetBox] = React.useState("");
-  const [value, setValue] = React.useState("");
+  const { data: balance } = useBalance({ address });
+  const { stableToken } = useDashboardData();
+
+  const costUsd = entrance ? tierCostUsd(entrance) : undefined;
+  const payment = useTokenPayment(costUsd, stableToken, WINDOW_ADDRESS);
 
   const {
     execute,
@@ -29,62 +31,48 @@ export function ChargeAccountForm() {
     hash,
   } = useContractWrite("chargeAccount");
 
-  const targetBoxNum = Number(targetBox);
-  const isTargetBoxValid =
-    targetBox !== "" && Number.isInteger(targetBoxNum) && targetBoxNum >= 0 && targetBoxNum <= UINT24_MAX;
-  const isValueValid = value !== "" && Number(value) > 0;
-  const canSubmit = isTargetBoxValid && isValueValid;
+  const canSubmit = Boolean(entrance) && payment.isPaymentValid;
 
   async function handleEstimate() {
-    if (!canSubmit) return;
-    await estimateGas([targetBoxNum], parseEther(value));
+    if (!canSubmit || !entrance) return;
+    await estimateGas([entrance], payment.value);
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!canSubmit) return;
+    if (!canSubmit || !entrance) return;
     try {
-      await execute([targetBoxNum], parseEther(value));
+      await execute([entrance], payment.value);
     } catch {
-      // toast already reported
+      // toast already reported by useContractWrite
     }
   }
 
   return (
     <Card className="card-glow">
-      <CardHeader>
-        <CardTitle>Charge Account</CardTitle>
-        <CardDescription>Top up a box by calling chargeAccount(targetBox).</CardDescription>
+      <CardHeader className="flex-row items-start justify-between gap-4 space-y-0">
+        <div>
+          <CardTitle>Top Up</CardTitle>
+          <CardDescription>Upgrade by calling chargeAccount(targetBox) with your selected package.</CardDescription>
+        </div>
+        {balance && (
+          <div className="shrink-0 text-right text-xs text-muted-foreground">
+            Balance
+            <p className="font-mono text-sm text-foreground">
+              {Number(balance.formatted).toFixed(4)} {balance.symbol}
+            </p>
+          </div>
+        )}
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="targetBox">Target Box</Label>
-            <Input
-              id="targetBox"
-              inputMode="numeric"
-              placeholder="0"
-              value={targetBox}
-              onChange={(e) => setTargetBox(e.target.value)}
-            />
-            {targetBox !== "" && !isTargetBoxValid && (
-              <p className="text-xs text-destructive">Enter an integer between 0 and {UINT24_MAX}</p>
-            )}
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="value">Payment Amount (native currency)</Label>
-            <Input
-              id="value"
-              inputMode="decimal"
-              placeholder="0.0"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">
-              chargeAccount() is payable - this amount is sent with the transaction.
+          {!entrance && (
+            <p className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
+              Select an available upgrade above to continue.
             </p>
-          </div>
+          )}
+
+          {entrance && <PaymentMethodPanel payment={payment} costUsd={costUsd} />}
 
           <TxProgress
             isSigning={isSigning}
@@ -103,8 +91,8 @@ export function ChargeAccountForm() {
           >
             {isEstimating ? "Estimating..." : "Estimate gas"}
           </Button>
-          <Button type="submit" disabled={!canSubmit || !address || isSigning || isConfirming}>
-            {isSigning || isConfirming ? "Processing..." : "Charge Account"}
+          <Button type="submit" className="ml-auto" disabled={!canSubmit || !address || isSigning || isConfirming}>
+            {isSigning || isConfirming ? "Processing..." : "Top Up"}
           </Button>
         </CardFooter>
       </form>

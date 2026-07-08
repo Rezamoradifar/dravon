@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { isAddress, parseEther, type Address } from "viem";
+import { isAddress, type Address } from "viem";
 import { useAccount, useBalance } from "wagmi";
-import { Wand2, Save } from "lucide-react";
+import { Wand2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -11,35 +11,29 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { TxProgress } from "@/components/shared/tx-progress";
+import { PaymentMethodPanel } from "@/components/registration/payment-method-panel";
 import { useContractWrite } from "@/hooks/useContractWrite";
 import { useBestReferral } from "@/hooks/useBestReferral";
-import type { RegisterPreset } from "@/hooks/useSavedPresets";
-
-const UINT24_MAX = 16_777_215;
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { useTokenPayment } from "@/hooks/useTokenPayment";
+import { WINDOW_ADDRESS } from "@/contracts/addresses";
+import { tierCostUsd } from "@/lib/packages";
 
 export function RegisterForm({
-  appliedPreset,
-  onSavePreset,
+  entrance,
   initialDirect,
 }: {
-  appliedPreset?: (RegisterPreset & { appliedAt: number }) | null;
-  onSavePreset?: (fields: Omit<RegisterPreset, "name">) => void;
+  entrance: number | undefined;
   initialDirect?: string;
 }) {
   const { address } = useAccount();
   const { data: balance } = useBalance({ address });
-  const [startBox, setStartBox] = React.useState("");
+  const { stableToken } = useDashboardData();
   const [direct, setDirect] = React.useState(initialDirect ?? "");
   const [referral, setReferral] = React.useState("");
-  const [value, setValue] = React.useState("");
 
-  React.useEffect(() => {
-    if (!appliedPreset) return;
-    setStartBox(appliedPreset.startBox);
-    setDirect(appliedPreset.direct);
-    setReferral(appliedPreset.referral);
-    setValue(appliedPreset.valueBnb);
-  }, [appliedPreset]);
+  const costUsd = entrance ? tierCostUsd(entrance) : undefined;
+  const payment = useTokenPayment(costUsd, stableToken, WINDOW_ADDRESS);
 
   const {
     execute,
@@ -55,12 +49,9 @@ export function RegisterForm({
   const { referral: bestReferral, isLoading: isFindingReferral, refetch: refetchBestReferral } =
     useBestReferral(isAddress(direct) ? (direct as Address) : undefined);
 
-  const startBoxNum = Number(startBox);
-  const isStartBoxValid = startBox !== "" && Number.isInteger(startBoxNum) && startBoxNum >= 0 && startBoxNum <= UINT24_MAX;
   const isDirectValid = isAddress(direct);
   const isReferralValid = isAddress(referral);
-  const isValueValid = value !== "" && Number(value) > 0;
-  const canSubmit = isStartBoxValid && isDirectValid && isReferralValid && isValueValid;
+  const canSubmit = Boolean(entrance) && isDirectValid && isReferralValid && payment.isPaymentValid;
 
   async function handleFindReferral() {
     if (!isDirectValid) {
@@ -76,15 +67,15 @@ export function RegisterForm({
   }
 
   async function handleEstimate() {
-    if (!canSubmit) return;
-    await estimateGas([startBoxNum, direct as Address, referral as Address], parseEther(value));
+    if (!canSubmit || !entrance) return;
+    await estimateGas([entrance, direct as Address, referral as Address], payment.value);
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!canSubmit) return;
+    if (!canSubmit || !entrance) return;
     try {
-      await execute([startBoxNum, direct as Address, referral as Address], parseEther(value));
+      await execute([entrance, direct as Address, referral as Address], payment.value);
     } catch {
       // toast already reported by useContractWrite
     }
@@ -95,7 +86,7 @@ export function RegisterForm({
       <CardHeader className="flex-row items-start justify-between gap-4 space-y-0">
         <div>
           <CardTitle>Register</CardTitle>
-          <CardDescription>Join the round by calling begin(startBox, direct, referral).</CardDescription>
+          <CardDescription>Join by calling begin(startBox, direct, referral) with your selected package.</CardDescription>
         </div>
         {balance && (
           <div className="shrink-0 text-right text-xs text-muted-foreground">
@@ -108,19 +99,11 @@ export function RegisterForm({
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="startBox">Start Box</Label>
-            <Input
-              id="startBox"
-              inputMode="numeric"
-              placeholder="0"
-              value={startBox}
-              onChange={(e) => setStartBox(e.target.value)}
-            />
-            {startBox !== "" && !isStartBoxValid && (
-              <p className="text-xs text-destructive">Enter an integer between 0 and {UINT24_MAX}</p>
-            )}
-          </div>
+          {!entrance && (
+            <p className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
+              Select a package above to continue.
+            </p>
+          )}
 
           <div className="space-y-1.5">
             <Label htmlFor="direct">Direct Sponsor</Label>
@@ -164,19 +147,7 @@ export function RegisterForm({
             )}
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="value">Payment Amount (native currency)</Label>
-            <Input
-              id="value"
-              inputMode="decimal"
-              placeholder="0.0"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">
-              begin() is payable - this amount is sent with the transaction.
-            </p>
-          </div>
+          {entrance && <PaymentMethodPanel payment={payment} costUsd={costUsd} />}
 
           <TxProgress
             isSigning={isSigning}
@@ -195,17 +166,6 @@ export function RegisterForm({
           >
             {isEstimating ? "Estimating..." : "Estimate gas"}
           </Button>
-          {onSavePreset && (
-            <Button
-              type="button"
-              variant="ghost"
-              className="gap-1.5"
-              disabled={!canSubmit}
-              onClick={() => onSavePreset({ startBox, direct, referral, valueBnb: value })}
-            >
-              <Save className="h-4 w-4" /> Save as preset
-            </Button>
-          )}
           <Button type="submit" className="ml-auto" disabled={!canSubmit || !address || isSigning || isConfirming}>
             {isSigning || isConfirming ? "Processing..." : "Register"}
           </Button>
