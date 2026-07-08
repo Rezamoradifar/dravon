@@ -4,10 +4,10 @@ import * as React from "react";
 import { decodeFunctionData } from "viem";
 import { bsc } from "wagmi/chains";
 
-import { WINDOW_ADDRESS } from "@/contracts/addresses";
 import { roundWindowAbi } from "@/contracts/roundWindowAbi";
 import { PRIMARY_CHAIN_ID } from "@/lib/wagmi";
 import type { ActivityEntry } from "@/hooks/useActivityLog";
+import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
 
 const BSCSCAN_API_KEY = process.env.NEXT_PUBLIC_BSCSCAN_API_KEY;
 
@@ -22,6 +22,7 @@ const BSCSCAN_API_KEY = process.env.NEXT_PUBLIC_BSCSCAN_API_KEY;
 export function useExplorerHistory(address?: string) {
   const [entries, setEntries] = React.useState<ActivityEntry[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
+  const { address: windowAddress } = useLatestRoundWindow();
   const enabled = Boolean(BSCSCAN_API_KEY && address && PRIMARY_CHAIN_ID === bsc.id);
 
   React.useEffect(() => {
@@ -43,7 +44,7 @@ export function useExplorerHistory(address?: string) {
           Array.isArray(json.result) ? json.result : [];
 
         const decoded: ActivityEntry[] = results
-          .filter((tx) => tx.to?.toLowerCase() === WINDOW_ADDRESS.toLowerCase() && tx.input !== "0x")
+          .filter((tx) => tx.to?.toLowerCase() === windowAddress.toLowerCase() && tx.input !== "0x")
           .map((tx) => {
             let functionName = "unknown";
             try {
@@ -73,7 +74,7 @@ export function useExplorerHistory(address?: string) {
     return () => {
       cancelled = true;
     };
-  }, [enabled, address]);
+  }, [enabled, address, windowAddress]);
 
   return { entries, isLoading, isConfigured: Boolean(BSCSCAN_API_KEY) };
 }

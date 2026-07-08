@@ -2,12 +2,13 @@
 
 import { useReadContracts } from "wagmi";
 
-import { WINDOW_ADDRESS } from "@/contracts/addresses";
 import { roundWindowAbi } from "@/contracts/roundWindowAbi";
-
-const contract = { address: WINDOW_ADDRESS, abi: roundWindowAbi } as const;
+import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
 
 export function useDashboardData() {
+  const { address: windowAddress } = useLatestRoundWindow();
+  const contract = { address: windowAddress, abi: roundWindowAbi } as const;
+
   const { data, isLoading, isError, refetch } = useReadContracts({
     contracts: [
       { ...contract, functionName: "roundId" },
@@ -27,6 +28,7 @@ export function useDashboardData() {
     isLoading,
     isError,
     refetch,
+    windowAddress,
     roundId: roundId?.result as bigint | undefined,
     latestWindow: latestWindow?.result as `0x${string}` | undefined,
     stabilizedPointValue: stabilizedPointValue?.result as bigint | undefined,

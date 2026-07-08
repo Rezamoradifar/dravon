@@ -3,9 +3,9 @@
 import { useReadContracts } from "wagmi";
 import type { Address } from "viem";
 
-import { WINDOW_ADDRESS } from "@/contracts/addresses";
 import { roundWindowAbi } from "@/contracts/roundWindowAbi";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
 
 export interface RoundHistoryPoint {
   roundsAgo: number;
@@ -17,13 +17,14 @@ export interface RoundHistoryPoint {
 
 export function useRoundsHistory(maxRounds = 8) {
   const { roundId, isLoading: isRoundIdLoading } = useDashboardData();
+  const { address: windowAddress } = useLatestRoundWindow();
 
   const available = roundId !== undefined ? Math.min(Number(roundId) + 1, maxRounds) : 0;
   const roundsAgoList = Array.from({ length: available }, (_, i) => i);
 
   const { data, isLoading } = useReadContracts({
     contracts: roundsAgoList.map((roundsAgo) => ({
-      address: WINDOW_ADDRESS,
+      address: windowAddress,
       abi: roundWindowAbi,
       functionName: "getMainBulkInfo",
       args: [BigInt(roundsAgo)],

@@ -3,8 +3,8 @@
 import { useReadContract } from "wagmi";
 import type { Address } from "viem";
 
-import { WINDOW_ADDRESS } from "@/contracts/addresses";
 import { roundWindowAbi } from "@/contracts/roundWindowAbi";
+import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
 import type { UserRoundInfo } from "@/types/contract";
 
 export function useUserRoundInfo(
@@ -12,8 +12,10 @@ export function useUserRoundInfo(
   fromRoundsAgo: number,
   roundsAgo: number,
 ) {
+  const { address: windowAddress } = useLatestRoundWindow();
+
   const { data, isLoading, isError, refetch } = useReadContract({
-    address: WINDOW_ADDRESS,
+    address: windowAddress,
     abi: roundWindowAbi,
     functionName: "getUserRoundInfo",
     args: userAddr ? [userAddr, BigInt(fromRoundsAgo), BigInt(roundsAgo)] : undefined,

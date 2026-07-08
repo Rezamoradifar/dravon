@@ -9,16 +9,17 @@ import { PaymentMethodPanel } from "@/components/registration/payment-method-pan
 import { useContractWrite } from "@/hooks/useContractWrite";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useTokenPayment } from "@/hooks/useTokenPayment";
-import { WINDOW_ADDRESS } from "@/contracts/addresses";
+import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
 import { tierCostUsd } from "@/lib/packages";
 
 export function ChargeAccountForm({ entrance }: { entrance: number | undefined }) {
   const { address } = useAccount();
   const { data: balance } = useBalance({ address });
   const { stableToken } = useDashboardData();
+  const { address: windowAddress } = useLatestRoundWindow();
 
   const costUsd = entrance ? tierCostUsd(entrance) : undefined;
-  const payment = useTokenPayment(costUsd, stableToken, WINDOW_ADDRESS);
+  const payment = useTokenPayment(costUsd, stableToken, windowAddress);
 
   const {
     execute,

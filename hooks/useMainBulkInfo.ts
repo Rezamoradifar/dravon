@@ -2,13 +2,15 @@
 
 import { useReadContract } from "wagmi";
 
-import { WINDOW_ADDRESS } from "@/contracts/addresses";
 import { roundWindowAbi } from "@/contracts/roundWindowAbi";
+import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
 import type { MainBulkInfo } from "@/types/contract";
 
 export function useMainBulkInfo(roundsAgo: bigint | number = 0) {
+  const { address: windowAddress } = useLatestRoundWindow();
+
   const { data, isLoading, isError, refetch } = useReadContract({
-    address: WINDOW_ADDRESS,
+    address: windowAddress,
     abi: roundWindowAbi,
     functionName: "getMainBulkInfo",
     args: [BigInt(roundsAgo)],

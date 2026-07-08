@@ -1,6 +1,5 @@
 import { PageHeader } from "@/components/shared/page-header";
 import { NetworkBanner } from "@/components/shared/network-banner";
-import { LatestWindowBanner } from "@/components/shared/latest-window-banner";
 import { PriceTicker } from "@/components/shared/price-ticker";
 import { WalletInfoCard } from "@/components/dashboard/wallet-info-card";
 import { DashboardCards } from "@/components/dashboard/dashboard-cards";
@@ -17,7 +16,6 @@ export default function DashboardPage() {
         description="Live overview of the current round window."
       />
       <NetworkBanner />
-      <LatestWindowBanner />
 
       <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">

@@ -3,13 +3,15 @@
 import { useReadContract } from "wagmi";
 import type { Address } from "viem";
 
-import { WINDOW_ADDRESS } from "@/contracts/addresses";
 import { roundWindowAbi } from "@/contracts/roundWindowAbi";
+import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
 import type { UserBulkInfo } from "@/types/contract";
 
 export function useUserBulkInfo(userAddr?: Address) {
+  const { address: windowAddress } = useLatestRoundWindow();
+
   const { data, isLoading, isError, refetch } = useReadContract({
-    address: WINDOW_ADDRESS,
+    address: windowAddress,
     abi: roundWindowAbi,
     functionName: "getUserBulkInfo",
     args: userAddr ? [userAddr] : undefined,

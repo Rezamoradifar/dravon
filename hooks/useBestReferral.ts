@@ -3,12 +3,14 @@
 import { useReadContract } from "wagmi";
 import type { Address } from "viem";
 
-import { WINDOW_ADDRESS } from "@/contracts/addresses";
 import { roundWindowAbi } from "@/contracts/roundWindowAbi";
+import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
 
 export function useBestReferral(direct: Address | undefined) {
+  const { address: windowAddress } = useLatestRoundWindow();
+
   const { data, isLoading, refetch } = useReadContract({
-    address: WINDOW_ADDRESS,
+    address: windowAddress,
     abi: roundWindowAbi,
     functionName: "getBestReferralForDirect",
     args: direct ? [direct] : undefined,

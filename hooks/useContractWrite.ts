@@ -12,11 +12,11 @@ import {
 } from "wagmi";
 import type { Abi } from "viem";
 
-import { WINDOW_ADDRESS } from "@/contracts/addresses";
 import { roundWindowAbi } from "@/contracts/roundWindowAbi";
 import { parseContractError } from "@/lib/errors";
 import { explorerTxLink } from "@/lib/format";
 import { logActivity, updateActivityStatus } from "@/hooks/useActivityLog";
+import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
 
 export type RoundWindowFunctionName =
   | "begin"
@@ -32,6 +32,7 @@ export function useContractWrite(functionName: RoundWindowFunctionName) {
   const chainId = useChainId();
   const chains = useChains();
   const publicClient = usePublicClient();
+  const { address: windowAddress } = useLatestRoundWindow();
   const [estimatedGas, setEstimatedGas] = React.useState<bigint | null>(null);
   const [isEstimating, setIsEstimating] = React.useState(false);
 
@@ -51,7 +52,7 @@ export function useContractWrite(functionName: RoundWindowFunctionName) {
     setIsEstimating(true);
     try {
       const gas = await publicClient.estimateContractGas({
-        address: WINDOW_ADDRESS,
+        address: windowAddress,
         abi: roundWindowAbi as unknown as Abi,
         functionName,
         args,
@@ -73,7 +74,7 @@ export function useContractWrite(functionName: RoundWindowFunctionName) {
     const toastId = toast.loading("Confirm the transaction in your wallet...");
     try {
       const txHash = await writeContractAsync({
-        address: WINDOW_ADDRESS,
+        address: windowAddress,
         abi: roundWindowAbi as unknown as Abi,
         functionName,
         args,

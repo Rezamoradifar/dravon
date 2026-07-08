@@ -3,13 +3,15 @@
 import { useReadContract } from "wagmi";
 import type { Address } from "viem";
 
-import { WINDOW_ADDRESS } from "@/contracts/addresses";
 import { roundWindowAbi } from "@/contracts/roundWindowAbi";
+import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
 import { parseContractError } from "@/lib/errors";
 
 export function useUserTree(addr: Address | undefined, len: number) {
+  const { address: windowAddress } = useLatestRoundWindow();
+
   const { data, isLoading, isFetching, isError, error, refetch } = useReadContract({
-    address: WINDOW_ADDRESS,
+    address: windowAddress,
     abi: roundWindowAbi,
     functionName: "getUserTree",
     args: addr ? [addr, BigInt(len)] : undefined,

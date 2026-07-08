@@ -5,6 +5,31 @@
  */
 export const factoryAbi = [
   {
+    inputs: [],
+    name: "latestWindow",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "address", name: "oldWindow", type: "address" },
+      { indexed: true, internalType: "address", name: "newWindow", type: "address" },
+    ],
+    name: "LatestWindowChanged",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "address", name: "window", type: "address" },
+      { indexed: false, internalType: "bytes32", name: "salt", type: "bytes32" },
+    ],
+    name: "WindowCreated",
+    type: "event",
+  },
+  {
     inputs: [{ internalType: "uint24", name: "entrance", type: "uint24" }],
     name: "entranceCap",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
