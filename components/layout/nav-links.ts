@@ -14,6 +14,7 @@ import {
   LayoutGrid,
   Megaphone,
   Terminal,
+  HelpCircle,
 } from "lucide-react";
 
 export interface NavLink {
@@ -25,6 +26,7 @@ export interface NavLink {
 
 export const NAV_LINKS: NavLink[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/help", label: "Help & User Guide", icon: HelpCircle },
   { href: "/register", label: "Register", icon: UserPlus },
   { href: "/charge", label: "Charge Account", icon: Wallet },
   { href: "/statistics", label: "Statistics", icon: BarChart3 },

@@ -121,6 +121,7 @@ public BNB Smart Chain endpoints (`lib/rpcEndpoints.ts`) if one is slow or unava
 
 | Route | Description |
 | --- | --- |
+| `/help` | User guide: wallet connection, registration, deposits, withdrawals, swap, security, FAQ, troubleshooting - usage only, no investment language (also in [`docs/user-guide.md`](docs/user-guide.md)) |
 | `/` | Dashboard: round id, latest window, point value, token addresses, contract status, live price ticker, network growth chart, recent activity |
 | `/register` | Starter/Professional/Enterprise packages ($11/$55/$110, real `startBox` 10/50/100), USDT or BNB payment, `begin(startBox, direct, referral)`, referral-link auto-fill, auto-redirects to Charge Account if already registered |
 | `/charge` | Only shows valid on-chain upgrade tiers for the wallet's current package, `chargeAccount(targetBox)`, USDT or BNB payment |
