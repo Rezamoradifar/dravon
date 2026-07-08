@@ -97,7 +97,8 @@ See `.env.example` for the full list. At minimum you need:
 - `NEXT_PUBLIC_SITE_URL` - used to build `sitemap.xml` (optional).
 
 Live native-token pricing uses CoinGecko's public API (client-side, no key needed) with an on-chain
-Chainlink price feed as a fallback/cross-check.
+Chainlink price feed as a fallback/cross-check. RPC reads automatically fail over across multiple
+public BNB Smart Chain endpoints (`lib/rpcEndpoints.ts`) if one is slow or unavailable.
 
 ## Pages
 
@@ -111,9 +112,10 @@ Chainlink price feed as a fallback/cross-check.
 | `/history` | `getUserRoundInfo(...)` charts: points, direct/binary/flash income |
 | `/genealogy` | `getUserTree(...)` tree graph, referral link + QR code, per-wallet activity chart |
 | `/swap` | Real PancakeSwap Router V2 trading (BNB/BEP20) |
-| `/learn` | Educational Learning Center (flash loans, arbitrage, MEV, cross-chain, DEX arbitrage) |
+| `/learn` | Educational Learning Center (flash loans, arbitrage, MEV, cross-chain/DEX arbitrage, AMMs, liquidity, PancakeSwap, Uniswap, smart contract risk, wallet security) |
 | `/learn/simulator` | Fully simulated borrow/swap/repay profit calculator |
-| `/products` | Honest status overview of every module in this app |
+| `/products` | Honest status overview of every module in this app, plus educational-only entries (no pricing, no purchase flow) |
+| `/news` | Real changelog of shipped features (not market/investment news), with a clearly-labeled "coming soon" video slot |
 | `/account` | `voteShutdown`, `terminateAccount`, `resetWalletAddress` |
 | `/admin` | Owner-gated: `distributeMatchingBonuses`, `init`, wallet lookup, CSV export, analytics |
 
@@ -134,10 +136,11 @@ components/
   genealogy/    tree graph (@xyflow/react), referral link + QR, growth chart
   swap/         token select, swap card (PancakeSwap Router V2)
   learn/        risk badge, workflow diagram
+  news/         announcement slider
 context/        WalletViewProvider - shares the currently-viewed wallet across pages
 contracts/      ABIs (round window, ERC20, Chainlink aggregator, PancakeSwap router) and addresses
 hooks/          wagmi read/write hooks, live price/gas/network status, activity log, saved presets
-lib/            wagmi config, cn(), formatting, error parsing, CSV export, learning/product content
+lib/            wagmi config + multi-RPC fallback, cn(), formatting, error parsing, CSV export, learning/product/news content
 types/          shared TypeScript types for parsed contract structs
 ```
 

@@ -1,7 +1,7 @@
 export interface Product {
   slug: string;
   name: string;
-  status: "Live" | "Educational Demo";
+  status: "Live" | "Educational Demo" | "Educational";
   tagline: string;
   description: string;
   features: string[];
@@ -77,5 +77,62 @@ export const PRODUCTS: Product[] = [
       "Explains flash loans, arbitrage, MEV, cross-chain and DEX arbitrage, with an interactive simulator using numbers you control. No real transactions, no profit promises.",
     features: ["Workflow diagrams", "Risk-level ratings", "FAQ", "Simulated profit/loss calculator"],
     href: "/learn",
+  },
+  {
+    slug: "flash-loan-learning",
+    name: "Flash Loan Learning",
+    status: "Educational",
+    tagline: "Borrow, use, repay - all in one transaction",
+    description:
+      "A dedicated explainer on how uncollateralized flash loans work, why they're safe for lenders, and where the real risks sit for anyone using them.",
+    features: ["Step-by-step workflow", "Risk rating", "FAQ", "Link to the simulator"],
+    href: "/learn/flash-loans",
+  },
+  {
+    slug: "mev-learning",
+    name: "MEV Learning",
+    status: "Educational",
+    tagline: "Understand transaction-ordering value extraction",
+    description: "Covers how block builders and searchers can profit from transaction ordering, and why slippage limits matter.",
+    features: ["Workflow diagram", "Risk rating", "FAQ"],
+    href: "/learn/mev",
+  },
+  {
+    slug: "arbitrage-learning",
+    name: "Arbitrage Learning",
+    status: "Educational",
+    tagline: "Same asset, different price, two markets",
+    description: "Explains cross-market and cross-DEX arbitrage mechanics, competition, and why gaps close quickly.",
+    features: ["Workflow diagram", "Risk rating", "FAQ", "Link to the simulator"],
+    href: "/learn/arbitrage",
+  },
+  {
+    slug: "blockchain-education",
+    name: "Blockchain Education",
+    status: "Educational",
+    tagline: "AMMs, liquidity pools and the DEXs built on them",
+    description: "Foundational explainers on automated market makers, liquidity pools, PancakeSwap and Uniswap.",
+    features: ["AMM mechanics", "Liquidity provider risk", "PancakeSwap & Uniswap overviews"],
+    href: "/learn/amm",
+  },
+  {
+    slug: "smart-contract-audit",
+    name: "Smart Contract Audit (Education)",
+    status: "Educational",
+    tagline: "What an audit does - and doesn't - guarantee",
+    description:
+      "Explains what smart contract risk means, what audits actually cover, and how to verify a contract's ABI and behavior yourself. This app does not sell or perform audits.",
+    features: ["Plain-language risk breakdown", "What audits do and don't cover", "FAQ"],
+    href: "/learn/smart-contracts",
+  },
+  {
+    slug: "security-review",
+    name: "Security Review (Education)",
+    status: "Educational",
+    tagline: "Practical wallet safety habits",
+    description:
+      "Covers seed-phrase hygiene, transaction verification, and token approval management for anyone using self-custody wallets with Web3 apps.",
+    features: ["Wallet safety checklist", "Approval hygiene", "Phishing awareness", "FAQ"],
+    href: "/learn/wallet-security",
   },
 ];

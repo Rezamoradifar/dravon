@@ -28,11 +28,24 @@ export function ReferralGrowthChart({ address }: { address?: Address }) {
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data}>
+              <defs>
+                <linearGradient id="referralPointsFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(244 75% 59%)" stopOpacity={1} />
+                  <stop offset="100%" stopColor="hsl(244 75% 59%)" stopOpacity={0.4} />
+                </linearGradient>
+              </defs>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis dataKey="round" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Bar dataKey="points" fill="hsl(244 75% 59%)" radius={[4, 4, 0, 0]} />
+              <Tooltip
+                contentStyle={{
+                  background: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--border))",
+                  borderRadius: 8,
+                  fontSize: 12,
+                }}
+              />
+              <Bar dataKey="points" fill="url(#referralPointsFill)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}

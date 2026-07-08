@@ -19,6 +19,10 @@ export function WalletSearch({
   const { address } = useAccount();
   const [draft, setDraft] = React.useState(value);
 
+  React.useEffect(() => {
+    setDraft(value);
+  }, [value]);
+
   const isValid = draft === "" || isAddress(draft);
 
   function handleSubmit(e: React.FormEvent) {

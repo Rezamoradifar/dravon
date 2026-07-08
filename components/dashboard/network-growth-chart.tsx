@@ -49,7 +49,14 @@ export function NetworkGrowthChart() {
               <XAxis dataKey="name" tick={{ fontSize: 12 }} />
               <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
               <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
-              <Tooltip />
+              <Tooltip
+                contentStyle={{
+                  background: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--border))",
+                  borderRadius: 8,
+                  fontSize: 12,
+                }}
+              />
               <Legend />
               <Area
                 yAxisId="left"

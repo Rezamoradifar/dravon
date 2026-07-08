@@ -15,8 +15,15 @@ const ROUTES = [
   "/learn/mev",
   "/learn/cross-chain-arbitrage",
   "/learn/dex-arbitrage",
+  "/learn/amm",
+  "/learn/liquidity",
+  "/learn/pancakeswap",
+  "/learn/uniswap",
+  "/learn/smart-contracts",
+  "/learn/wallet-security",
   "/learn/simulator",
   "/products",
+  "/news",
   "/account",
 ];
 

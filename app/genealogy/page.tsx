@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import dynamic from "next/dynamic";
+import { RefreshCw } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { WalletSearch } from "@/components/user/wallet-search";
@@ -13,6 +14,7 @@ import { ReferralLinkCard } from "@/components/genealogy/referral-link-card";
 import { ReferralGrowthChart } from "@/components/genealogy/referral-growth-chart";
 import { useUserTree } from "@/hooks/useUserTree";
 import { useWalletView } from "@/context/wallet-view-context";
+import { cn } from "@/lib/utils";
 
 const TreeGraph = dynamic(() => import("@/components/genealogy/tree-graph").then((m) => m.TreeGraph), {
   ssr: false,
@@ -25,7 +27,7 @@ export default function GenealogyPage() {
   const [lenInput, setLenInput] = React.useState("15");
   const [len, setLen] = React.useState(15);
 
-  const { addresses, isLoading, isError } = useUserTree(viewedAddress, len);
+  const { addresses, isLoading, isFetching, isError, errorMessage, refetch } = useUserTree(viewedAddress, len);
 
   function handleApply() {
     const parsed = Number(lenInput);
@@ -34,7 +36,18 @@ export default function GenealogyPage() {
 
   return (
     <div>
-      <PageHeader title="Genealogy" description="Binary tree structure via getUserTree(addr, len)." />
+      <PageHeader
+        title="Genealogy"
+        description="Binary tree structure via getUserTree(addr, len)."
+        actions={
+          viewedAddress && (
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => refetch()} disabled={isFetching}>
+              <RefreshCw className={cn("h-3.5 w-3.5", isFetching && "animate-spin")} />
+              Refresh
+            </Button>
+          )
+        }
+      />
 
       <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
         <ReferralLinkCard />
@@ -63,7 +76,9 @@ export default function GenealogyPage() {
       {!viewedAddress && <p className="text-sm text-muted-foreground">Connect a wallet or search an address.</p>}
       {viewedAddress && isLoading && <Skeleton className="h-[560px] w-full" />}
       {viewedAddress && !isLoading && isError && (
-        <p className="text-sm text-destructive">Could not load the tree for this wallet.</p>
+        <p className="text-sm text-destructive">
+          {errorMessage ?? "Could not load the tree for this wallet."}
+        </p>
       )}
       {viewedAddress && !isLoading && !isError && addresses && <TreeGraph addresses={addresses} />}
     </div>

@@ -10,6 +10,7 @@ import {
   type Chain,
 } from "wagmi/chains";
 import { CHAIN_ID } from "@/contracts/addresses";
+import { RPC_ENDPOINTS } from "@/lib/rpcEndpoints";
 
 const SUPPORTED_CHAINS = [mainnet, bsc, polygon, arbitrum, optimism, base] as const;
 
@@ -26,18 +27,27 @@ export const orderedChains = orderByPrimary(SUPPORTED_CHAINS, CHAIN_ID) as unkno
 
 const customRpcUrl = process.env.NEXT_PUBLIC_RPC_URL;
 
+function transportForChain(chainId: number) {
+  const urls = [
+    ...(chainId === CHAIN_ID && customRpcUrl ? [customRpcUrl] : []),
+    ...(RPC_ENDPOINTS[chainId] ?? []),
+  ];
+
+  if (urls.length === 0) return http();
+
+  // wagmi's fallback() transport automatically retries the next URL in order
+  // when one fails or times out - this is the "automatic RPC fallback".
+  return fallback(
+    urls.map((url) => http(url, { timeout: 8_000 })),
+    { rank: false },
+  );
+}
+
 export const wagmiConfig = getDefaultConfig({
   appName: "Round Dashboard",
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "",
   chains: orderedChains,
-  transports: Object.fromEntries(
-    orderedChains.map((chain) => [
-      chain.id,
-      chain.id === CHAIN_ID && customRpcUrl
-        ? fallback([http(customRpcUrl), http()])
-        : http(),
-    ]),
-  ),
+  transports: Object.fromEntries(orderedChains.map((chain) => [chain.id, transportForChain(chain.id)])),
   ssr: true,
 });
 

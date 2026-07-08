@@ -46,17 +46,19 @@ export default async function LearningTopicPage({
             ))}
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex-row items-center gap-2 space-y-0">
-            <Boxes className="h-4 w-4 text-muted-foreground" />
-            <CardTitle className="text-sm font-medium">Illustrative venues</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-2">
-            {topic.supportedDexes.map((d) => (
-              <Badge key={d} variant="outline">{d}</Badge>
-            ))}
-          </CardContent>
-        </Card>
+        {topic.supportedDexes.length > 0 && (
+          <Card>
+            <CardHeader className="flex-row items-center gap-2 space-y-0">
+              <Boxes className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Illustrative venues</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-wrap gap-2">
+              {topic.supportedDexes.map((d) => (
+                <Badge key={d} variant="outline">{d}</Badge>
+              ))}
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <h2 className="mb-3 text-lg font-semibold">How it works</h2>
