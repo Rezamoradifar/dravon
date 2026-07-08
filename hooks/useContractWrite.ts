@@ -18,7 +18,7 @@ import { parseContractError } from "@/lib/errors";
 import { explorerTxLink } from "@/lib/format";
 import { logActivity, updateActivityStatus } from "@/hooks/useActivityLog";
 
-type RoundWindowFunctionName =
+export type RoundWindowFunctionName =
   | "begin"
   | "chargeAccount"
   | "distributeMatchingBonuses"

@@ -24,6 +24,7 @@ const ROUTES = [
   "/learn/simulator",
   "/products",
   "/news",
+  "/contract-actions",
   "/account",
 ];
 
