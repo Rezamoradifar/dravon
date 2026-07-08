@@ -1,13 +1,29 @@
-node_modules
-/.cache
-/netlify/functions/server/index.js
-/public/build
-/.netlify
+# dependencies
+/node_modules
 
-/.env
+# next.js
+/.next/
+/out/
 
-/app/styles/tailwind.css
+# production
+/build
 
-cypress/videos/
+# misc
+.DS_Store
+*.pem
 
-build
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
