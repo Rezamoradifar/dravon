@@ -23,6 +23,7 @@ export function NetworkGrowthChart() {
     name: p.roundsAgo === 0 ? "Current" : `-${p.roundsAgo}`,
     users: p.userCount,
     volume: p.roundEnteredUSD,
+    pointValue: p.pointValue,
   }));
 
   return (
@@ -49,6 +50,7 @@ export function NetworkGrowthChart() {
               <XAxis dataKey="name" tick={{ fontSize: 12 }} />
               <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
               <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
+              <YAxis yAxisId="pointValue" hide />
               <Tooltip
                 contentStyle={{
                   background: "hsl(var(--card))",
@@ -73,6 +75,15 @@ export function NetworkGrowthChart() {
                 dataKey="volume"
                 name="Round Volume (USD)"
                 stroke="hsl(38 92% 50%)"
+                strokeWidth={2}
+                dot={false}
+              />
+              <Line
+                yAxisId="pointValue"
+                type="monotone"
+                dataKey="pointValue"
+                name="Point Value"
+                stroke="hsl(142 71% 45%)"
                 strokeWidth={2}
                 dot={false}
               />

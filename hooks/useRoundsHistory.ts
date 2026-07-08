@@ -10,6 +10,7 @@ import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
 export interface RoundHistoryPoint {
   roundsAgo: number;
   userCount: number;
+  pointValue: number;
   roundPoints: number;
   roundEnteredUSD: number;
   allEnteredUSD: number;
@@ -35,7 +36,7 @@ export function useRoundsHistory(maxRounds = 8) {
   const points: RoundHistoryPoint[] = (data ?? [])
     .map((entry, i) => {
       if (!entry.result) return null;
-      const [, userCount, , roundPoints, roundEnteredUSD, allEnteredUSD] = entry.result as unknown as readonly [
+      const [, userCount, pointValue, roundPoints, roundEnteredUSD, allEnteredUSD] = entry.result as unknown as readonly [
         Address,
         bigint,
         string,
@@ -47,6 +48,7 @@ export function useRoundsHistory(maxRounds = 8) {
       return {
         roundsAgo: roundsAgoList[i],
         userCount: Number(userCount),
+        pointValue: Number(pointValue) || 0,
         roundPoints: Number(roundPoints),
         roundEnteredUSD: Number(roundEnteredUSD) || 0,
         allEnteredUSD: Number(allEnteredUSD) || 0,
