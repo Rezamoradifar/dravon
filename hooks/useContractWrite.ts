@@ -16,6 +16,7 @@ import { WINDOW_ADDRESS } from "@/contracts/addresses";
 import { roundWindowAbi } from "@/contracts/roundWindowAbi";
 import { parseContractError } from "@/lib/errors";
 import { explorerTxLink } from "@/lib/format";
+import { logActivity, updateActivityStatus } from "@/hooks/useActivityLog";
 
 type RoundWindowFunctionName =
   | "begin"
@@ -79,6 +80,8 @@ export function useContractWrite(functionName: RoundWindowFunctionName) {
         value,
       });
 
+      if (address) logActivity({ hash: txHash, functionName, from: address });
+
       const link = explorerTxLink(chainId, chain?.blockExplorers?.default.url, txHash);
       toast.loading("Transaction submitted, waiting for confirmation...", {
         id: toastId,
@@ -88,10 +91,12 @@ export function useContractWrite(functionName: RoundWindowFunctionName) {
       const receipt = await publicClient?.waitForTransactionReceipt({ hash: txHash });
 
       if (receipt?.status === "reverted") {
+        updateActivityStatus(txHash, "failed");
         toast.error("Transaction reverted on-chain.", { id: toastId });
         return null;
       }
 
+      updateActivityStatus(txHash, "confirmed");
       toast.success("Transaction confirmed", {
         id: toastId,
         description: link ? link : txHash,

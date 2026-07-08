@@ -9,6 +9,9 @@ import {
   Network,
   ShieldAlert,
   ShieldCheck,
+  ArrowLeftRight,
+  GraduationCap,
+  LayoutGrid,
 } from "lucide-react";
 
 export interface NavLink {
@@ -26,6 +29,9 @@ export const NAV_LINKS: NavLink[] = [
   { href: "/user", label: "My Dashboard", icon: UserCircle },
   { href: "/history", label: "Round History", icon: History },
   { href: "/genealogy", label: "Genealogy", icon: Network },
+  { href: "/swap", label: "Swap", icon: ArrowLeftRight },
+  { href: "/learn", label: "Learning Center", icon: GraduationCap },
+  { href: "/products", label: "Products", icon: LayoutGrid },
   { href: "/account", label: "Account Actions", icon: ShieldAlert },
   { href: "/admin", label: "Admin Panel", icon: ShieldCheck, adminOnly: true },
 ];

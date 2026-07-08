@@ -9,6 +9,7 @@ import { ThemeProvider, useTheme } from "next-themes";
 
 import { wagmiConfig } from "@/lib/wagmi";
 import { Toaster } from "@/components/ui/sonner";
+import { WalletViewProvider } from "@/context/wallet-view-context";
 
 function RainbowKitWithTheme({ children }: { children: React.ReactNode }) {
   const { resolvedTheme } = useTheme();
@@ -34,8 +35,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <WagmiProvider config={wagmiConfig}>
         <QueryClientProvider client={queryClient}>
           <RainbowKitWithTheme>
-            {children}
-            <Toaster position="top-right" richColors closeButton />
+            <WalletViewProvider>
+              {children}
+              <Toaster position="top-right" richColors closeButton />
+            </WalletViewProvider>
           </RainbowKitWithTheme>
         </QueryClientProvider>
       </WagmiProvider>

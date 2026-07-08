@@ -1,16 +1,42 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 
 import "./globals.css";
 import { Providers } from "./providers";
 import { Navbar } from "@/components/layout/navbar";
 import { Sidebar } from "@/components/layout/sidebar";
+import { PageTransition } from "@/components/layout/page-transition";
+import { FloatingLights } from "@/components/layout/floating-lights";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+
+const title = "Round Dashboard - Web3 Round Window Control Center";
+const description =
+  "Manage registration, top-ups, statistics, referrals and account actions for the round-window smart contract, with live on-chain data and a built-in BNB Chain swap.";
 
 export const metadata: Metadata = {
-  title: "Round Dashboard",
-  description: "Web3 dashboard for the round-based referral/matrix smart contract",
+  title,
+  description,
+  openGraph: {
+    title,
+    description,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+  },
+  robots: { index: true, follow: true },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#080b14" },
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -18,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
         <Providers>
+          <FloatingLights />
           <div className="flex min-h-screen flex-col">
             <Navbar />
             <div className="flex flex-1">
@@ -27,7 +54,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </div>
               </aside>
               <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
-                <div className="mx-auto w-full max-w-6xl">{children}</div>
+                <div className="mx-auto w-full max-w-7xl">
+                  <PageTransition>{children}</PageTransition>
+                </div>
               </main>
             </div>
           </div>

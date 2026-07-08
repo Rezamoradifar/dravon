@@ -13,7 +13,16 @@ import { useContractWrite } from "@/hooks/useContractWrite";
 
 export function ResetWalletForm() {
   const [newAddr, setNewAddr] = React.useState("");
-  const { execute, isSigning, isConfirming, isConfirmed, hash } = useContractWrite("resetWalletAddress");
+  const {
+    execute,
+    estimateGas,
+    estimatedGas,
+    isEstimating,
+    isSigning,
+    isConfirming,
+    isConfirmed,
+    hash,
+  } = useContractWrite("resetWalletAddress");
 
   const isValid = isAddress(newAddr);
 
@@ -43,9 +52,23 @@ export function ResetWalletForm() {
           />
           {newAddr !== "" && !isValid && <p className="text-xs text-destructive">Enter a valid address</p>}
         </div>
-        <TxProgress isSigning={isSigning} isConfirming={isConfirming} isConfirmed={isConfirmed} hash={hash} />
+        <TxProgress
+          isSigning={isSigning}
+          isConfirming={isConfirming}
+          isConfirmed={isConfirmed}
+          hash={hash}
+          estimatedGas={estimatedGas}
+        />
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex-wrap gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          disabled={!isValid || isEstimating || isSigning || isConfirming}
+          onClick={() => estimateGas([newAddr as Address])}
+        >
+          {isEstimating ? "Estimating..." : "Estimate gas"}
+        </Button>
         <ConfirmDialog
           trigger={<Button variant="destructive" disabled={!isValid || isSigning || isConfirming}>Reset Wallet</Button>}
           title="Reset your wallet address?"

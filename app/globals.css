@@ -98,7 +98,55 @@
   }
 
   .card-glow {
+    background-color: hsl(var(--card) / 0.72);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     box-shadow: 0 0 0 1px hsl(var(--border)), 0 8px 30px -12px hsl(var(--primary) / 0.25);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .card-glow:hover {
+    box-shadow: 0 0 0 1px hsl(var(--border)), 0 12px 40px -12px hsl(var(--primary) / 0.35);
+  }
+
+  .gradient-border {
+    position: relative;
+    border-radius: var(--radius);
+  }
+  .gradient-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary) / 0.8),
+      hsl(var(--primary) / 0.05) 40%,
+      hsl(var(--primary) / 0.6)
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .floating-lights {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .floating-lights span {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(80px);
+    opacity: 0.35;
+    background: hsl(var(--primary) / 0.5);
+    animation: float-light 18s ease-in-out infinite;
+  }
+  .dark .floating-lights span {
+    opacity: 0.22;
   }
 
   .skeleton-shimmer {
@@ -117,5 +165,17 @@
       transparent
     );
     animation: shimmer 1.5s infinite;
+  }
+}
+
+@keyframes float-light {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(4%, 6%) scale(1.08);
+  }
+  66% {
+    transform: translate(-3%, -4%) scale(0.95);
   }
 }

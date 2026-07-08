@@ -7,7 +7,16 @@ import { TxProgress } from "@/components/shared/tx-progress";
 import { useContractWrite } from "@/hooks/useContractWrite";
 
 export function TerminateAccountCard() {
-  const { execute, isSigning, isConfirming, isConfirmed, hash } = useContractWrite("terminateAccount");
+  const {
+    execute,
+    estimateGas,
+    estimatedGas,
+    isEstimating,
+    isSigning,
+    isConfirming,
+    isConfirmed,
+    hash,
+  } = useContractWrite("terminateAccount");
 
   async function handleConfirm() {
     try {
@@ -24,9 +33,23 @@ export function TerminateAccountCard() {
         <CardDescription>terminateAccount() - permanently terminate your account in this window.</CardDescription>
       </CardHeader>
       <CardContent>
-        <TxProgress isSigning={isSigning} isConfirming={isConfirming} isConfirmed={isConfirmed} hash={hash} />
+        <TxProgress
+          isSigning={isSigning}
+          isConfirming={isConfirming}
+          isConfirmed={isConfirmed}
+          hash={hash}
+          estimatedGas={estimatedGas}
+        />
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex-wrap gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          disabled={isEstimating || isSigning || isConfirming}
+          onClick={() => estimateGas([])}
+        >
+          {isEstimating ? "Estimating..." : "Estimate gas"}
+        </Button>
         <ConfirmDialog
           trigger={<Button variant="destructive" disabled={isSigning || isConfirming}>Terminate Account</Button>}
           title="Terminate your account?"

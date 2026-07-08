@@ -8,6 +8,9 @@ import { ConnectWalletGuard } from "@/components/shared/connect-wallet-guard";
 import { Card, CardContent } from "@/components/ui/card";
 import { MatchingBonusForm } from "@/components/admin/matching-bonus-form";
 import { InitRoundForm } from "@/components/admin/init-round-form";
+import { NetworkGrowthChart } from "@/components/dashboard/network-growth-chart";
+import { ExportCsvButton } from "@/components/admin/export-csv-button";
+import { UserLookupPanel } from "@/components/admin/user-lookup-panel";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 export default function AdminPage() {
@@ -18,13 +21,18 @@ export default function AdminPage() {
       <PageHeader
         title="Admin Panel"
         description="Owner-only actions: distribute matching bonuses and initialize rounds."
+        actions={isAdmin ? <ExportCsvButton /> : undefined}
       />
       <NetworkBanner />
       <ConnectWalletGuard>
         {isAdmin ? (
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <MatchingBonusForm />
-            <InitRoundForm />
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <MatchingBonusForm />
+              <InitRoundForm />
+            </div>
+            <NetworkGrowthChart />
+            <UserLookupPanel />
           </div>
         ) : (
           <Card>

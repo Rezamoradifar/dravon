@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { isAddress, parseEther, type Address } from "viem";
-import { useAccount } from "wagmi";
-import { Wand2 } from "lucide-react";
+import { useAccount, useBalance } from "wagmi";
+import { Wand2, Save } from "lucide-react";
 import { toast } from "sonner";
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -13,15 +13,33 @@ import { Button } from "@/components/ui/button";
 import { TxProgress } from "@/components/shared/tx-progress";
 import { useContractWrite } from "@/hooks/useContractWrite";
 import { useBestReferral } from "@/hooks/useBestReferral";
+import type { RegisterPreset } from "@/hooks/useSavedPresets";
 
 const UINT24_MAX = 16_777_215;
 
-export function RegisterForm() {
+export function RegisterForm({
+  appliedPreset,
+  onSavePreset,
+  initialDirect,
+}: {
+  appliedPreset?: (RegisterPreset & { appliedAt: number }) | null;
+  onSavePreset?: (fields: Omit<RegisterPreset, "name">) => void;
+  initialDirect?: string;
+}) {
   const { address } = useAccount();
+  const { data: balance } = useBalance({ address });
   const [startBox, setStartBox] = React.useState("");
-  const [direct, setDirect] = React.useState("");
+  const [direct, setDirect] = React.useState(initialDirect ?? "");
   const [referral, setReferral] = React.useState("");
   const [value, setValue] = React.useState("");
+
+  React.useEffect(() => {
+    if (!appliedPreset) return;
+    setStartBox(appliedPreset.startBox);
+    setDirect(appliedPreset.direct);
+    setReferral(appliedPreset.referral);
+    setValue(appliedPreset.valueBnb);
+  }, [appliedPreset]);
 
   const {
     execute,
@@ -74,9 +92,19 @@ export function RegisterForm() {
 
   return (
     <Card className="card-glow">
-      <CardHeader>
-        <CardTitle>Register</CardTitle>
-        <CardDescription>Join the round by calling begin(startBox, direct, referral).</CardDescription>
+      <CardHeader className="flex-row items-start justify-between gap-4 space-y-0">
+        <div>
+          <CardTitle>Register</CardTitle>
+          <CardDescription>Join the round by calling begin(startBox, direct, referral).</CardDescription>
+        </div>
+        {balance && (
+          <div className="shrink-0 text-right text-xs text-muted-foreground">
+            Balance
+            <p className="font-mono text-sm text-foreground">
+              {Number(balance.formatted).toFixed(4)} {balance.symbol}
+            </p>
+          </div>
+        )}
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
@@ -167,7 +195,18 @@ export function RegisterForm() {
           >
             {isEstimating ? "Estimating..." : "Estimate gas"}
           </Button>
-          <Button type="submit" disabled={!canSubmit || !address || isSigning || isConfirming}>
+          {onSavePreset && (
+            <Button
+              type="button"
+              variant="ghost"
+              className="gap-1.5"
+              disabled={!canSubmit}
+              onClick={() => onSavePreset({ startBox, direct, referral, valueBnb: value })}
+            >
+              <Save className="h-4 w-4" /> Save as preset
+            </Button>
+          )}
+          <Button type="submit" className="ml-auto" disabled={!canSubmit || !address || isSigning || isConfirming}>
             {isSigning || isConfirming ? "Processing..." : "Register"}
           </Button>
         </CardFooter>
