@@ -7,11 +7,12 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RiskBadge } from "@/components/learn/risk-badge";
-import { LEARNING_TOPICS } from "@/lib/learning-content";
+import { getLocalizedTopics } from "@/lib/learning-content";
 import { useTranslation } from "@/contexts/language-context";
 
 export default function LearningCenterPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const topics = getLocalizedTopics(locale);
 
   return (
     <div>
@@ -21,7 +22,7 @@ export default function LearningCenterPage() {
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {LEARNING_TOPICS.map((topic) => (
+        {topics.map((topic) => (
           <Link key={topic.slug} href={`/learn/${topic.slug}`}>
             <Card className="card-glow h-full transition-transform hover:-translate-y-0.5">
               <CardHeader>

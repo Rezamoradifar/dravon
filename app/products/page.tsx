@@ -7,11 +7,12 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PRODUCTS } from "@/lib/products-content";
+import { getLocalizedProducts } from "@/lib/products-content";
 import { useTranslation } from "@/contexts/language-context";
 
 export default function ProductsPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const products = getLocalizedProducts(locale);
 
   return (
     <div>
@@ -21,7 +22,7 @@ export default function ProductsPage() {
       />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {PRODUCTS.map((product) => (
+        {products.map((product) => (
           <Card key={product.slug} className="card-glow flex flex-col">
             <CardHeader>
               <div className="flex items-start justify-between gap-2">
@@ -29,7 +30,9 @@ export default function ProductsPage() {
                   <CardTitle>{product.name}</CardTitle>
                   <CardDescription>{product.tagline}</CardDescription>
                 </div>
-                <Badge variant={product.status === "Live" ? "success" : "secondary"}>{product.status}</Badge>
+                <Badge variant={product.status === "Live" ? "success" : "secondary"}>
+                  {product.statusLabel ?? product.status}
+                </Badge>
               </div>
             </CardHeader>
             <CardContent className="flex flex-1 flex-col gap-4">

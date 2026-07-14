@@ -8,11 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RiskBadge } from "@/components/learn/risk-badge";
 import { WorkflowDiagram } from "@/components/learn/workflow-diagram";
-import type { LearningTopic } from "@/lib/learning-content";
+import { getTopic } from "@/lib/learning-content";
 import { useTranslation } from "@/contexts/language-context";
 
-export function LearnTopicView({ topic }: { topic: LearningTopic }) {
-  const { t } = useTranslation();
+export function LearnTopicView({ slug }: { slug: string }) {
+  const { t, locale } = useTranslation();
+  const topic = getTopic(slug, locale);
+  if (!topic) return null;
 
   return (
     <div>

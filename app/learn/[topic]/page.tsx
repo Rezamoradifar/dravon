@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { LearnTopicView } from "@/components/learn/learn-topic-view";
-import { LEARNING_TOPICS, getTopic } from "@/lib/learning-content";
+import { LEARNING_TOPICS } from "@/lib/learning-content";
 
 export function generateStaticParams() {
   return LEARNING_TOPICS.map((topic) => ({ topic: topic.slug }));
@@ -13,8 +13,7 @@ export default async function LearningTopicPage({
   params: Promise<{ topic: string }>;
 }) {
   const { topic: slug } = await params;
-  const topic = getTopic(slug);
-  if (!topic) notFound();
+  if (!LEARNING_TOPICS.some((t) => t.slug === slug)) notFound();
 
-  return <LearnTopicView topic={topic} />;
+  return <LearnTopicView slug={slug} />;
 }
