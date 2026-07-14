@@ -16,6 +16,7 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { UserRoundInfo } from "@/types/contract";
+import { useTranslation } from "@/contexts/language-context";
 
 const AXIS_STYLE = { fontSize: 12 };
 const TOOLTIP_STYLE = {
@@ -38,16 +39,17 @@ function buildRows(info: UserRoundInfo) {
 
 export function RoundHistoryCharts({ info }: { info: UserRoundInfo }) {
   const rows = React.useMemo(() => buildRows(info), [info]);
+  const { t } = useTranslation();
 
   if (rows.length === 0) {
-    return <p className="text-sm text-muted-foreground">No round data in this range.</p>;
+    return <p className="text-sm text-muted-foreground">{t("historyPage.noData")}</p>;
   }
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <Card className="card-glow">
         <CardHeader>
-          <CardTitle className="text-base">Points</CardTitle>
+          <CardTitle className="text-base">{t("historyPage.points")}</CardTitle>
         </CardHeader>
         <CardContent className="h-64">
           <ResponsiveContainer width="100%" height="100%">
@@ -70,7 +72,7 @@ export function RoundHistoryCharts({ info }: { info: UserRoundInfo }) {
 
       <Card className="card-glow">
         <CardHeader>
-          <CardTitle className="text-base">Direct Income</CardTitle>
+          <CardTitle className="text-base">{t("historyPage.directIncome")}</CardTitle>
         </CardHeader>
         <CardContent className="h-64">
           <ResponsiveContainer width="100%" height="100%">
@@ -99,7 +101,7 @@ export function RoundHistoryCharts({ info }: { info: UserRoundInfo }) {
 
       <Card className="card-glow">
         <CardHeader>
-          <CardTitle className="text-base">Binary Income</CardTitle>
+          <CardTitle className="text-base">{t("historyPage.binaryIncome")}</CardTitle>
         </CardHeader>
         <CardContent className="h-64">
           <ResponsiveContainer width="100%" height="100%">
@@ -128,7 +130,7 @@ export function RoundHistoryCharts({ info }: { info: UserRoundInfo }) {
 
       <Card className="card-glow">
         <CardHeader>
-          <CardTitle className="text-base">Flash Income</CardTitle>
+          <CardTitle className="text-base">{t("historyPage.flashIncome")}</CardTitle>
         </CardHeader>
         <CardContent className="h-64">
           <ResponsiveContainer width="100%" height="100%">
@@ -151,7 +153,7 @@ export function RoundHistoryCharts({ info }: { info: UserRoundInfo }) {
               <Area
                 type="monotone"
                 dataKey="directFlash"
-                name="Direct Flash"
+                name={t("historyPage.directFlash")}
                 stroke="hsl(244 75% 59%)"
                 fill="url(#directFlashFill)"
                 strokeWidth={2}
@@ -159,7 +161,7 @@ export function RoundHistoryCharts({ info }: { info: UserRoundInfo }) {
               <Area
                 type="monotone"
                 dataKey="binaryFlash"
-                name="Binary Flash"
+                name={t("historyPage.binaryFlash")}
                 stroke="hsl(0 84% 60%)"
                 fill="url(#binaryFlashFill)"
                 strokeWidth={2}

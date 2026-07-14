@@ -1,5 +1,8 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import type { LearningTopic } from "@/lib/learning-content";
+import { useTranslation } from "@/contexts/language-context";
 
 const RISK_VARIANT: Record<LearningTopic["riskLevel"], "success" | "secondary" | "destructive"> = {
   Low: "success",
@@ -9,5 +12,6 @@ const RISK_VARIANT: Record<LearningTopic["riskLevel"], "success" | "secondary" |
 };
 
 export function RiskBadge({ level }: { level: LearningTopic["riskLevel"] }) {
-  return <Badge variant={RISK_VARIANT[level]}>{level} risk</Badge>;
+  const { t } = useTranslation();
+  return <Badge variant={RISK_VARIANT[level]}>{level}{t("riskBadge.suffix")}</Badge>;
 }

@@ -20,6 +20,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/contexts/language-context";
 
 function useSimulation(inputs: {
   borrowUsd: number;
@@ -44,6 +45,7 @@ function useSimulation(inputs: {
 }
 
 export default function ArbitrageSimulatorPage() {
+  const { t } = useTranslation();
   const [borrowUsd, setBorrowUsd] = React.useState(10_000);
   const [priceA, setPriceA] = React.useState(600);
   const [priceB, setPriceB] = React.useState(603);
@@ -68,14 +70,14 @@ export default function ArbitrageSimulatorPage() {
 
   const steps = result
     ? [
-        { label: "Borrow", value: `$${borrowUsd.toLocaleString()}`, note: "Flash loan principal (simulated)" },
-        { label: "Swap on Market A", value: `${result.assetBought.toFixed(4)} units`, note: `Bought at $${priceA}` },
-        { label: "Swap on Market B", value: `$${result.proceedsUsd.toFixed(2)}`, note: `Sold at $${priceB}` },
-        { label: "Repay flash loan", value: `-$${result.repaymentUsd.toFixed(2)}`, note: `Principal + ${flashFeePct}% fee` },
+        { label: t("simulatorPage.borrow"), value: `$${borrowUsd.toLocaleString()}`, note: t("simulatorPage.borrowNote") },
+        { label: t("simulatorPage.swapMarketA"), value: `${result.assetBought.toFixed(4)} units`, note: t("simulatorPage.boughtAt", { price: priceA }) },
+        { label: t("simulatorPage.swapMarketB"), value: `$${result.proceedsUsd.toFixed(2)}`, note: t("simulatorPage.soldAt", { price: priceB }) },
+        { label: t("simulatorPage.repayFlashLoan"), value: `-$${result.repaymentUsd.toFixed(2)}`, note: t("simulatorPage.principalPlusFee", { fee: flashFeePct }) },
         {
-          label: "Net result",
+          label: t("simulatorPage.netResult"),
           value: `${result.netProfit >= 0 ? "+" : ""}$${result.netProfit.toFixed(2)}`,
-          note: "After gas",
+          note: t("simulatorPage.afterGas"),
         },
       ]
     : [];
@@ -83,45 +85,42 @@ export default function ArbitrageSimulatorPage() {
   return (
     <div>
       <PageHeader
-        title="Arbitrage Simulator"
-        description="A fully simulated calculator for learning purposes only."
+        title={t("simulatorPage.title")}
+        description={t("simulatorPage.description")}
       />
 
       <Alert variant="warning" className="mb-6">
         <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Educational demonstration - not investment advice</AlertTitle>
-        <AlertDescription>
-          Every number on this page is a manual input you control. No real transaction, wallet, or
-          exchange is involved. This does not predict, guarantee, or represent any real profit.
-        </AlertDescription>
+        <AlertTitle>{t("simulatorPage.disclaimerTitle")}</AlertTitle>
+        <AlertDescription>{t("simulatorPage.disclaimerBody")}</AlertDescription>
       </Alert>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Simulated inputs</CardTitle>
-            <CardDescription>All values are illustrative and editable.</CardDescription>
+            <CardTitle>{t("simulatorPage.simulatedInputs")}</CardTitle>
+            <CardDescription>{t("simulatorPage.simulatedInputsDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>Borrow amount (USD)</Label>
+                <Label>{t("simulatorPage.borrowAmount")}</Label>
                 <Input type="number" value={borrowUsd} onChange={(e) => setBorrowUsd(Number(e.target.value))} />
               </div>
               <div className="space-y-1.5">
-                <Label>Gas cost (USD)</Label>
+                <Label>{t("simulatorPage.gasCost")}</Label>
                 <Input type="number" value={gasUsd} onChange={(e) => setGasUsd(Number(e.target.value))} />
               </div>
               <div className="space-y-1.5">
-                <Label>Price on Market A</Label>
+                <Label>{t("simulatorPage.priceOnMarketA")}</Label>
                 <Input type="number" value={priceA} onChange={(e) => setPriceA(Number(e.target.value))} />
               </div>
               <div className="space-y-1.5">
-                <Label>Price on Market B</Label>
+                <Label>{t("simulatorPage.priceOnMarketB")}</Label>
                 <Input type="number" value={priceB} onChange={(e) => setPriceB(Number(e.target.value))} />
               </div>
               <div className="space-y-1.5">
-                <Label>Flash loan fee (%)</Label>
+                <Label>{t("simulatorPage.flashLoanFee")}</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -130,7 +129,7 @@ export default function ArbitrageSimulatorPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>DEX fee per swap (%)</Label>
+                <Label>{t("simulatorPage.dexFee")}</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -144,8 +143,8 @@ export default function ArbitrageSimulatorPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Simulated process</CardTitle>
-            <CardDescription>Borrow → Swap → Swap → Repay → Result</CardDescription>
+            <CardTitle>{t("simulatorPage.simulatedProcess")}</CardTitle>
+            <CardDescription>{t("simulatorPage.simulatedProcessDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -164,8 +163,8 @@ export default function ArbitrageSimulatorPage() {
                     <p
                       className={cn(
                         "font-mono font-semibold",
-                        step.label === "Net result" && result && result.netProfit >= 0 && "text-success",
-                        step.label === "Net result" && result && result.netProfit < 0 && "text-destructive",
+                        step.label === t("simulatorPage.netResult") && result && result.netProfit >= 0 && "text-success",
+                        step.label === t("simulatorPage.netResult") && result && result.netProfit < 0 && "text-destructive",
                       )}
                     >
                       {step.value}
@@ -193,8 +192,8 @@ export default function ArbitrageSimulatorPage() {
                   <XCircle className="h-4 w-4" />
                 )}
                 {result.netProfit >= 0
-                  ? "In this simulated scenario, proceeds exceed costs."
-                  : "In this simulated scenario, costs exceed proceeds."}
+                  ? t("simulatorPage.proceedsExceedCosts")
+                  : t("simulatorPage.costsExceedProceeds")}
               </div>
             )}
           </CardContent>
@@ -203,10 +202,8 @@ export default function ArbitrageSimulatorPage() {
 
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Net result vs. price gap</CardTitle>
-          <CardDescription>
-            Simulated net profit as the gap between Market A and Market B varies, holding other inputs fixed.
-          </CardDescription>
+          <CardTitle>{t("simulatorPage.netResultVsGap")}</CardTitle>
+          <CardDescription>{t("simulatorPage.netResultVsGapDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="h-72">
           <ResponsiveContainer width="100%" height="100%">
@@ -214,7 +211,10 @@ export default function ArbitrageSimulatorPage() {
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis dataKey="gapPct" tick={{ fontSize: 12 }} unit="%" />
               <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip formatter={(v: number) => [`$${v.toFixed(2)}`, "Net result"]} labelFormatter={(l) => `Gap: ${l}%`} />
+              <Tooltip
+                formatter={(v: number) => [`$${v.toFixed(2)}`, t("simulatorPage.netResultTooltip")]}
+                labelFormatter={(l) => t("simulatorPage.gapLabel", { gap: l })}
+              />
               <ReferenceLine y={0} stroke="hsl(var(--border))" />
               <Line type="monotone" dataKey="netProfit" stroke="hsl(244 75% 59%)" strokeWidth={2} dot={false} />
             </LineChart>

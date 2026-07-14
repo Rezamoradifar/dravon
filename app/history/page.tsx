@@ -11,9 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserRoundInfo } from "@/hooks/useUserRoundInfo";
 import { useWalletView } from "@/context/wallet-view-context";
+import { useTranslation } from "@/contexts/language-context";
 
 export default function RoundHistoryPage() {
   const { searchedAddress, setSearchedAddress, viewedAddress } = useWalletView();
+  const { t } = useTranslation();
 
   const [fromRoundsAgo, setFromRoundsAgo] = React.useState("0");
   const [roundsAgo, setRoundsAgo] = React.useState("9");
@@ -31,13 +33,13 @@ export default function RoundHistoryPage() {
 
   return (
     <div>
-      <PageHeader title="Round History" description="Points, direct, binary and flash income via getUserRoundInfo()." />
+      <PageHeader title={t("historyPage.title")} description={t("historyPage.description")} />
 
       <div className="mb-6 space-y-4 rounded-xl border bg-card p-4">
         <WalletSearch value={searchedAddress} onChange={setSearchedAddress} />
         <div className="flex flex-wrap items-end gap-3">
           <div className="space-y-1.5">
-            <Label htmlFor="fromRoundsAgo">From rounds ago</Label>
+            <Label htmlFor="fromRoundsAgo">{t("historyPage.fromRoundsAgo")}</Label>
             <Input
               id="fromRoundsAgo"
               className="w-32"
@@ -47,7 +49,7 @@ export default function RoundHistoryPage() {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="roundsAgo">To rounds ago</Label>
+            <Label htmlFor="roundsAgo">{t("historyPage.toRoundsAgo")}</Label>
             <Input
               id="roundsAgo"
               className="w-32"
@@ -57,12 +59,12 @@ export default function RoundHistoryPage() {
             />
           </div>
           <Button variant="outline" onClick={handleApply}>
-            Load history
+            {t("historyPage.loadHistory")}
           </Button>
         </div>
       </div>
 
-      {!viewedAddress && <p className="text-sm text-muted-foreground">Connect a wallet or search an address.</p>}
+      {!viewedAddress && <p className="text-sm text-muted-foreground">{t("historyPage.connectOrSearch")}</p>}
 
       {viewedAddress && isLoading && (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -73,7 +75,7 @@ export default function RoundHistoryPage() {
       )}
 
       {viewedAddress && !isLoading && isError && (
-        <p className="text-sm text-destructive">Could not load round history for this wallet.</p>
+        <p className="text-sm text-destructive">{t("historyPage.loadFailed")}</p>
       )}
 
       {viewedAddress && !isLoading && !isError && info && <RoundHistoryCharts info={info} />}
