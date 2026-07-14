@@ -8,9 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { TxProgress } from "@/components/shared/tx-progress";
 import { useContractWrite } from "@/hooks/useContractWrite";
+import { useTranslation } from "@/contexts/language-context";
 
 export function InitRoundForm() {
   const [round, setRound] = React.useState("");
+  const { t } = useTranslation();
 
   const {
     execute,
@@ -44,17 +46,17 @@ export function InitRoundForm() {
   return (
     <Card className="card-glow">
       <CardHeader>
-        <CardTitle>Init Round</CardTitle>
+        <CardTitle>{t("initRound.title")}</CardTitle>
         <CardDescription>init(round)</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="round">Round</Label>
+            <Label htmlFor="round">{t("initRound.round")}</Label>
             <Input
               id="round"
               inputMode="numeric"
-              placeholder="Round id"
+              placeholder={t("initRound.roundPlaceholder")}
               value={round}
               onChange={(e) => setRound(e.target.value)}
             />
@@ -69,10 +71,10 @@ export function InitRoundForm() {
         </CardContent>
         <CardFooter className="flex-wrap gap-2">
           <Button type="button" variant="outline" disabled={!isValid || isEstimating} onClick={handleEstimate}>
-            {isEstimating ? "Estimating..." : "Estimate gas"}
+            {isEstimating ? t("common2.estimating") : t("common2.estimateGas")}
           </Button>
           <Button type="submit" variant="destructive" disabled={!isValid || isSigning || isConfirming}>
-            {isSigning || isConfirming ? "Processing..." : "Init Round"}
+            {isSigning || isConfirming ? t("common2.processing") : t("initRound.submit")}
           </Button>
         </CardFooter>
       </form>

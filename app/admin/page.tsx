@@ -12,15 +12,17 @@ import { NetworkGrowthChart } from "@/components/dashboard/network-growth-chart"
 import { ExportCsvButton } from "@/components/admin/export-csv-button";
 import { UserLookupPanel } from "@/components/admin/user-lookup-panel";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useTranslation } from "@/contexts/language-context";
 
 export default function AdminPage() {
   const isAdmin = useIsAdmin();
+  const { t } = useTranslation();
 
   return (
     <div>
       <PageHeader
-        title="Admin Panel"
-        description="Owner-only actions: distribute matching bonuses and initialize rounds."
+        title={t("adminPage.title")}
+        description={t("adminPage.description")}
         actions={isAdmin ? <ExportCsvButton /> : undefined}
       />
       <NetworkBanner />
@@ -38,12 +40,8 @@ export default function AdminPage() {
           <Card>
             <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
               <ShieldAlert className="h-8 w-8 text-muted-foreground" />
-              <p className="font-medium">You are not authorized to view this page</p>
-              <p className="max-w-sm text-sm text-muted-foreground">
-                This panel is only shown to the configured admin wallet
-                (NEXT_PUBLIC_ADMIN_ADDRESS). The contract itself enforces the real
-                permission check for these calls.
-              </p>
+              <p className="font-medium">{t("adminPage.notAuthorized")}</p>
+              <p className="max-w-sm text-sm text-muted-foreground">{t("adminPage.notAuthorizedBody")}</p>
             </CardContent>
           </Card>
         )}

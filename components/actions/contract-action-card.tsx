@@ -26,6 +26,7 @@ import {
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { ActionResultPanel } from "@/components/actions/action-result-panel";
 import { useContractWrite, type RoundWindowFunctionName } from "@/hooks/useContractWrite";
+import { useTranslation } from "@/contexts/language-context";
 
 export interface ActionField {
   key: string;
@@ -66,6 +67,7 @@ export function ContractActionCard({
   confirm?: { title: string; description: string; confirmLabel: string };
 }) {
   const { address } = useAccount();
+  const { t } = useTranslation();
   const [values, setValues] = React.useState<Record<string, string>>(
     Object.fromEntries(fields.map((f) => [f.key, f.type === "bool" ? "false" : ""])),
   );
@@ -143,8 +145,8 @@ export function ContractActionCard({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="false">False</SelectItem>
-                  <SelectItem value="true">True</SelectItem>
+                  <SelectItem value="false">{t("matchingBonus.false")}</SelectItem>
+                  <SelectItem value="true">{t("matchingBonus.true")}</SelectItem>
                 </SelectContent>
               </Select>
             ) : (
@@ -158,8 +160,8 @@ export function ContractActionCard({
             {field.helper && <p className="text-xs text-muted-foreground">{field.helper}</p>}
             {values[field.key] !== "" && !isFieldValid(field, values[field.key]) && (
               <p className="text-xs text-destructive">
-                {field.type === "address" ? "Enter a valid address" : "Enter a valid non-negative integer"}
-                {field.max !== undefined ? ` (max ${field.max})` : ""}
+                {field.type === "address" ? t("contractActionsPage.invalidAddress") : t("contractActionsPage.invalidUint")}
+                {field.max !== undefined ? t("contractActionsPage.maxSuffix", { max: field.max }) : ""}
               </p>
             )}
           </div>
@@ -167,7 +169,7 @@ export function ContractActionCard({
 
         {payable && (
           <div className="space-y-1.5">
-            <Label htmlFor={`${functionName}-value`}>Payment Amount (native currency)</Label>
+            <Label htmlFor={`${functionName}-value`}>{t("contractActionsPage.paymentAmount")}</Label>
             <Input
               id={`${functionName}-value`}
               inputMode="decimal"
@@ -175,7 +177,7 @@ export function ContractActionCard({
               value={nativeValue}
               onChange={(e) => setNativeValue(e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">This function is payable - the amount is sent with the transaction.</p>
+            <p className="text-xs text-muted-foreground">{t("contractActionsPage.payableHint")}</p>
           </div>
         )}
 
@@ -196,13 +198,13 @@ export function ContractActionCard({
       </CardContent>
       <CardFooter className="flex-wrap gap-2">
         <Button type="button" variant="outline" disabled={!canSubmit || isEstimating} onClick={handleEstimate}>
-          {isEstimating ? "Estimating..." : "Estimate gas"}
+          {isEstimating ? t("common2.estimating") : t("common2.estimateGas")}
         </Button>
         {confirm ? (
           <ConfirmDialog
             trigger={
               <Button variant="destructive" disabled={!canSubmit || !address || isBusy} className="ml-auto">
-                {isBusy ? "Processing..." : title}
+                {isBusy ? t("common2.processing") : title}
               </Button>
             }
             title={confirm.title}
@@ -214,7 +216,7 @@ export function ContractActionCard({
           />
         ) : (
           <Button className="ml-auto" disabled={!canSubmit || !address || isBusy} onClick={handleExecute}>
-            {isBusy ? "Processing..." : "Execute"}
+            {isBusy ? t("common2.processing") : t("contractActionsPage.execute")}
           </Button>
         )}
       </CardFooter>

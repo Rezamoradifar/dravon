@@ -5,9 +5,11 @@ import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { downloadCsv } from "@/lib/csv";
 import { useRoundsHistory } from "@/hooks/useRoundsHistory";
+import { useTranslation } from "@/contexts/language-context";
 
 export function ExportCsvButton() {
   const { points, isLoading } = useRoundsHistory(20);
+  const { t } = useTranslation();
 
   function handleExport() {
     downloadCsv(
@@ -24,7 +26,7 @@ export function ExportCsvButton() {
 
   return (
     <Button type="button" variant="outline" className="gap-1.5" disabled={isLoading || points.length === 0} onClick={handleExport}>
-      <Download className="h-4 w-4" /> Export round history CSV
+      <Download className="h-4 w-4" /> {t("exportCsv.label")}
     </Button>
   );
 }

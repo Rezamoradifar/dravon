@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { CopyButton } from "@/components/shared/copy-button";
 import { explorerTxLink, shortenAddress } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/contexts/language-context";
 
 export function ActionResultPanel({
   functionSignature,
@@ -31,50 +32,51 @@ export function ActionResultPanel({
   const chains = useChains();
   const chain = chains.find((c) => c.id === chainId);
   const link = hash ? explorerTxLink(chainId, chain?.blockExplorers?.default.url, hash) : "";
+  const { t } = useTranslation();
 
   const status = isFailed
-    ? "Failed"
+    ? t("actionResult.statusFailed")
     : isConfirmed
-      ? "Success"
+      ? t("actionResult.statusSuccess")
       : isConfirming
-        ? "Pending"
+        ? t("actionResult.statusPending")
         : isSigning
-          ? "Awaiting signature"
-          : "Idle";
+          ? t("actionResult.statusAwaitingSignature")
+          : t("actionResult.statusIdle");
 
   const statusVariant =
-    status === "Success"
+    status === t("actionResult.statusSuccess")
       ? "success"
-      : status === "Failed"
+      : status === t("actionResult.statusFailed")
         ? "destructive"
-        : status === "Idle"
+        : status === t("actionResult.statusIdle")
           ? "outline"
           : "secondary";
 
   return (
     <div className="space-y-2 rounded-lg border bg-muted/30 p-3 font-mono text-xs">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-muted-foreground">Function</span>
+        <span className="text-muted-foreground">{t("actionResult.function")}</span>
         <span className="truncate">{functionSignature}</span>
       </div>
       <div className="flex items-center justify-between gap-2">
-        <span className="text-muted-foreground">Estimated Gas</span>
+        <span className="text-muted-foreground">{t("actionResult.estimatedGas")}</span>
         <span className="flex items-center gap-1">
           <Fuel className="h-3 w-3" />
-          {isEstimating ? "Estimating..." : estimatedGas != null ? `${estimatedGas.toString()} units` : "-"}
+          {isEstimating ? t("common2.estimating") : estimatedGas != null ? `${estimatedGas.toString()} units` : "-"}
         </span>
       </div>
       <div className="flex items-center justify-between gap-2">
-        <span className="text-muted-foreground">Status</span>
+        <span className="text-muted-foreground">{t("actionResult.status")}</span>
         <Badge variant={statusVariant} className="gap-1 font-sans">
           {(isSigning || isConfirming) && <Loader2 className="h-3 w-3 animate-spin" />}
-          {status === "Success" && <CheckCircle2 className="h-3 w-3" />}
-          {status === "Failed" && <XCircle className="h-3 w-3" />}
+          {isConfirmed && <CheckCircle2 className="h-3 w-3" />}
+          {isFailed && <XCircle className="h-3 w-3" />}
           {status}
         </Badge>
       </div>
       <div className="flex items-center justify-between gap-2">
-        <span className="text-muted-foreground">Tx Hash</span>
+        <span className="text-muted-foreground">{t("actionResult.txHash")}</span>
         {hash ? (
           <span className="flex items-center gap-1">
             <HashIcon className="h-3 w-3" />
@@ -93,7 +95,7 @@ export function ActionResultPanel({
             rel="noreferrer noopener"
             className={cn("text-primary hover:underline")}
           >
-            View on explorer
+            {t("actionResult.viewOnExplorer")}
           </a>
         </div>
       )}

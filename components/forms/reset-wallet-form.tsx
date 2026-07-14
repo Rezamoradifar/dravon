@@ -10,9 +10,11 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { TxProgress } from "@/components/shared/tx-progress";
 import { useContractWrite } from "@/hooks/useContractWrite";
+import { useTranslation } from "@/contexts/language-context";
 
 export function ResetWalletForm() {
   const [newAddr, setNewAddr] = React.useState("");
+  const { t } = useTranslation();
   const {
     execute,
     estimateGas,
@@ -38,19 +40,19 @@ export function ResetWalletForm() {
   return (
     <Card className="card-glow">
       <CardHeader>
-        <CardTitle>Reset Wallet Address</CardTitle>
-        <CardDescription>resetWalletAddress(newAddr) - move your account to a new wallet.</CardDescription>
+        <CardTitle>{t("resetWalletForm.title")}</CardTitle>
+        <CardDescription>{t("resetWalletForm.description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-1.5">
-          <Label htmlFor="newAddr">New Wallet Address</Label>
+          <Label htmlFor="newAddr">{t("resetWalletForm.newAddr")}</Label>
           <Input
             id="newAddr"
             placeholder="0x..."
             value={newAddr}
             onChange={(e) => setNewAddr(e.target.value)}
           />
-          {newAddr !== "" && !isValid && <p className="text-xs text-destructive">Enter a valid address</p>}
+          {newAddr !== "" && !isValid && <p className="text-xs text-destructive">{t("common2.invalidAddress")}</p>}
         </div>
         <TxProgress
           isSigning={isSigning}
@@ -67,13 +69,13 @@ export function ResetWalletForm() {
           disabled={!isValid || isEstimating || isSigning || isConfirming}
           onClick={() => estimateGas([newAddr as Address])}
         >
-          {isEstimating ? "Estimating..." : "Estimate gas"}
+          {isEstimating ? t("common2.estimating") : t("common2.estimateGas")}
         </Button>
         <ConfirmDialog
-          trigger={<Button variant="destructive" disabled={!isValid || isSigning || isConfirming}>Reset Wallet</Button>}
-          title="Reset your wallet address?"
-          description={`Your account will be moved to ${newAddr || "the new address"}. This cannot be undone.`}
-          confirmLabel="Reset Wallet"
+          trigger={<Button variant="destructive" disabled={!isValid || isSigning || isConfirming}>{t("resetWalletForm.submit")}</Button>}
+          title={t("resetWalletForm.confirmTitle")}
+          description={t("resetWalletForm.confirmDescription", { addr: newAddr || t("resetWalletForm.theNewAddress") })}
+          confirmLabel={t("resetWalletForm.confirmLabel")}
           destructive
           isLoading={isSigning || isConfirming}
           onConfirm={handleConfirm}

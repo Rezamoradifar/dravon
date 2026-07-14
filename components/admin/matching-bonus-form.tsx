@@ -15,10 +15,12 @@ import {
 } from "@/components/ui/select";
 import { TxProgress } from "@/components/shared/tx-progress";
 import { useContractWrite } from "@/hooks/useContractWrite";
+import { useTranslation } from "@/contexts/language-context";
 
 export function MatchingBonusForm() {
   const [nodes, setNodes] = React.useState("");
   const [devPool, setDevPool] = React.useState("false");
+  const { t } = useTranslation();
 
   const {
     execute,
@@ -52,34 +54,34 @@ export function MatchingBonusForm() {
   return (
     <Card className="card-glow">
       <CardHeader>
-        <CardTitle>Distribute Matching Bonuses</CardTitle>
+        <CardTitle>{t("matchingBonus.title")}</CardTitle>
         <CardDescription>distributeMatchingBonuses(nodes, devPool)</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="nodes">Nodes</Label>
+            <Label htmlFor="nodes">{t("matchingBonus.nodes")}</Label>
             <Input
               id="nodes"
               inputMode="numeric"
-              placeholder="Number of nodes to process"
+              placeholder={t("matchingBonus.nodesPlaceholder")}
               value={nodes}
               onChange={(e) => setNodes(e.target.value)}
             />
             {nodes !== "" && !isNodesValid && (
-              <p className="text-xs text-destructive">Enter a positive integer</p>
+              <p className="text-xs text-destructive">{t("matchingBonus.invalidNodes")}</p>
             )}
           </div>
 
           <div className="space-y-1.5">
-            <Label>Dev Pool</Label>
+            <Label>{t("matchingBonus.devPool")}</Label>
             <Select value={devPool} onValueChange={setDevPool}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="false">False</SelectItem>
-                <SelectItem value="true">True</SelectItem>
+                <SelectItem value="false">{t("matchingBonus.false")}</SelectItem>
+                <SelectItem value="true">{t("matchingBonus.true")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -94,10 +96,10 @@ export function MatchingBonusForm() {
         </CardContent>
         <CardFooter className="flex-wrap gap-2">
           <Button type="button" variant="outline" disabled={!isNodesValid || isEstimating} onClick={handleEstimate}>
-            {isEstimating ? "Estimating..." : "Estimate gas"}
+            {isEstimating ? t("common2.estimating") : t("common2.estimateGas")}
           </Button>
           <Button type="submit" disabled={!isNodesValid || isSigning || isConfirming}>
-            {isSigning || isConfirming ? "Processing..." : "Distribute"}
+            {isSigning || isConfirming ? t("common2.processing") : t("matchingBonus.submit")}
           </Button>
         </CardFooter>
       </form>

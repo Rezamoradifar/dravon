@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { TxProgress } from "@/components/shared/tx-progress";
 import { useContractWrite } from "@/hooks/useContractWrite";
+import { useTranslation } from "@/contexts/language-context";
 
 export function TerminateAccountCard() {
+  const { t } = useTranslation();
   const {
     execute,
     estimateGas,
@@ -29,8 +31,8 @@ export function TerminateAccountCard() {
   return (
     <Card className="card-glow border-destructive/40">
       <CardHeader>
-        <CardTitle>Terminate Account</CardTitle>
-        <CardDescription>terminateAccount() - permanently terminate your account in this window.</CardDescription>
+        <CardTitle>{t("terminateAccountCard.title")}</CardTitle>
+        <CardDescription>{t("terminateAccountCard.description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <TxProgress
@@ -48,13 +50,13 @@ export function TerminateAccountCard() {
           disabled={isEstimating || isSigning || isConfirming}
           onClick={() => estimateGas([])}
         >
-          {isEstimating ? "Estimating..." : "Estimate gas"}
+          {isEstimating ? t("common2.estimating") : t("common2.estimateGas")}
         </Button>
         <ConfirmDialog
-          trigger={<Button variant="destructive" disabled={isSigning || isConfirming}>Terminate Account</Button>}
-          title="Terminate your account?"
-          description="This is irreversible. Your account in this round window will be permanently terminated."
-          confirmLabel="Terminate"
+          trigger={<Button variant="destructive" disabled={isSigning || isConfirming}>{t("terminateAccountCard.submit")}</Button>}
+          title={t("terminateAccountCard.confirmTitle")}
+          description={t("terminateAccountCard.confirmDescription")}
+          confirmLabel={t("terminateAccountCard.confirmLabel")}
           destructive
           isLoading={isSigning || isConfirming}
           onConfirm={handleConfirm}

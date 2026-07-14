@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { TxProgress } from "@/components/shared/tx-progress";
 import { useContractWrite } from "@/hooks/useContractWrite";
+import { useTranslation } from "@/contexts/language-context";
 
 export function VoteShutdownCard() {
+  const { t } = useTranslation();
   const {
     execute,
     estimateGas,
@@ -29,8 +31,8 @@ export function VoteShutdownCard() {
   return (
     <Card className="card-glow">
       <CardHeader>
-        <CardTitle>Vote Shutdown</CardTitle>
-        <CardDescription>voteShutdown() - cast your vote to shut the round down.</CardDescription>
+        <CardTitle>{t("voteShutdownCard.title")}</CardTitle>
+        <CardDescription>{t("voteShutdownCard.description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <TxProgress
@@ -48,13 +50,13 @@ export function VoteShutdownCard() {
           disabled={isEstimating || isSigning || isConfirming}
           onClick={() => estimateGas([])}
         >
-          {isEstimating ? "Estimating..." : "Estimate gas"}
+          {isEstimating ? t("common2.estimating") : t("common2.estimateGas")}
         </Button>
         <ConfirmDialog
-          trigger={<Button variant="destructive" disabled={isSigning || isConfirming}>Vote Shutdown</Button>}
-          title="Vote for shutdown?"
-          description="This casts your on-chain vote to shut down the round. You can only vote once per round."
-          confirmLabel="Vote Shutdown"
+          trigger={<Button variant="destructive" disabled={isSigning || isConfirming}>{t("voteShutdownCard.submit")}</Button>}
+          title={t("voteShutdownCard.confirmTitle")}
+          description={t("voteShutdownCard.confirmDescription")}
+          confirmLabel={t("voteShutdownCard.confirmLabel")}
           destructive
           isLoading={isSigning || isConfirming}
           onConfirm={handleConfirm}
