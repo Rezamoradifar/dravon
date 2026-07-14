@@ -473,4 +473,20 @@ export const fa: Dictionary = {
     title: "راهنما و آموزش استفاده",
     description: "نحوه استفاده از این پلتفرم - بدون مشاوره سرمایه‌گذاری، بدون اعداد بازده، فقط نحوه کار سایت.",
   },
+  sharedComponents: {
+    viewOnExplorer: "مشاهده در اکسپلورر",
+    copyToClipboard: "کپی در کلیپ‌بورد",
+    cancel: "لغو",
+    processing: "در حال پردازش...",
+    confirm: "تأیید",
+  },
+  connectWalletGuard: {
+    title: "برای ادامه، کیف‌پول خود را وصل کنید",
+    body: "این عملیات به یک کیف‌پول متصل روی شبکه پشتیبانی‌شده نیاز دارد.",
+  },
+  notFoundPage: {
+    title: "۴۰۴",
+    description: "این صفحه وجود ندارد.",
+    backToDashboard: "بازگشت به داشبورد",
+  },
 };

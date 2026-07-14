@@ -12,12 +12,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/contexts/language-context";
 
 export function ConfirmDialog({
   trigger,
   title,
   description,
-  confirmLabel = "Confirm",
+  confirmLabel,
   onConfirm,
   isLoading,
   destructive,
@@ -31,6 +32,7 @@ export function ConfirmDialog({
   destructive?: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
+  const { t } = useTranslation();
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -42,7 +44,7 @@ export function ConfirmDialog({
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
-            Cancel
+            {t("sharedComponents.cancel")}
           </Button>
           <Button
             variant={destructive ? "destructive" : "default"}
@@ -52,7 +54,7 @@ export function ConfirmDialog({
               setOpen(false);
             }}
           >
-            {isLoading ? "Processing..." : confirmLabel}
+            {isLoading ? t("sharedComponents.processing") : confirmLabel ?? t("sharedComponents.confirm")}
           </Button>
         </DialogFooter>
       </DialogContent>

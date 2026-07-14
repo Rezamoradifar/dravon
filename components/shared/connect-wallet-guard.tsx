@@ -5,9 +5,11 @@ import { useAccount } from "wagmi";
 import { WalletMinimal } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { useTranslation } from "@/contexts/language-context";
 
 export function ConnectWalletGuard({ children }: { children: React.ReactNode }) {
   const { isConnected } = useAccount();
+  const { t } = useTranslation();
 
   if (isConnected) return <>{children}</>;
 
@@ -18,10 +20,8 @@ export function ConnectWalletGuard({ children }: { children: React.ReactNode }) 
           <WalletMinimal className="h-7 w-7" />
         </div>
         <div>
-          <p className="font-medium">Connect your wallet to continue</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            This action requires a connected wallet on the supported network.
-          </p>
+          <p className="font-medium">{t("connectWalletGuard.title")}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{t("connectWalletGuard.body")}</p>
         </div>
         <ConnectButton />
       </CardContent>

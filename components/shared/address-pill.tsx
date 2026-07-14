@@ -6,6 +6,7 @@ import { useChainId, useChains } from "wagmi";
 import { shortenAddress, explorerAddressLink } from "@/lib/format";
 import { CopyButton } from "./copy-button";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/contexts/language-context";
 
 export function AddressPill({
   address,
@@ -20,6 +21,7 @@ export function AddressPill({
   const chains = useChains();
   const chain = chains.find((c) => c.id === chainId);
   const href = address ? explorerAddressLink(chainId, chain?.blockExplorers?.default.url, address) : "";
+  const { t } = useTranslation();
 
   if (!address) {
     return <span className={cn("text-muted-foreground", className)}>-</span>;
@@ -34,7 +36,7 @@ export function AddressPill({
           href={href}
           target="_blank"
           rel="noreferrer noopener"
-          aria-label="View on explorer"
+          aria-label={t("sharedComponents.viewOnExplorer")}
           className="text-muted-foreground hover:text-foreground"
         >
           <ExternalLink className="h-3.5 w-3.5" />

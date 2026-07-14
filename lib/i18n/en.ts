@@ -471,6 +471,22 @@ export const en = {
     title: "Help & User Guide",
     description: "How to use this platform - no investment advice, no ROI figures, just how the site works.",
   },
+  sharedComponents: {
+    viewOnExplorer: "View on explorer",
+    copyToClipboard: "Copy to clipboard",
+    cancel: "Cancel",
+    processing: "Processing...",
+    confirm: "Confirm",
+  },
+  connectWalletGuard: {
+    title: "Connect your wallet to continue",
+    body: "This action requires a connected wallet on the supported network.",
+  },
+  notFoundPage: {
+    title: "404",
+    description: "This page does not exist.",
+    backToDashboard: "Back to dashboard",
+  },
 };
 
 export type Dictionary = typeof en;
