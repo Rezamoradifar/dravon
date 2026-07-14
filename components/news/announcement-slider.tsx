@@ -9,9 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Announcement } from "@/lib/news-content";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/contexts/language-context";
 
 export function AnnouncementSlider({ items }: { items: Announcement[] }) {
   const [index, setIndex] = React.useState(0);
+  const { t } = useTranslation();
 
   React.useEffect(() => {
     const interval = setInterval(() => setIndex((i) => (i + 1) % items.length), 6000);
@@ -45,7 +47,7 @@ export function AnnouncementSlider({ items }: { items: Announcement[] }) {
           <p className="mt-3 text-muted-foreground">{current.summary}</p>
           <Button asChild className="mt-6 gap-1.5">
             <Link href={current.href}>
-              Explore <ArrowRight className="h-3.5 w-3.5" />
+              {t("announcementSlider.explore")} <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </Button>
         </motion.div>
@@ -55,7 +57,7 @@ export function AnnouncementSlider({ items }: { items: Announcement[] }) {
         {items.map((item, i) => (
           <button
             key={item.slug}
-            aria-label={`Show slide ${i + 1}`}
+            aria-label={t("announcementSlider.showSlide", { n: i + 1 })}
             onClick={() => setIndex(i)}
             className={cn(
               "h-1.5 rounded-full transition-all",

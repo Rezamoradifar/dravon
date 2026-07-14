@@ -15,11 +15,13 @@ import { SWAP_TOKENS, type SwapToken } from "@/lib/pancakeswap";
 import { useSwapQuote } from "@/hooks/useSwapQuote";
 import { useSwapExecute } from "@/hooks/useSwapExecute";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/contexts/language-context";
 
 const SLIPPAGE_OPTIONS = [0.1, 0.5, 1];
 
 export function SwapCard() {
   const { address } = useAccount();
+  const { t } = useTranslation();
   const [fromToken, setFromToken] = React.useState<SwapToken>(SWAP_TOKENS[0]);
   const [toToken, setToToken] = React.useState<SwapToken>(SWAP_TOKENS[2]);
   const [amountIn, setAmountIn] = React.useState("");
@@ -80,8 +82,8 @@ export function SwapCard() {
     <Card className="card-glow mx-auto max-w-md">
       <CardHeader className="flex-row items-center justify-between space-y-0">
         <div>
-          <CardTitle>Swap</CardTitle>
-          <CardDescription>PancakeSwap Router V2 on BNB Smart Chain</CardDescription>
+          <CardTitle>{t("swapCard.title")}</CardTitle>
+          <CardDescription>{t("swapCard.description")}</CardDescription>
         </div>
         <Button variant="ghost" size="icon" onClick={() => setShowSettings((v) => !v)}>
           <Settings2 className="h-4 w-4" />
@@ -90,7 +92,7 @@ export function SwapCard() {
       <CardContent className="space-y-3">
         {showSettings && (
           <div className="rounded-lg border p-3 text-sm">
-            <p className="mb-2 text-xs text-muted-foreground">Slippage tolerance</p>
+            <p className="mb-2 text-xs text-muted-foreground">{t("swapCard.slippageTolerance")}</p>
             <div className="flex gap-2">
               {SLIPPAGE_OPTIONS.map((opt) => (
                 <Button
@@ -109,14 +111,14 @@ export function SwapCard() {
 
         <div className="rounded-xl border p-3">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>From</span>
+            <span>{t("swapCard.from")}</span>
             {fromBalance && (
               <button
                 type="button"
                 className="hover:text-foreground"
                 onClick={() => setAmountIn(fromBalance.formatted)}
               >
-                Balance: {Number(fromBalance.formatted).toFixed(4)}
+                {t("swapCard.balance", { amount: Number(fromBalance.formatted).toFixed(4) })}
               </button>
             )}
           </div>
@@ -139,7 +141,7 @@ export function SwapCard() {
         </div>
 
         <div className="rounded-xl border p-3">
-          <p className="text-xs text-muted-foreground">To (estimated)</p>
+          <p className="text-xs text-muted-foreground">{t("swapCard.toEstimated")}</p>
           <div className="mt-1 flex items-center gap-2">
             <div
               className={cn(
@@ -154,22 +156,22 @@ export function SwapCard() {
         </div>
 
         {sameToken && parsedAmountValid && (
-          <p className="text-xs text-destructive">Choose two different tokens.</p>
+          <p className="text-xs text-destructive">{t("swapCard.chooseDifferentTokens")}</p>
         )}
         {isError && !sameToken && (
-          <p className="text-xs text-destructive">No liquidity route found for this pair.</p>
+          <p className="text-xs text-destructive">{t("swapCard.noLiquidity")}</p>
         )}
 
         {parsedAmountValid && amountOutFormatted && !isError && (
           <div className="space-y-1.5 rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
             <div className="flex justify-between">
-              <span>Price impact</span>
+              <span>{t("swapCard.priceImpact")}</span>
               <span className={cn(priceImpactPct !== undefined && priceImpactPct > 3 && "text-destructive")}>
                 {priceImpactPct !== undefined ? `${priceImpactPct.toFixed(2)}%` : "-"}
               </span>
             </div>
             <div className="flex justify-between">
-              <span>Minimum received</span>
+              <span>{t("swapCard.minimumReceived")}</span>
               <span>
                 {minReceived !== undefined
                   ? `${(Number(minReceived) / 10 ** toToken.decimals).toFixed(6)} ${toToken.symbol}`
@@ -177,13 +179,13 @@ export function SwapCard() {
               </span>
             </div>
             <div className="flex justify-between">
-              <span>Route</span>
+              <span>{t("swapCard.route")}</span>
               <span>
                 {fromToken.symbol} → {toToken.symbol}
               </span>
             </div>
             <div className="flex justify-between">
-              <span>Slippage tolerance</span>
+              <span>{t("swapCard.slippage")}</span>
               <span>{slippage}%</span>
             </div>
           </div>
@@ -207,10 +209,10 @@ export function SwapCard() {
           onClick={handleAction}
         >
           {isSigning || isConfirming
-            ? "Processing..."
+            ? t("swapCard.processing")
             : requiresApproval
-              ? `Approve ${fromToken.symbol}`
-              : "Swap"}
+              ? t("swapCard.approve", { symbol: fromToken.symbol })
+              : t("swapCard.submit")}
         </Button>
       </CardContent>
     </Card>

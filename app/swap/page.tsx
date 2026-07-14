@@ -9,32 +9,29 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { SwapCard } from "@/components/swap/swap-card";
 import { useChainId } from "wagmi";
 import { SWAP_SUPPORTED_CHAIN_ID } from "@/lib/pancakeswap";
+import { useTranslation } from "@/contexts/language-context";
 
 export default function SwapPage() {
   const chainId = useChainId();
+  const { t } = useTranslation();
 
   return (
     <div>
       <PageHeader
-        title="Swap"
-        description="Swap BNB and BEP20 tokens directly through PancakeSwap's Router V2 contract."
+        title={t("swapPage.title")}
+        description={t("swapPage.description")}
       />
       <NetworkBanner />
 
       <Alert className="mb-6">
         <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Real swaps, real funds</AlertTitle>
-        <AlertDescription>
-          This executes real trades on PancakeSwap V2 using your connected wallet. Always verify the
-          quote, price impact and minimum received before confirming.
-        </AlertDescription>
+        <AlertTitle>{t("swapPage.disclaimerTitle")}</AlertTitle>
+        <AlertDescription>{t("swapPage.disclaimerBody")}</AlertDescription>
       </Alert>
 
       <ConnectWalletGuard>
         {chainId !== SWAP_SUPPORTED_CHAIN_ID ? (
-          <p className="text-center text-sm text-muted-foreground">
-            Switch to BNB Smart Chain to use the swap.
-          </p>
+          <p className="text-center text-sm text-muted-foreground">{t("swapPage.switchToBsc")}</p>
         ) : (
           <SwapCard />
         )}

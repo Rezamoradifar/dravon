@@ -424,6 +424,53 @@ export const en = {
     netResultTooltip: "Net result",
     gapLabel: "Gap: {gap}%",
   },
+  swapPage: {
+    title: "Swap",
+    description: "Swap BNB and BEP20 tokens directly through PancakeSwap's Router V2 contract.",
+    disclaimerTitle: "Real swaps, real funds",
+    disclaimerBody:
+      "This executes real trades on PancakeSwap V2 using your connected wallet. Always verify the quote, price impact and minimum received before confirming.",
+    switchToBsc: "Switch to BNB Smart Chain to use the swap.",
+  },
+  swapCard: {
+    title: "Swap",
+    description: "PancakeSwap Router V2 on BNB Smart Chain",
+    slippageTolerance: "Slippage tolerance",
+    from: "From",
+    balance: "Balance: {amount}",
+    toEstimated: "To (estimated)",
+    chooseDifferentTokens: "Choose two different tokens.",
+    noLiquidity: "No liquidity route found for this pair.",
+    priceImpact: "Price impact",
+    minimumReceived: "Minimum received",
+    route: "Route",
+    slippage: "Slippage tolerance",
+    processing: "Processing...",
+    approve: "Approve {symbol}",
+    submit: "Swap",
+  },
+  productsPage: {
+    title: "Products",
+    description: "Every module that ships with this dashboard, and its real status - nothing here is for sale.",
+    open: "Open",
+  },
+  newsPage: {
+    title: "News & Announcements",
+    description: "What's new in this dashboard, and what's coming next.",
+    updates: "Updates",
+    videoWalkthrough: "Video Walkthrough",
+    videoComingSoon: "Video walkthrough coming soon",
+    videoComingSoonBody:
+      "No video has been produced yet - this space is reserved and clearly marked rather than filled with a placeholder video.",
+  },
+  announcementSlider: {
+    explore: "Explore",
+    showSlide: "Show slide {n}",
+  },
+  helpPage: {
+    title: "Help & User Guide",
+    description: "How to use this platform - no investment advice, no ROI figures, just how the site works.",
+  },
 };
 
 export type Dictionary = typeof en;

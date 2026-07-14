@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 
@@ -6,13 +8,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PRODUCTS } from "@/lib/products-content";
+import { useTranslation } from "@/contexts/language-context";
 
 export default function ProductsPage() {
+  const { t } = useTranslation();
+
   return (
     <div>
       <PageHeader
-        title="Products"
-        description="Every module that ships with this dashboard, and its real status - nothing here is for sale."
+        title={t("productsPage.title")}
+        description={t("productsPage.description")}
       />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -38,7 +43,7 @@ export default function ProductsPage() {
               </ul>
               <Button asChild variant="outline" className="mt-auto w-fit gap-1.5">
                 <Link href={product.href}>
-                  Open <ArrowRight className="h-3.5 w-3.5" />
+                  {t("productsPage.open")} <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </Button>
             </CardContent>

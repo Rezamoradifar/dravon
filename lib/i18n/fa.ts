@@ -426,4 +426,51 @@ export const fa: Dictionary = {
     netResultTooltip: "نتیجه خالص",
     gapLabel: "فاصله: {gap}٪",
   },
+  swapPage: {
+    title: "تبدیل ارز",
+    description: "BNB و توکن‌های BEP20 را مستقیماً از طریق قرارداد Router V2 پنکیک‌سواپ تبدیل کنید.",
+    disclaimerTitle: "تبدیل واقعی، سرمایه واقعی",
+    disclaimerBody:
+      "این عملیات معاملات واقعی روی PancakeSwap V2 با کیف‌پول متصل شما انجام می‌دهد. همیشه قیمت، تأثیر قیمتی و حداقل دریافتی را قبل از تأیید بررسی کنید.",
+    switchToBsc: "برای استفاده از تبدیل، به شبکه BNB Smart Chain تغییر دهید.",
+  },
+  swapCard: {
+    title: "تبدیل ارز",
+    description: "Router V2 پنکیک‌سواپ روی BNB Smart Chain",
+    slippageTolerance: "تحمل لغزش قیمت",
+    from: "از",
+    balance: "موجودی: {amount}",
+    toEstimated: "به (تخمینی)",
+    chooseDifferentTokens: "دو توکن متفاوت انتخاب کنید.",
+    noLiquidity: "مسیر نقدینگی برای این جفت یافت نشد.",
+    priceImpact: "تأثیر قیمتی",
+    minimumReceived: "حداقل دریافتی",
+    route: "مسیر",
+    slippage: "تحمل لغزش قیمت",
+    processing: "در حال پردازش...",
+    approve: "تأیید {symbol}",
+    submit: "تبدیل",
+  },
+  productsPage: {
+    title: "محصولات",
+    description: "هر ماژولی که همراه این داشبورد ارائه می‌شود، همراه با وضعیت واقعی آن - چیزی اینجا برای فروش نیست.",
+    open: "باز کردن",
+  },
+  newsPage: {
+    title: "اخبار و اعلانات",
+    description: "چه چیز جدیدی در این داشبورد اضافه شده و چه چیزی در راه است.",
+    updates: "بروزرسانی‌ها",
+    videoWalkthrough: "ویدیوی آموزشی",
+    videoComingSoon: "ویدیوی آموزشی به‌زودی",
+    videoComingSoonBody:
+      "هنوز ویدیویی تولید نشده - این بخش رزرو شده و به‌وضوح مشخص شده، به‌جای پر شدن با یک ویدیوی جایگزین.",
+  },
+  announcementSlider: {
+    explore: "مشاهده",
+    showSlide: "نمایش اسلاید {n}",
+  },
+  helpPage: {
+    title: "راهنما و آموزش استفاده",
+    description: "نحوه استفاده از این پلتفرم - بدون مشاوره سرمایه‌گذاری، بدون اعداد بازده، فقط نحوه کار سایت.",
+  },
 };

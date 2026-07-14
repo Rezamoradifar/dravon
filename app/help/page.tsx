@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
 
-import { PageHeader } from "@/components/shared/page-header";
+import { HelpPageHeader } from "@/components/help/help-page-header";
 import { HelpToc } from "@/components/help/help-toc";
 import { HelpSection, HelpScreenshot } from "@/components/help/help-section";
 import { WorkflowDiagram } from "@/components/learn/workflow-diagram";
@@ -18,10 +18,7 @@ export const metadata = {
 export default function HelpPage() {
   return (
     <div>
-      <PageHeader
-        title="Help & User Guide"
-        description="How to use this platform - no investment advice, no ROI figures, just how the site works."
-      />
+      <HelpPageHeader />
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[220px_1fr]">
         <aside className="hidden lg:block">
