@@ -6,10 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RoundOverviewCards } from "@/components/dashboard/round-overview-cards";
+import { useTranslation } from "@/contexts/language-context";
 
 export function StatisticsPanel() {
   const [roundsAgoInput, setRoundsAgoInput] = React.useState("0");
   const [roundsAgo, setRoundsAgo] = React.useState(0);
+  const { t } = useTranslation();
 
   function handleApply() {
     const parsed = Number(roundsAgoInput);
@@ -20,7 +22,7 @@ export function StatisticsPanel() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end gap-3">
         <div className="space-y-1.5">
-          <Label htmlFor="roundsAgo">Rounds ago</Label>
+          <Label htmlFor="roundsAgo">{t("statisticsPage.roundsAgo")}</Label>
           <Input
             id="roundsAgo"
             className="w-32"
@@ -30,7 +32,7 @@ export function StatisticsPanel() {
           />
         </div>
         <Button variant="outline" onClick={handleApply}>
-          Load round
+          {t("statisticsPage.loadRound")}
         </Button>
       </div>
 

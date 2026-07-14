@@ -6,6 +6,7 @@ import { zeroAddress } from "viem";
 import { shortenAddress } from "@/lib/format";
 import { CopyButton } from "@/components/shared/copy-button";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/contexts/language-context";
 
 export type GenealogyNodeData = {
   address: string;
@@ -14,6 +15,7 @@ export type GenealogyNodeData = {
 
 export function GenealogyTreeNode({ data }: NodeProps) {
   const { address, isRoot } = data as unknown as GenealogyNodeData;
+  const { t } = useTranslation();
   const isEmpty = !address || address.toLowerCase() === zeroAddress;
 
   return (
@@ -30,7 +32,7 @@ export function GenealogyTreeNode({ data }: NodeProps) {
     >
       <Handle type="target" position={Position.Top} className="!bg-primary" />
       {isEmpty ? (
-        <span>Empty slot</span>
+        <span>{t("treeNode.emptySlot")}</span>
       ) : (
         <div className="flex items-center gap-1 font-mono">
           {shortenAddress(address)}

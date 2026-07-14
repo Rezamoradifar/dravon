@@ -15,6 +15,7 @@ import { ReferralGrowthChart } from "@/components/genealogy/referral-growth-char
 import { useUserTree } from "@/hooks/useUserTree";
 import { useWalletView } from "@/context/wallet-view-context";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/contexts/language-context";
 
 const TreeGraph = dynamic(() => import("@/components/genealogy/tree-graph").then((m) => m.TreeGraph), {
   ssr: false,
@@ -28,6 +29,7 @@ export default function GenealogyPage() {
   const [len, setLen] = React.useState(15);
 
   const { addresses, isLoading, isFetching, isError, errorMessage, refetch } = useUserTree(viewedAddress, len);
+  const { t } = useTranslation();
 
   function handleApply() {
     const parsed = Number(lenInput);
@@ -37,13 +39,13 @@ export default function GenealogyPage() {
   return (
     <div>
       <PageHeader
-        title="Genealogy"
-        description="Binary tree structure via getUserTree(addr, len)."
+        title={t("genealogyPage.title")}
+        description={t("genealogyPage.description")}
         actions={
           viewedAddress && (
             <Button variant="outline" size="sm" className="gap-1.5" onClick={() => refetch()} disabled={isFetching}>
               <RefreshCw className={cn("h-3.5 w-3.5", isFetching && "animate-spin")} />
-              Refresh
+              {t("genealogyPage.refresh")}
             </Button>
           )
         }
@@ -58,7 +60,7 @@ export default function GenealogyPage() {
         <WalletSearch value={searchedAddress} onChange={setSearchedAddress} />
         <div className="flex flex-wrap items-end gap-3">
           <div className="space-y-1.5">
-            <Label htmlFor="len">Tree size (nodes)</Label>
+            <Label htmlFor="len">{t("genealogyPage.treeSize")}</Label>
             <Input
               id="len"
               className="w-32"
@@ -68,16 +70,16 @@ export default function GenealogyPage() {
             />
           </div>
           <Button variant="outline" onClick={handleApply}>
-            Load tree
+            {t("genealogyPage.loadTree")}
           </Button>
         </div>
       </div>
 
-      {!viewedAddress && <p className="text-sm text-muted-foreground">Connect a wallet or search an address.</p>}
+      {!viewedAddress && <p className="text-sm text-muted-foreground">{t("genealogyPage.connectOrSearch")}</p>}
       {viewedAddress && isLoading && <Skeleton className="h-[560px] w-full" />}
       {viewedAddress && !isLoading && isError && (
         <p className="text-sm text-destructive">
-          {errorMessage ?? "Could not load the tree for this wallet."}
+          {errorMessage ?? t("genealogyPage.loadFailed")}
         </p>
       )}
       {viewedAddress && !isLoading && !isError && addresses && <TreeGraph addresses={addresses} />}

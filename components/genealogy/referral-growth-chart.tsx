@@ -6,25 +6,27 @@ import type { Address } from "viem";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserRoundInfo } from "@/hooks/useUserRoundInfo";
+import { useTranslation } from "@/contexts/language-context";
 
 export function ReferralGrowthChart({ address }: { address?: Address }) {
   const { info, isLoading } = useUserRoundInfo(address, 0, 7);
+  const { t } = useTranslation();
 
   const data = info?.points.map((p, i) => ({ round: `R${i + 1}`, points: Number(p) })) ?? [];
 
   return (
     <Card className="card-glow">
       <CardHeader>
-        <CardTitle className="text-base">Points Across Recent Rounds</CardTitle>
-        <CardDescription>From getUserRoundInfo - a proxy for this wallet&apos;s network activity.</CardDescription>
+        <CardTitle className="text-base">{t("referralGrowth.title")}</CardTitle>
+        <CardDescription>{t("referralGrowth.description")}</CardDescription>
       </CardHeader>
       <CardContent className="h-56">
         {!address ? (
-          <p className="text-sm text-muted-foreground">Connect a wallet or search an address.</p>
+          <p className="text-sm text-muted-foreground">{t("referralGrowth.connectOrSearch")}</p>
         ) : isLoading ? (
           <Skeleton className="h-full w-full" />
         ) : data.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No round data available.</p>
+          <p className="text-sm text-muted-foreground">{t("referralGrowth.noData")}</p>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data}>

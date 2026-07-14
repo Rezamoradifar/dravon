@@ -171,6 +171,56 @@ export const en = {
     selectUpgradePrompt: "Select an available upgrade above to continue.",
     submit: "Top Up",
   },
+  statisticsPage: {
+    title: "Statistics",
+    description: "Round-level statistics via getMainBulkInfo(roundsAgo).",
+    roundsAgo: "Rounds ago",
+    loadRound: "Load round",
+  },
+  userPage: {
+    title: "My Dashboard",
+    description: "Look up a wallet's round performance.",
+    walletPersists: "This wallet stays selected across My Dashboard, Round History and Genealogy.",
+    connectOrSearch: "Connect a wallet or search an address to see its stats.",
+    loadFailed: "Could not load data for this wallet. It may not be registered.",
+    roundPoints: "Round Points",
+    totalEnter: "Total Enter",
+    worth: "Worth",
+    users: "Users",
+    directEarned: "Direct Earned",
+    binaryEarned: "Binary Earned",
+    earnable: "Earnable",
+    insuranceStatus: "Insurance Status",
+  },
+  walletSearch: {
+    label: "Wallet address",
+    invalidAddress: "Enter a valid address",
+    search: "Search",
+    useMyWallet: "Use my wallet",
+  },
+  genealogyPage: {
+    title: "Genealogy",
+    description: "Binary tree structure via getUserTree(addr, len).",
+    refresh: "Refresh",
+    treeSize: "Tree size (nodes)",
+    loadTree: "Load tree",
+    connectOrSearch: "Connect a wallet or search an address.",
+    loadFailed: "Could not load the tree for this wallet.",
+  },
+  referralLink: {
+    title: "Referral Link",
+    connectPrompt: "Connect your wallet to get your referral link.",
+    description: "Share this link - it pre-fills your address as the direct sponsor on Register.",
+  },
+  treeNode: {
+    emptySlot: "Empty slot",
+  },
+  referralGrowth: {
+    title: "Points Across Recent Rounds",
+    description: "From getUserRoundInfo - a proxy for this wallet's network activity.",
+    connectOrSearch: "Connect a wallet or search an address.",
+    noData: "No round data available.",
+  },
 };
 
 export type Dictionary = typeof en;

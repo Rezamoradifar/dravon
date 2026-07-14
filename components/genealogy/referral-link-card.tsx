@@ -8,9 +8,11 @@ import { Link2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { CopyButton } from "@/components/shared/copy-button";
+import { useTranslation } from "@/contexts/language-context";
 
 export function ReferralLinkCard() {
   const { address } = useAccount();
+  const { t } = useTranslation();
   const [origin, setOrigin] = React.useState("");
 
   React.useEffect(() => {
@@ -22,9 +24,9 @@ export function ReferralLinkCard() {
       <Card className="card-glow">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Link2 className="h-4 w-4" /> Referral Link
+            <Link2 className="h-4 w-4" /> {t("referralLink.title")}
           </CardTitle>
-          <CardDescription>Connect your wallet to get your referral link.</CardDescription>
+          <CardDescription>{t("referralLink.connectPrompt")}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -36,9 +38,9 @@ export function ReferralLinkCard() {
     <Card className="card-glow">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <Link2 className="h-4 w-4" /> Referral Link
+          <Link2 className="h-4 w-4" /> {t("referralLink.title")}
         </CardTitle>
-        <CardDescription>Share this link - it pre-fills your address as the direct sponsor on Register.</CardDescription>
+        <CardDescription>{t("referralLink.description")}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
         <div className="rounded-lg border bg-white p-3">
