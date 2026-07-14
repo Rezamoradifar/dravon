@@ -10,6 +10,7 @@ import { useActivityLog } from "@/hooks/useActivityLog";
 import { useExplorerHistory } from "@/hooks/useExplorerHistory";
 import { explorerTxLink } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/contexts/language-context";
 
 const STATUS_ICON = {
   pending: Clock,
@@ -31,6 +32,7 @@ export function ActivityPanel() {
 
   const localEntries = useActivityLog(address);
   const { entries: explorerEntries, isConfigured } = useExplorerHistory(address);
+  const { t } = useTranslation();
 
   const merged = React.useMemo(() => {
     const map = new Map<string, (typeof localEntries)[number]>();
@@ -43,18 +45,16 @@ export function ActivityPanel() {
   return (
     <Card className="card-glow">
       <CardHeader>
-        <CardTitle>Recent Activity</CardTitle>
+        <CardTitle>{t("activityPanel.title")}</CardTitle>
         <CardDescription>
-          {isConfigured
-            ? "Your on-chain history with this contract, via BscScan."
-            : "Transactions submitted from this browser. Add NEXT_PUBLIC_BSCSCAN_API_KEY for full wallet history."}
+          {isConfigured ? t("activityPanel.descriptionConfigured") : t("activityPanel.descriptionUnconfigured")}
         </CardDescription>
       </CardHeader>
       <CardContent>
         {!address ? (
-          <p className="text-sm text-muted-foreground">Connect a wallet to see your activity.</p>
+          <p className="text-sm text-muted-foreground">{t("activityPanel.connectPrompt")}</p>
         ) : merged.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No transactions yet.</p>
+          <p className="text-sm text-muted-foreground">{t("activityPanel.noTransactions")}</p>
         ) : (
           <ul className="divide-y divide-border">
             {merged.map((entry) => {
@@ -82,7 +82,7 @@ export function ActivityPanel() {
                     <Badge variant={STATUS_VARIANT[entry.status]}>{entry.status}</Badge>
                     {link && (
                       <a href={link} target="_blank" rel="noreferrer noopener" className="text-xs text-primary hover:underline">
-                        View
+                        {t("common.view")}
                       </a>
                     )}
                   </div>

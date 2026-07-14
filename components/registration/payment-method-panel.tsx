@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { useTokenPayment } from "@/hooks/useTokenPayment";
+import { useTranslation } from "@/contexts/language-context";
 
 export function PaymentMethodPanel({
   payment,
@@ -15,37 +16,41 @@ export function PaymentMethodPanel({
   payment: ReturnType<typeof useTokenPayment>;
   costUsd: number | undefined;
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-3 rounded-lg border p-3">
       <Tabs value={payment.method} onValueChange={(v) => payment.setMethod(v as "usdt" | "bnb")}>
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="usdt">Pay with USDT</TabsTrigger>
-          <TabsTrigger value="bnb">Pay with BNB</TabsTrigger>
+          <TabsTrigger value="usdt">{t("paymentMethod.payWithUsdt")}</TabsTrigger>
+          <TabsTrigger value="bnb">{t("paymentMethod.payWithBnb")}</TabsTrigger>
         </TabsList>
       </Tabs>
 
       {payment.method === "usdt" ? (
         <div className="space-y-2">
           <p className="text-sm text-muted-foreground">
-            Exact amount required: <span className="font-mono text-foreground">{costUsd?.toFixed(2)} USDT</span>
+            {t("paymentMethod.exactAmountRequired")}{" "}
+            <span className="font-mono text-foreground">{costUsd?.toFixed(2)} USDT</span>
           </p>
           {payment.needsApproval ? (
             <div className="space-y-1.5">
               <p className="text-xs text-muted-foreground">
-                Current allowance: {payment.allowance !== undefined ? formatUnits(payment.allowance, 18) : "0"} USDT.
-                Approve the contract to spend USDT before registering.
+                {t("paymentMethod.currentAllowance")}{" "}
+                {payment.allowance !== undefined ? formatUnits(payment.allowance, 18) : "0"} USDT.{" "}
+                {t("paymentMethod.approveNote")}
               </p>
               <Button type="button" variant="outline" onClick={() => payment.approve()} disabled={payment.isApproving}>
-                {payment.isApproving ? "Approving..." : "Approve USDT"}
+                {payment.isApproving ? t("paymentMethod.approving") : t("paymentMethod.approveUsdt")}
               </Button>
             </div>
           ) : (
-            <p className="text-xs text-success">USDT allowance is sufficient.</p>
+            <p className="text-xs text-success">{t("paymentMethod.allowanceSufficient")}</p>
           )}
         </div>
       ) : (
         <div className="space-y-1.5">
-          <Label htmlFor="bnb-amount">Max BNB to send</Label>
+          <Label htmlFor="bnb-amount">{t("paymentMethod.maxBnbToSend")}</Label>
           <Input
             id="bnb-amount"
             inputMode="decimal"
@@ -54,9 +59,9 @@ export function PaymentMethodPanel({
           />
           <p className="text-xs text-muted-foreground">
             {payment.estimatedBnb !== undefined
-              ? `Estimated from live price: ~${payment.estimatedBnb.toFixed(6)} BNB (a small buffer is pre-filled). `
+              ? t("paymentMethod.estimatedFromPrice", { amount: payment.estimatedBnb.toFixed(6) })
               : ""}
-            The contract swaps just enough BNB for the exact USDT amount and refunds the rest.
+            {t("paymentMethod.swapNote")}
           </p>
         </div>
       )}

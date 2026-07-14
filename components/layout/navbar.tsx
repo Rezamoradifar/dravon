@@ -7,11 +7,14 @@ import { Menu, Layers } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
+import { LanguageToggle } from "./language-toggle";
 import { Sidebar } from "./sidebar";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/contexts/language-context";
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const { t } = useTranslation();
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
@@ -21,7 +24,7 @@ export function Navbar() {
             variant="ghost"
             size="icon"
             className="md:hidden"
-            aria-label="Toggle navigation"
+            aria-label={t("nav.toggleNavigation")}
             onClick={() => setMobileOpen((v) => !v)}
           >
             <Menu />
@@ -30,11 +33,12 @@ export function Navbar() {
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <Layers className="h-4 w-4" />
             </span>
-            <span className="hidden sm:inline">Round Dashboard</span>
+            <span className="hidden sm:inline">{t("nav.brand")}</span>
           </Link>
         </div>
 
         <div className="flex items-center gap-2">
+          <LanguageToggle />
           <ThemeToggle />
           <ConnectButton showBalance={false} chainStatus="icon" accountStatus="address" />
         </div>

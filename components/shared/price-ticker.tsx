@@ -10,10 +10,12 @@ import { AnimatedNumber } from "@/components/shared/animated-number";
 import { useNativePrice } from "@/hooks/useNativePrice";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/contexts/language-context";
 
 export function PriceTicker() {
   const { symbol, price, change24h, sparkline, source, isLoading } = useNativePrice();
   const { gasPriceGwei, isHealthy, blockNumber } = useNetworkStatus();
+  const { t } = useTranslation();
 
   const isUp = (change24h ?? 0) >= 0;
   const sparklineData = sparkline?.map((p, i) => ({ i, p })) ?? [];
@@ -23,7 +25,7 @@ export function PriceTicker() {
       <CardContent className="flex flex-wrap items-center gap-6 p-5">
         <div className="min-w-[140px]">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {symbol} Price
+            {symbol} {t("priceTicker.priceSuffix")}
           </p>
           {isLoading || price === undefined ? (
             <Skeleton className="mt-2 h-7 w-24" />
@@ -42,7 +44,7 @@ export function PriceTicker() {
           )}
           {source && (
             <p className="mt-0.5 text-[11px] text-muted-foreground">
-              via {source === "coingecko" ? "CoinGecko" : "on-chain oracle"}
+              {source === "coingecko" ? t("priceTicker.viaCoinGecko") : t("priceTicker.viaOracle")}
             </p>
           )}
         </div>
@@ -91,7 +93,7 @@ export function PriceTicker() {
           />
           <Activity className="h-4 w-4 text-muted-foreground" />
           <span className="text-muted-foreground">
-            {blockNumber !== undefined ? `Block #${blockNumber.toString()}` : "Connecting..."}
+            {blockNumber !== undefined ? `Block #${blockNumber.toString()}` : t("common.connecting")}
           </span>
         </div>
       </CardContent>

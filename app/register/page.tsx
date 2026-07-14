@@ -18,19 +18,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserRegistration } from "@/hooks/useUserRegistration";
+import { useTranslation } from "@/contexts/language-context";
 
 function AlreadyRegisteredNotice() {
+  const { t } = useTranslation();
   return (
     <Card className="card-glow">
       <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-        <p className="font-medium">This wallet is already registered</p>
-        <p className="max-w-sm text-sm text-muted-foreground">
-          factory.userAddrExists() found an existing account for this address. Head to Charge
-          Account to top up instead.
-        </p>
+        <p className="font-medium">{t("registerPage.alreadyRegisteredTitle")}</p>
+        <p className="max-w-sm text-sm text-muted-foreground">{t("registerPage.alreadyRegisteredBody")}</p>
         <Button asChild className="gap-1.5">
           <Link href="/charge">
-            Go to Charge Account <ArrowRight className="h-3.5 w-3.5" />
+            {t("registerPage.goToCharge")} <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </Button>
       </CardContent>
@@ -46,10 +45,11 @@ function RegisterPageContent() {
   const { address } = useAccount();
   const { isRegistered, isLoading } = useUserRegistration(address);
   const [selectedEntrance, setSelectedEntrance] = React.useState<number | undefined>(undefined);
+  const { t } = useTranslation();
 
   return (
     <div>
-      <PageHeader title="Register" description="Join the current round window with a real, contract-verified package." />
+      <PageHeader title={t("registerPage.title")} description={t("registerPage.description")} />
       <NetworkBanner />
 
       <div className="mb-6">

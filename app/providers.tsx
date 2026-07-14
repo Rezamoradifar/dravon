@@ -10,6 +10,7 @@ import { ThemeProvider, useTheme } from "next-themes";
 import { wagmiConfig } from "@/lib/wagmi";
 import { Toaster } from "@/components/ui/sonner";
 import { WalletViewProvider } from "@/context/wallet-view-context";
+import { LanguageProvider } from "@/contexts/language-context";
 
 function RainbowKitWithTheme({ children }: { children: React.ReactNode }) {
   const { resolvedTheme } = useTheme();
@@ -31,17 +32,19 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = React.useState(() => new QueryClient());
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-      <WagmiProvider config={wagmiConfig}>
-        <QueryClientProvider client={queryClient}>
-          <RainbowKitWithTheme>
-            <WalletViewProvider>
-              {children}
-              <Toaster position="top-right" richColors closeButton />
-            </WalletViewProvider>
-          </RainbowKitWithTheme>
-        </QueryClientProvider>
-      </WagmiProvider>
-    </ThemeProvider>
+    <LanguageProvider>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+        <WagmiProvider config={wagmiConfig}>
+          <QueryClientProvider client={queryClient}>
+            <RainbowKitWithTheme>
+              <WalletViewProvider>
+                {children}
+                <Toaster position="top-right" richColors closeButton />
+              </WalletViewProvider>
+            </RainbowKitWithTheme>
+          </QueryClientProvider>
+        </WagmiProvider>
+      </ThemeProvider>
+    </LanguageProvider>
   );
 }

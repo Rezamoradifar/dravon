@@ -1,3 +1,5 @@
+"use client";
+
 import { PageHeader } from "@/components/shared/page-header";
 import { NetworkBanner } from "@/components/shared/network-banner";
 import { PriceTicker } from "@/components/shared/price-ticker";
@@ -7,13 +9,16 @@ import { ContractAddressesCard } from "@/components/dashboard/contract-addresses
 import { RoundOverviewCards } from "@/components/dashboard/round-overview-cards";
 import { NetworkGrowthChart } from "@/components/dashboard/network-growth-chart";
 import { ActivityPanel } from "@/components/dashboard/activity-panel";
+import { useTranslation } from "@/contexts/language-context";
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
+
   return (
     <div>
       <PageHeader
-        title="Dashboard"
-        description="Live overview of the current round window."
+        title={t("dashboardPage.title")}
+        description={t("dashboardPage.description")}
       />
       <NetworkBanner />
 
@@ -26,8 +31,8 @@ export default function DashboardPage() {
 
       <DashboardCards />
 
-      <h2 className="mb-3 mt-8 text-lg font-semibold">Current Round Overview</h2>
-      <p className="mb-4 text-sm text-muted-foreground">Live from getMainBulkInfo(0).</p>
+      <h2 className="mb-3 mt-8 text-lg font-semibold">{t("dashboardPage.currentRoundOverview")}</h2>
+      <p className="mb-4 text-sm text-muted-foreground">{t("dashboardPage.currentRoundHint")}</p>
       <RoundOverviewCards roundsAgo={0} />
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">

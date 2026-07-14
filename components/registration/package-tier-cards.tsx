@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { PACKAGE_TIERS, tierCostUsd } from "@/lib/packages";
 import { useEntranceCap } from "@/hooks/useEntranceCap";
+import { useTranslation } from "@/contexts/language-context";
 
 export interface TierStatus {
   valid: boolean;
@@ -33,6 +34,7 @@ function TierCard({
   status: TierStatus;
 }) {
   const { cap, isLoading } = useEntranceCap(entrance);
+  const { t } = useTranslation();
   const disabled = !status.valid;
 
   return (
@@ -55,7 +57,7 @@ function TierCard({
         {entrance === 50 && !disabled && (
           <span className="absolute right-3 top-3 z-10">
             <Badge className="gap-1">
-              <Sparkles className="h-3 w-3" /> Popular
+              <Sparkles className="h-3 w-3" /> {t("packageTierCards.popular")}
             </Badge>
           </span>
         )}
@@ -65,9 +67,9 @@ function TierCard({
             ${tierCostUsd(entrance).toFixed(2)}
             <span className="text-sm font-normal text-muted-foreground"> USDT</span>
           </p>
-          <p className="text-xs text-muted-foreground">Start box #{entrance}</p>
+          <p className="text-xs text-muted-foreground">{t("packageTierCards.startBox", { n: entrance })}</p>
           <div className="rounded-lg border bg-muted/30 p-2 text-xs">
-            <span className="text-muted-foreground">Earnable cap (entranceCap): </span>
+            <span className="text-muted-foreground">{t("packageTierCards.earnableCap")}</span>
             {isLoading ? (
               <Skeleton className="mt-1 inline-block h-4 w-16 align-middle" />
             ) : (
@@ -87,7 +89,11 @@ function TierCard({
             onClick={onSelect}
           >
             {selected && <CheckCircle2 className="h-4 w-4" />}
-            {selected ? "Selected" : disabled ? "Not available" : "Select this package"}
+            {selected
+              ? t("packageTierCards.selected")
+              : disabled
+                ? t("packageTierCards.notAvailable")
+                : t("packageTierCards.selectThisPackage")}
           </Button>
         </CardContent>
       </Card>

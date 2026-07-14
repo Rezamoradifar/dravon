@@ -7,45 +7,47 @@ import { StatGridSkeleton } from "@/components/shared/stat-grid-skeleton";
 import { AddressPill } from "@/components/shared/address-pill";
 import { useMainBulkInfo } from "@/hooks/useMainBulkInfo";
 import { formatContractNumericString } from "@/lib/format";
+import { useTranslation } from "@/contexts/language-context";
 
 export function RoundOverviewCards({ roundsAgo = 0 }: { roundsAgo?: number }) {
   const { info, isLoading, isError } = useMainBulkInfo(roundsAgo);
+  const { t } = useTranslation();
 
   if (isLoading) return <StatGridSkeleton count={7} />;
-  if (isError || !info) return <p className="text-sm text-destructive">Failed to load round statistics.</p>;
+  if (isError || !info) return <p className="text-sm text-destructive">{t("roundOverview.loadError")}</p>;
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <StatCard
         index={0}
-        label="Round Window"
+        label={t("roundOverview.roundWindow")}
         icon={Layers}
         value={<AddressPill address={info.roundWindow} />}
-        hint="roundWindow from getMainBulkInfo"
+        hint={t("roundOverview.roundWindowHint")}
       />
-      <StatCard index={1} label="Users" icon={Users} value={info.userCount.toLocaleString("en-US")} />
-      <StatCard index={2} label="Round Points" icon={Gem} value={info.roundPoints.toLocaleString("en-US")} />
+      <StatCard index={1} label={t("roundOverview.users")} icon={Users} value={info.userCount.toLocaleString("en-US")} />
+      <StatCard index={2} label={t("roundOverview.roundPoints")} icon={Gem} value={info.roundPoints.toLocaleString("en-US")} />
       <StatCard
         index={3}
-        label="Point Value"
+        label={t("roundOverview.pointValue")}
         icon={Coins}
         value={formatContractNumericString(info.pointValue)}
       />
       <StatCard
         index={4}
-        label="Round Entered USD"
+        label={t("roundOverview.roundEnteredUSD")}
         icon={TrendingUp}
         value={formatContractNumericString(info.roundEnteredUSD)}
       />
       <StatCard
         index={5}
-        label="Total Entered USD"
+        label={t("roundOverview.totalEnteredUSD")}
         icon={Landmark}
         value={formatContractNumericString(info.allEnteredUSD)}
       />
       <StatCard
         index={6}
-        label="Next Binary Pay"
+        label={t("roundOverview.nextBinaryPay")}
         icon={Zap}
         value={formatContractNumericString(info.nextBinaryPay)}
       />

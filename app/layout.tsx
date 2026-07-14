@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Vazirmatn } from "next/font/google";
 
 import "./globals.css";
 import { Providers } from "./providers";
@@ -9,6 +9,7 @@ import { PageTransition } from "@/components/layout/page-transition";
 import { FloatingLights } from "@/components/layout/floating-lights";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+const vazirmatn = Vazirmatn({ subsets: ["arabic"], variable: "--font-vazirmatn", display: "swap" });
 
 const title = "Round Dashboard - Web3 Round Window Control Center";
 const description =
@@ -42,7 +43,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${vazirmatn.variable} font-sans antialiased`}>
         <Providers>
           <FloatingLights />
           <div className="flex min-h-screen flex-col">

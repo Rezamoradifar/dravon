@@ -7,6 +7,7 @@ import { Wallet2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { AddressPill } from "@/components/shared/address-pill";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "@/contexts/language-context";
 
 export function WalletInfoCard() {
   const { address, isConnected } = useAccount();
@@ -14,18 +15,19 @@ export function WalletInfoCard() {
   const chains = useChains();
   const chain = chains.find((c) => c.id === chainId);
   const { data: balance, isLoading } = useBalance({ address });
+  const { t } = useTranslation();
 
   return (
     <Card className="card-glow">
       <CardHeader className="flex-row items-center gap-2 space-y-0">
         <Wallet2 className="h-4 w-4 text-muted-foreground" />
-        <CardTitle className="text-base">Your Wallet</CardTitle>
-        <CardDescription className="ml-auto">{chain?.name ?? "Not connected"}</CardDescription>
+        <CardTitle className="text-base">{t("walletCard.title")}</CardTitle>
+        <CardDescription className="ml-auto">{chain?.name ?? t("common.notConnected")}</CardDescription>
       </CardHeader>
       <CardContent>
         {!isConnected || !address ? (
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground">Connect a wallet to see your balance.</p>
+            <p className="text-sm text-muted-foreground">{t("walletCard.connectPrompt")}</p>
             <ConnectButton />
           </div>
         ) : (

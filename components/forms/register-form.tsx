@@ -18,6 +18,7 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { useTokenPayment } from "@/hooks/useTokenPayment";
 import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
 import { tierCostUsd } from "@/lib/packages";
+import { useTranslation } from "@/contexts/language-context";
 
 export function RegisterForm({
   entrance,
@@ -30,6 +31,7 @@ export function RegisterForm({
   const { data: balance } = useBalance({ address });
   const { stableToken } = useDashboardData();
   const { address: windowAddress } = useLatestRoundWindow();
+  const { t } = useTranslation();
   const [direct, setDirect] = React.useState(initialDirect ?? "");
   const [referral, setReferral] = React.useState("");
 
@@ -56,14 +58,14 @@ export function RegisterForm({
 
   async function handleFindReferral() {
     if (!isDirectValid) {
-      toast.error("Enter a valid direct sponsor address first");
+      toast.error(t("registerForm.enterDirectFirst"));
       return;
     }
     const result = await refetchBestReferral();
     if (result.data) {
       setReferral(result.data);
     } else {
-      toast.error("Could not find a referral for this direct sponsor");
+      toast.error(t("registerForm.noReferralFound"));
     }
   }
 
@@ -86,12 +88,12 @@ export function RegisterForm({
     <Card className="card-glow">
       <CardHeader className="flex-row items-start justify-between gap-4 space-y-0">
         <div>
-          <CardTitle>Register</CardTitle>
-          <CardDescription>Join by calling begin(startBox, direct, referral) with your selected package.</CardDescription>
+          <CardTitle>{t("registerForm.title")}</CardTitle>
+          <CardDescription>{t("registerForm.description")}</CardDescription>
         </div>
         {balance && (
           <div className="shrink-0 text-right text-xs text-muted-foreground">
-            Balance
+            {t("registerForm.balance")}
             <p className="font-mono text-sm text-foreground">
               {Number(balance.formatted).toFixed(4)} {balance.symbol}
             </p>
@@ -102,12 +104,12 @@ export function RegisterForm({
         <CardContent className="space-y-4">
           {!entrance && (
             <p className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
-              Select a package above to continue.
+              {t("registerForm.selectPackagePrompt")}
             </p>
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="direct">Direct Sponsor</Label>
+            <Label htmlFor="direct">{t("registerForm.directSponsor")}</Label>
             <Input
               id="direct"
               placeholder="0x..."
@@ -115,13 +117,13 @@ export function RegisterForm({
               onChange={(e) => setDirect(e.target.value)}
             />
             {direct !== "" && !isDirectValid && (
-              <p className="text-xs text-destructive">Enter a valid address</p>
+              <p className="text-xs text-destructive">{t("registerForm.invalidAddress")}</p>
             )}
           </div>
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label htmlFor="referral">Referral Sponsor</Label>
+              <Label htmlFor="referral">{t("registerForm.referralSponsor")}</Label>
               <Button
                 type="button"
                 variant="ghost"
@@ -131,7 +133,7 @@ export function RegisterForm({
                 onClick={handleFindReferral}
               >
                 <Wand2 className="h-3 w-3" />
-                {isFindingReferral ? "Finding..." : "Auto-fill best referral"}
+                {isFindingReferral ? t("registerForm.finding") : t("registerForm.autoFillReferral")}
               </Button>
             </div>
             <Input
@@ -141,10 +143,10 @@ export function RegisterForm({
               onChange={(e) => setReferral(e.target.value)}
             />
             {referral !== "" && !isReferralValid && (
-              <p className="text-xs text-destructive">Enter a valid address</p>
+              <p className="text-xs text-destructive">{t("registerForm.invalidAddress")}</p>
             )}
             {bestReferral && (
-              <p className="text-xs text-muted-foreground">Suggested: {bestReferral}</p>
+              <p className="text-xs text-muted-foreground">{t("registerForm.suggested", { address: bestReferral })}</p>
             )}
           </div>
 
@@ -165,10 +167,10 @@ export function RegisterForm({
             disabled={!canSubmit || isEstimating}
             onClick={handleEstimate}
           >
-            {isEstimating ? "Estimating..." : "Estimate gas"}
+            {isEstimating ? t("registerForm.estimating") : t("registerForm.estimateGas")}
           </Button>
           <Button type="submit" className="ml-auto" disabled={!canSubmit || !address || isSigning || isConfirming}>
-            {isSigning || isConfirming ? "Processing..." : "Register"}
+            {isSigning || isConfirming ? t("registerForm.processing") : t("registerForm.submit")}
           </Button>
         </CardFooter>
       </form>

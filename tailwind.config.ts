@@ -61,6 +61,15 @@ const config: Config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontFamily: {
+        sans: [
+          "var(--font-inter)",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif",
+        ],
+        vazirmatn: ["var(--font-vazirmatn)", "ui-sans-serif", "system-ui", "sans-serif"],
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },

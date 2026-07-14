@@ -18,18 +18,18 @@ import { Badge } from "@/components/ui/badge";
 import { useUserRegistration } from "@/hooks/useUserRegistration";
 import { useEntranceCap } from "@/hooks/useEntranceCap";
 import { tierByEntrance } from "@/lib/packages";
+import { useTranslation } from "@/contexts/language-context";
 
 function NotRegisteredNotice() {
+  const { t } = useTranslation();
   return (
     <Card className="card-glow">
       <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-        <p className="font-medium">This wallet isn&apos;t registered yet</p>
-        <p className="max-w-sm text-sm text-muted-foreground">
-          factory.userAddrExists() found no account for this address. Register first to unlock top-ups.
-        </p>
+        <p className="font-medium">{t("chargePage.notRegisteredTitle")}</p>
+        <p className="max-w-sm text-sm text-muted-foreground">{t("chargePage.notRegisteredBody")}</p>
         <Button asChild className="gap-1.5">
           <Link href="/register">
-            Go to Register <ArrowRight className="h-3.5 w-3.5" />
+            {t("chargePage.goToRegister")} <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </Button>
       </CardContent>
@@ -42,21 +42,22 @@ export default function ChargeAccountPage() {
   const { isRegistered, currentEntrance, periodEarnable, isLoading } = useUserRegistration(address);
   const { cap: cap100 } = useEntranceCap(100);
   const [selectedEntrance, setSelectedEntrance] = React.useState<number | undefined>(undefined);
+  const { t } = useTranslation();
 
   function getStatus(entrance: number): TierStatus {
-    if (currentEntrance === undefined) return { valid: false, reason: "Loading current tier..." };
+    if (currentEntrance === undefined) return { valid: false, reason: t("chargePage.loadingCurrentTier") };
     if (entrance > currentEntrance) return { valid: true };
     if (entrance === 100 && currentEntrance === 100) {
-      if (cap100 === undefined) return { valid: false, reason: "Loading cap..." };
+      if (cap100 === undefined) return { valid: false, reason: t("chargePage.loadingCap") };
       if (periodEarnable !== undefined && periodEarnable < cap100) return { valid: true };
-      return { valid: false, reason: "Renewal locked until your current $110 cap is reached" };
+      return { valid: false, reason: t("chargePage.renewalLocked") };
     }
-    return { valid: false, reason: "Already at or above this tier" };
+    return { valid: false, reason: t("chargePage.alreadyAtTier") };
   }
 
   return (
     <div>
-      <PageHeader title="Charge Account" description="Top up to a higher package, per the contract's real upgrade rules." />
+      <PageHeader title={t("chargePage.title")} description={t("chargePage.description")} />
       <NetworkBanner />
 
       <div className="mb-6">
@@ -72,7 +73,10 @@ export default function ChargeAccountPage() {
           <div className="space-y-6">
             {currentEntrance !== undefined && (
               <p className="text-sm text-muted-foreground">
-                Current package: <Badge variant="outline">{tierByEntrance(currentEntrance)?.name ?? `Box #${currentEntrance}`}</Badge>
+                {t("chargePage.currentPackage")}{" "}
+                <Badge variant="outline">
+                  {tierByEntrance(currentEntrance)?.name ?? t("chargePage.boxLabel", { n: currentEntrance })}
+                </Badge>
               </p>
             )}
             <PackageTierCards selectedEntrance={selectedEntrance} onSelect={setSelectedEntrance} getStatus={getStatus} />

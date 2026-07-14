@@ -7,10 +7,12 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { NAV_LINKS } from "./nav-links";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useTranslation } from "@/contexts/language-context";
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const isAdmin = useIsAdmin();
+  const { t } = useTranslation();
 
   const links = NAV_LINKS.filter((link) => !link.adminOnly || isAdmin);
 
@@ -39,10 +41,10 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               />
             )}
             <Icon className="relative z-10 h-4 w-4 shrink-0" />
-            <span className="relative z-10">{link.label}</span>
+            <span className="relative z-10">{t(link.labelKey)}</span>
             {link.adminOnly && (
               <span className="relative z-10 ml-auto rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-500">
-                Owner
+                {t("nav.owner")}
               </span>
             )}
           </Link>

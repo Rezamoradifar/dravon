@@ -15,9 +15,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRoundsHistory } from "@/hooks/useRoundsHistory";
+import { useTranslation } from "@/contexts/language-context";
 
 export function NetworkGrowthChart() {
   const { points, isLoading } = useRoundsHistory(8);
+  const { t } = useTranslation();
 
   const data = points.map((p) => ({
     name: p.roundsAgo === 0 ? "Current" : `-${p.roundsAgo}`,
@@ -29,14 +31,14 @@ export function NetworkGrowthChart() {
   return (
     <Card className="card-glow">
       <CardHeader>
-        <CardTitle>Network Growth</CardTitle>
-        <CardDescription>Users and round volume across recent rounds via getMainBulkInfo.</CardDescription>
+        <CardTitle>{t("networkGrowth.title")}</CardTitle>
+        <CardDescription>{t("networkGrowth.description")}</CardDescription>
       </CardHeader>
       <CardContent className="h-72">
         {isLoading ? (
           <Skeleton className="h-full w-full" />
         ) : data.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No round history available yet.</p>
+          <p className="text-sm text-muted-foreground">{t("networkGrowth.noHistory")}</p>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data}>
@@ -64,7 +66,7 @@ export function NetworkGrowthChart() {
                 yAxisId="left"
                 type="monotone"
                 dataKey="users"
-                name="Users"
+                name={t("networkGrowth.usersLegend")}
                 stroke="hsl(244 75% 59%)"
                 fill="url(#usersFill)"
                 strokeWidth={2}
@@ -73,7 +75,7 @@ export function NetworkGrowthChart() {
                 yAxisId="right"
                 type="monotone"
                 dataKey="volume"
-                name="Round Volume (USD)"
+                name={t("networkGrowth.volumeLegend")}
                 stroke="hsl(38 92% 50%)"
                 strokeWidth={2}
                 dot={false}
@@ -82,7 +84,7 @@ export function NetworkGrowthChart() {
                 yAxisId="pointValue"
                 type="monotone"
                 dataKey="pointValue"
-                name="Point Value"
+                name={t("networkGrowth.pointValueLegend")}
                 stroke="hsl(142 71% 45%)"
                 strokeWidth={2}
                 dot={false}

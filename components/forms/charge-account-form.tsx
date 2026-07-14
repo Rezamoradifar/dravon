@@ -11,12 +11,14 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { useTokenPayment } from "@/hooks/useTokenPayment";
 import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
 import { tierCostUsd } from "@/lib/packages";
+import { useTranslation } from "@/contexts/language-context";
 
 export function ChargeAccountForm({ entrance }: { entrance: number | undefined }) {
   const { address } = useAccount();
   const { data: balance } = useBalance({ address });
   const { stableToken } = useDashboardData();
   const { address: windowAddress } = useLatestRoundWindow();
+  const { t } = useTranslation();
 
   const costUsd = entrance ? tierCostUsd(entrance) : undefined;
   const payment = useTokenPayment(costUsd, stableToken, windowAddress);
@@ -53,12 +55,12 @@ export function ChargeAccountForm({ entrance }: { entrance: number | undefined }
     <Card className="card-glow">
       <CardHeader className="flex-row items-start justify-between gap-4 space-y-0">
         <div>
-          <CardTitle>Top Up</CardTitle>
-          <CardDescription>Upgrade by calling chargeAccount(targetBox) with your selected package.</CardDescription>
+          <CardTitle>{t("chargeForm.title")}</CardTitle>
+          <CardDescription>{t("chargeForm.description")}</CardDescription>
         </div>
         {balance && (
           <div className="shrink-0 text-right text-xs text-muted-foreground">
-            Balance
+            {t("registerForm.balance")}
             <p className="font-mono text-sm text-foreground">
               {Number(balance.formatted).toFixed(4)} {balance.symbol}
             </p>
@@ -69,7 +71,7 @@ export function ChargeAccountForm({ entrance }: { entrance: number | undefined }
         <CardContent className="space-y-4">
           {!entrance && (
             <p className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
-              Select an available upgrade above to continue.
+              {t("chargeForm.selectUpgradePrompt")}
             </p>
           )}
 
@@ -90,10 +92,10 @@ export function ChargeAccountForm({ entrance }: { entrance: number | undefined }
             disabled={!canSubmit || isEstimating}
             onClick={handleEstimate}
           >
-            {isEstimating ? "Estimating..." : "Estimate gas"}
+            {isEstimating ? t("registerForm.estimating") : t("registerForm.estimateGas")}
           </Button>
           <Button type="submit" className="ml-auto" disabled={!canSubmit || !address || isSigning || isConfirming}>
-            {isSigning || isConfirming ? "Processing..." : "Top Up"}
+            {isSigning || isConfirming ? t("registerForm.processing") : t("chargeForm.submit")}
           </Button>
         </CardFooter>
       </form>
