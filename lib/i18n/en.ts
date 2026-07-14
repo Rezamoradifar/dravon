@@ -466,6 +466,8 @@ export const en = {
   announcementSlider: {
     explore: "Explore",
     showSlide: "Show slide {n}",
+    tagFeature: "Feature",
+    tagEducation: "Education",
   },
   helpPage: {
     title: "Help & User Guide",

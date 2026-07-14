@@ -41,7 +41,7 @@ export function AnnouncementSlider({ items }: { items: Announcement[] }) {
           className="relative z-10 max-w-2xl"
         >
           <Badge variant={current.tag === "Feature" ? "success" : "secondary"} className="mb-4">
-            {current.tag}
+            {current.tag === "Feature" ? t("announcementSlider.tagFeature") : t("announcementSlider.tagEducation")}
           </Badge>
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">{current.title}</h2>
           <p className="mt-3 text-muted-foreground">{current.summary}</p>

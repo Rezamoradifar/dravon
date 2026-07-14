@@ -5,23 +5,25 @@ import { PlayCircle } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { AnnouncementSlider } from "@/components/news/announcement-slider";
-import { ANNOUNCEMENTS, NEWS_CARDS } from "@/lib/news-content";
+import { getLocalizedAnnouncements, getLocalizedNewsCards } from "@/lib/news-content";
 import { useTranslation } from "@/contexts/language-context";
 
 export default function NewsPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const announcements = getLocalizedAnnouncements(locale);
+  const newsCards = getLocalizedNewsCards(locale);
 
   return (
     <div>
       <PageHeader title={t("newsPage.title")} description={t("newsPage.description")} />
 
       <div className="mb-8">
-        <AnnouncementSlider items={ANNOUNCEMENTS} />
+        <AnnouncementSlider items={announcements} />
       </div>
 
       <h2 className="mb-3 text-lg font-semibold">{t("newsPage.updates")}</h2>
       <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {NEWS_CARDS.map((card) => (
+        {newsCards.map((card) => (
           <Card key={card.title} className="card-glow">
             <CardHeader>
               <CardTitle className="text-base">{card.title}</CardTitle>

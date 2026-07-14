@@ -45,3 +45,54 @@ export const NEWS_CARDS = [
     description: "Reads automatically fail over across multiple public BNB Smart Chain RPC endpoints if one is slow or unavailable.",
   },
 ];
+
+type LocalizedAnnouncementFields = Pick<Announcement, "tag" | "title" | "summary"> & { tagLabel: string };
+
+export const ANNOUNCEMENTS_FA: Record<string, LocalizedAnnouncementFields> = {
+  "swap-live": {
+    tag: "Feature",
+    tagLabel: "ویژگی",
+    title: "معامله مستقیم از طریق پنکیک‌سواپ",
+    summary: "صفحه جدید /swap مستقیماً با قرارداد Router V2 پنکیک‌سواپ صحبت می‌کند - قیمت زنده، کنترل لغزش قیمت و تخمین تأثیر قیمتی.",
+  },
+  "learning-center": {
+    tag: "Education",
+    tagLabel: "آموزش",
+    title: "وام‌های فلش و آربیتراژ را ایمن درک کنید",
+    summary: "مرکز آموزش، وام‌های فلش، آربیتراژ، MEV و AMM‌ها را با یک ماشین‌حساب کاملاً شبیه‌سازی‌شده توضیح می‌دهد - بدون تراکنش واقعی، بدون وعده سود.",
+  },
+  "genealogy-referral": {
+    tag: "Feature",
+    tagLabel: "ویژگی",
+    title: "لینک معرفی خود را با کد QR به اشتراک بگذارید",
+    summary: "صفحه شجره‌نامه اکنون شامل یک لینک معرفی قابل‌اشتراک، کد QR و نمودار فعالیت راند برای هر کیف‌پول است.",
+  },
+};
+
+export function getLocalizedAnnouncements(locale: "en" | "fa" = "en"): Announcement[] {
+  if (locale !== "fa") return ANNOUNCEMENTS;
+  return ANNOUNCEMENTS.map((item) => {
+    const fa = ANNOUNCEMENTS_FA[item.slug];
+    if (!fa) return item;
+    return { ...item, title: fa.title, summary: fa.summary };
+  });
+}
+
+export const NEWS_CARDS_FA: { title: string; description: string }[] = [
+  {
+    title: "داده زنده آن‌چین، همه‌جا",
+    description: "قیمت توکن بومی، قیمت گاز و وضعیت بلاک به‌صورت خودکار در سراسر داشبورد بروزرسانی می‌شوند.",
+  },
+  {
+    title: "همه‌چیز از قرارداد خوانده می‌شود",
+    description: "شناسه راند، آمار، داده کاربر و شجره‌نامه همگی به‌صورت زنده از ABI قرارداد پنجره راند خوانده می‌شوند - چیزی هاردکد نشده است.",
+  },
+  {
+    title: "قابلیت اطمینان چند-RPC",
+    description: "خواندن‌ها به‌صورت خودکار بین چندین نقطه پایانی عمومی RPC شبکه BNB Smart Chain جابه‌جا می‌شوند اگر یکی کند یا در دسترس نباشد.",
+  },
+];
+
+export function getLocalizedNewsCards(locale: "en" | "fa" = "en") {
+  return locale === "fa" ? NEWS_CARDS_FA : NEWS_CARDS;
+}

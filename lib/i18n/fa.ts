@@ -468,6 +468,8 @@ export const fa: Dictionary = {
   announcementSlider: {
     explore: "مشاهده",
     showSlide: "نمایش اسلاید {n}",
+    tagFeature: "ویژگی",
+    tagEducation: "آموزش",
   },
   helpPage: {
     title: "راهنما و آموزش استفاده",
