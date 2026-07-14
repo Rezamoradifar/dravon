@@ -100,7 +100,7 @@ export const TROUBLESHOOTING: TroubleshootingRow[] = [
   {
     symptom: "WindowClosed error",
     cause: "This round window has already closed",
-    fix: "Wait for the new round window, or check the Dashboard's newer-window banner",
+    fix: "The Dashboard automatically switches to the latest round window - refresh the page and try again",
   },
   {
     symptom: "AlreadyVoted error",
@@ -139,3 +139,135 @@ export const HELP_SECTIONS: HelpSection[] = [
   { id: "faq", title: "FAQ" },
   { id: "troubleshooting", title: "Troubleshooting" },
 ];
+
+export const HELP_FAQ_FA: HelpFaqItem[] = [
+  {
+    question: "آیا به حساب کاربری یا رمز عبور نیاز دارم؟",
+    answer: "خیر. وصل کردن کیف‌پول شما همان ورود شماست - نیازی به نام کاربری/رمز عبور جداگانه نیست.",
+  },
+  {
+    question: "کدام شبکه‌ها پشتیبانی می‌شوند؟",
+    answer: "قرارداد روی BNB Smart Chain قرار دارد. کانکتور کیف‌پول امکان تغییر شبکه را دارد، اما همه عملیات قرارداد به BNB Smart Chain نیاز دارند.",
+  },
+  {
+    question: "چرا نمی‌توانم هنگام ثبت‌نام یک مبلغ دلخواه انتخاب کنم؟",
+    answer: "قرارداد فقط سه پکیج ثابت را می‌پذیرد (۱۰/۵۰/۱۰۰، یعنی ۱۱/۵۵/۱۱۰ دلار). هر مبلغ دیگری روی زنجیره رد می‌شود.",
+  },
+  {
+    question: "BNB فرستادم ولی بخشی از آن برگشت - آیا این باگ است؟",
+    answer: "خیر. پرداخت با BNB کمی بیشتر از نیاز به‌عنوان مازاد ارسال می‌کند؛ قرارداد فقط دقیقاً مبلغ USDT مورد نیاز را تبدیل می‌کند و بقیه را خودکار برمی‌گرداند.",
+  },
+  {
+    question: "چرا گزینه شارژ حساب من خاکستری (غیرفعال) است؟",
+    answer: "شما فقط می‌توانید به پکیجی دقیقاً بالاتر از پکیج فعلی خود شارژ کنید (به‌جز تمدید ۱۱۰ دلاری که سقف خودش را دارد). صفحه دلیل را زیر هر گزینه غیرفعال نشان می‌دهد.",
+  },
+  {
+    question: "درآمدهایم را کجا می‌بینم؟",
+    answer: "در صفحه پروفایل / داشبورد من - درآمد مستقیم، درآمد باینری و قابل‌کسب آنجا نمایش داده می‌شوند و با پردازش پرداخت‌ها توسط قرارداد به‌روز می‌شوند.",
+  },
+  {
+    question: "چطور درآمدم را برداشت کنم؟",
+    answer: "نیازی نیست - درآمدها به‌صورت خودکار به کیف‌پول شما ارسال می‌شوند. بخش راهنمای برداشت را ببینید.",
+  },
+  {
+    question: "آیا صفحه تبدیل ارز به سرمایه واقعی متصل است؟",
+    answer: "بله. برخلاف مرکز آموزش، تبدیل ارز معاملات واقعی با سرمایه واقعی از طریق پنکیک‌سواپ انجام می‌دهد.",
+  },
+  {
+    question: "آیا شبیه‌ساز مرکز آموزش از پول واقعی استفاده می‌کند؟",
+    answer: "خیر. هر عددی آنجا یک ورودی دستی تحت کنترل شماست؛ هیچ کیف‌پول یا تراکنشی درگیر نیست.",
+  },
+  {
+    question: "آیا می‌توانم آدرس کیف‌پول ثبت‌شده‌ام را تغییر دهم؟",
+    answer: "بله، از طریق «بازنشانی آدرس کیف‌پول» در صفحه عملیات حساب. این کار پس از تأیید دائمی است.",
+  },
+  {
+    question: "اگر حسابم را خاتمه دهم چه اتفاقی می‌افتد؟",
+    answer: "این کار برای این پنجره راند دائمی است. هر موجودی بیمه/تضمین واجد شرایط در آن لحظه به کیف‌پول شما پرداخت می‌شود.",
+  },
+  {
+    question: "چرا تراکنش من برگشت خورد؟",
+    answer: "جدول عیب‌یابی زیر را برای رایج‌ترین پیام‌های خطای روی زنجیره و معنی آن‌ها ببینید.",
+  },
+];
+
+export const TROUBLESHOOTING_FA: TroubleshootingRow[] = [
+  {
+    symptom: 'دکمه «اتصال کیف‌پول» کاری نمی‌کند',
+    cause: "افزونه کیف‌پول نصب نشده / پاپ‌آپ مسدود شده",
+    fix: "MetaMask/Trust Wallet را نصب کنید یا اجازه پاپ‌آپ اتصال را بدهید",
+  },
+  {
+    symptom: 'بنر «تغییر شبکه» از بین نمی‌رود',
+    cause: "کیف‌پول هنوز روی شبکه اشتباه است",
+    fix: "روی بنر کلیک کنید و تغییر شبکه را در کیف‌پول خود تأیید کنید",
+  },
+  {
+    symptom: 'تراکنش روی «در انتظار امضا» گیر کرده',
+    cause: "پاپ‌آپ کیف‌پول پشت پنجره دیگری پنهان شده، یا بسته شده",
+    fix: "افزونه/اپلیکیشن کیف‌پول خود را برای یک درخواست در انتظار بررسی کنید",
+  },
+  {
+    symptom: "خطای InvalidStartBox",
+    cause: "تلاش برای ثبت‌نام/شارژ با مقداری غیر از سه پکیج معتبر",
+    fix: "فقط از کارت‌های پکیج نمایش‌داده‌شده در صفحه ثبت‌نام/شارژ حساب استفاده کنید",
+  },
+  {
+    symptom: "خطای InsufficientPayment",
+    cause: "BNB کمتری ارسال شده، یا مجوز USDT کافی نیست",
+    fix: "مبلغ BNB را افزایش دهید، یا مجوز USDT کافی تأیید کنید",
+  },
+  {
+    symptom: "خطای UserNotFound",
+    cause: "عملیات به یک کیف‌پول ثبت‌شده نیاز دارد، اما این یکی ثبت‌نام نکرده",
+    fix: "ابتدا ثبت‌نام کنید",
+  },
+  {
+    symptom: "خطای WindowClosed",
+    cause: "این پنجره راند قبلاً بسته شده است",
+    fix: "داشبورد به‌صورت خودکار به آخرین پنجره راند سوییچ می‌کند - صفحه را رفرش کرده و دوباره امتحان کنید",
+  },
+  {
+    symptom: "خطای AlreadyVoted",
+    cause: "شما قبلاً برای خاموش کردن این راند رأی داده‌اید",
+    fix: "نیازی به اقدام نیست - فقط یک رأی در هر راند مجاز است",
+  },
+  {
+    symptom: 'قیمت پیشنهادی تبدیل «مسیر نقدینگی یافت نشد» نشان می‌دهد',
+    cause: "جفت توکن انتخاب‌شده استخر مستقیمی ندارد",
+    fix: "یک جفت توکن دیگر انتخاب کنید",
+  },
+  {
+    symptom: "تخمین گاز بی‌صدا ناموفق می‌شود",
+    cause: "کیف‌پول وصل نیست، یا ورودی‌ها نامعتبرند",
+    fix: "همه فیلدهای مورد نیاز را درست پر کنید، سپس دوباره امتحان کنید",
+  },
+];
+
+export const HELP_SECTIONS_FA: HelpSection[] = [
+  { id: "wallet-connection", title: "اتصال کیف‌پول" },
+  { id: "dashboard", title: "داشبورد" },
+  { id: "registration", title: "ثبت‌نام" },
+  { id: "deposit", title: "راهنمای واریز" },
+  { id: "withdrawal", title: "راهنمای برداشت" },
+  { id: "profile", title: "پروفایل" },
+  { id: "swap", title: "تبدیل ارز" },
+  { id: "learning-center", title: "مرکز آموزش" },
+  { id: "statistics", title: "آمار" },
+  { id: "account-settings", title: "تنظیمات حساب" },
+  { id: "security", title: "امنیت" },
+  { id: "faq", title: "سوالات متداول" },
+  { id: "troubleshooting", title: "عیب‌یابی" },
+];
+
+export function getLocalizedHelpFaq(locale: "en" | "fa" = "en"): HelpFaqItem[] {
+  return locale === "fa" ? HELP_FAQ_FA : HELP_FAQ;
+}
+
+export function getLocalizedTroubleshooting(locale: "en" | "fa" = "en"): TroubleshootingRow[] {
+  return locale === "fa" ? TROUBLESHOOTING_FA : TROUBLESHOOTING;
+}
+
+export function getLocalizedHelpSections(locale: "en" | "fa" = "en"): HelpSection[] {
+  return locale === "fa" ? HELP_SECTIONS_FA : HELP_SECTIONS;
+}

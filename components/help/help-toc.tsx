@@ -1,11 +1,15 @@
 "use client";
 
-import { HELP_SECTIONS } from "@/lib/help-content";
+import { getLocalizedHelpSections } from "@/lib/help-content";
+import { useTranslation } from "@/contexts/language-context";
 
 export function HelpToc() {
+  const { locale } = useTranslation();
+  const sections = getLocalizedHelpSections(locale);
+
   return (
     <nav className="sticky top-20 space-y-1 text-sm">
-      {HELP_SECTIONS.map((section, i) => (
+      {sections.map((section, i) => (
         <a
           key={section.id}
           href={`#${section.id}`}
