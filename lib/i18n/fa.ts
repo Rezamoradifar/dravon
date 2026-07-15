@@ -501,4 +501,23 @@ export const fa: Dictionary = {
     notConfigured: "برای فعال‌سازی فید فعالیت زنده شبکه، NEXT_PUBLIC_BSCSCAN_API_KEY را تنظیم کنید.",
     empty: "هنوز فعالیتی روی این پنجره ثبت نشده است.",
   },
+  ranks: {
+    starter: "مبتدی",
+    bronze: "برنزی",
+    silver: "نقره‌ای",
+    gold: "طلایی",
+    platinum: "پلاتینیوم",
+    diamond: "الماس",
+    elite: "نخبه",
+    legend: "افسانه‌ای",
+  },
+  rank: {
+    currentRank: "رتبه فعلی",
+    nextRank: "رتبه بعدی",
+    binaryEarnedLabel: "درآمد باینری",
+    remaining: "باقی‌مانده تا رتبه بعدی",
+    maxRankReached: "شما به بالاترین رتبه رسیده‌اید.",
+    loadFailed: "بارگذاری اطلاعات رتبه ناموفق بود.",
+    upgradeHistory: "تاریخچه ارتقای رتبه",
+  },
 };

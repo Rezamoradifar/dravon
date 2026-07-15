@@ -39,7 +39,7 @@ export function StatCard({
             {loading ? (
               <Skeleton className="mt-2 h-7 w-24" />
             ) : (
-              <p className="mt-1 truncate text-xl font-semibold">{value}</p>
+              <p className="mt-1 truncate text-xl font-semibold tabular-nums">{value}</p>
             )}
             {hint && !loading && (
               <p className="mt-1 truncate text-xs text-muted-foreground">{hint}</p>

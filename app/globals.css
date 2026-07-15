@@ -80,6 +80,10 @@ html[dir="rtl"] body {
   * {
     @apply border-border;
   }
+  html {
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+  }
   body {
     @apply bg-background text-foreground;
     background-image: radial-gradient(
@@ -89,10 +93,38 @@ html[dir="rtl"] body {
       ),
       radial-gradient(circle at 100% 30%, hsl(var(--primary) / 0.06), transparent 45%);
     background-attachment: fixed;
+    overscroll-behavior-y: none;
+  }
+  button,
+  a,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
 @layer utilities {
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
   .scrollbar-thin::-webkit-scrollbar {
     height: 6px;
     width: 6px;

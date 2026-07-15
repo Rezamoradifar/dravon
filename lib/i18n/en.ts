@@ -499,6 +499,25 @@ export const en = {
     notConfigured: "Add NEXT_PUBLIC_BSCSCAN_API_KEY to enable the live network activity feed.",
     empty: "No recent activity on this window yet.",
   },
+  ranks: {
+    starter: "Starter",
+    bronze: "Bronze",
+    silver: "Silver",
+    gold: "Gold",
+    platinum: "Platinum",
+    diamond: "Diamond",
+    elite: "Elite",
+    legend: "Legend",
+  },
+  rank: {
+    currentRank: "Current Rank",
+    nextRank: "Next Rank",
+    binaryEarnedLabel: "Binary Earnings",
+    remaining: "Remaining to next rank",
+    maxRankReached: "You've reached the highest rank.",
+    loadFailed: "Failed to load rank data.",
+    upgradeHistory: "Rank Upgrade History",
+  },
 };
 
 export type Dictionary = typeof en;

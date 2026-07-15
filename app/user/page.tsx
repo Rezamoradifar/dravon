@@ -3,6 +3,7 @@
 import { PageHeader } from "@/components/shared/page-header";
 import { WalletSearch } from "@/components/user/wallet-search";
 import { UserDashboardCards } from "@/components/user/user-dashboard-cards";
+import { RankProgressCard } from "@/components/rank/rank-progress-card";
 import { useWalletView } from "@/context/wallet-view-context";
 import { useTranslation } from "@/contexts/language-context";
 
@@ -17,6 +18,11 @@ export default function UserDashboardPage() {
         <WalletSearch value={searchedAddress} onChange={setSearchedAddress} />
         <p className="mt-2 text-xs text-muted-foreground">{t("userPage.walletPersists")}</p>
       </div>
+      {viewedAddress && (
+        <div className="mb-6">
+          <RankProgressCard address={viewedAddress} />
+        </div>
+      )}
       <UserDashboardCards address={viewedAddress} />
     </div>
   );
