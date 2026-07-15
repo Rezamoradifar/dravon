@@ -27,3 +27,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# token/ (hardhat) subproject
+token/node_modules
+token/artifacts
+token/cache
+token/typechain-types
+token/.env
