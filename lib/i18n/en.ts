@@ -489,6 +489,16 @@ export const en = {
     description: "This page does not exist.",
     backToDashboard: "Back to dashboard",
   },
+  networkActivityFeed: {
+    title: "Live Network Activity",
+    description: "Real registrations and top-ups on the active window, decoded from BscScan.",
+    joined: "Joined with the {package} package",
+    joinedRaw: "Joined with box #{entrance}",
+    toppedUp: "Topped up to the {package} package",
+    toppedUpRaw: "Topped up to box #{entrance}",
+    notConfigured: "Add NEXT_PUBLIC_BSCSCAN_API_KEY to enable the live network activity feed.",
+    empty: "No recent activity on this window yet.",
+  },
 };
 
 export type Dictionary = typeof en;

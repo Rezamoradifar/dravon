@@ -9,6 +9,7 @@ import { ContractAddressesCard } from "@/components/dashboard/contract-addresses
 import { RoundOverviewCards } from "@/components/dashboard/round-overview-cards";
 import { NetworkGrowthChart } from "@/components/dashboard/network-growth-chart";
 import { ActivityPanel } from "@/components/dashboard/activity-panel";
+import { NetworkActivityFeed } from "@/components/dashboard/network-activity-feed";
 import { useTranslation } from "@/contexts/language-context";
 
 export default function DashboardPage() {
@@ -42,7 +43,8 @@ export default function DashboardPage() {
         <ContractAddressesCard />
       </div>
 
-      <div className="mt-6">
+      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <NetworkActivityFeed />
         <ActivityPanel />
       </div>
     </div>

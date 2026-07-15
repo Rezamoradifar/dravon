@@ -15,6 +15,7 @@ import type { Abi } from "viem";
 import { roundWindowAbi } from "@/contracts/roundWindowAbi";
 import { parseContractError } from "@/lib/errors";
 import { explorerTxLink } from "@/lib/format";
+import { fireConfetti } from "@/lib/confetti";
 import { logActivity, updateActivityStatus } from "@/hooks/useActivityLog";
 import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
 
@@ -102,6 +103,7 @@ export function useContractWrite(functionName: RoundWindowFunctionName) {
         id: toastId,
         description: link ? link : txHash,
       });
+      fireConfetti();
       return txHash;
     } catch (error) {
       toast.error("Transaction failed", {

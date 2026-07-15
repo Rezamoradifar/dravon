@@ -491,4 +491,14 @@ export const fa: Dictionary = {
     description: "این صفحه وجود ندارد.",
     backToDashboard: "بازگشت به داشبورد",
   },
+  networkActivityFeed: {
+    title: "فعالیت زنده شبکه",
+    description: "ثبت‌نام‌ها و شارژهای واقعی روی پنجره فعال، رمزگشایی‌شده از BscScan.",
+    joined: "با پکیج {package} پیوست",
+    joinedRaw: "با باکس #{entrance} پیوست",
+    toppedUp: "به پکیج {package} شارژ کرد",
+    toppedUpRaw: "به باکس #{entrance} شارژ کرد",
+    notConfigured: "برای فعال‌سازی فید فعالیت زنده شبکه، NEXT_PUBLIC_BSCSCAN_API_KEY را تنظیم کنید.",
+    empty: "هنوز فعالیتی روی این پنجره ثبت نشده است.",
+  },
 };
