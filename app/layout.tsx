@@ -59,6 +59,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               var RELOAD_KEY = '__chunk_reload_attempted';
 
               function isChunkLoadError(message) {
+                // Webpack's ChunkLoadError sets error.name to "ChunkLoadError" but
+                // can leave error.message empty (confirmed in production) - check
+                // the combined name+message+stack text, not just one field.
                 return /loading chunk [\\w.-]+ failed|chunkloaderror/i.test(String(message || ''));
               }
 
@@ -101,11 +104,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 } catch (e) {}
               }
               window.addEventListener('error', function (e) {
-                showError((e.error && (e.error.stack || e.error.message)) || e.message);
+                var err = e.error;
+                var detail = err ? [err.name, err.message, err.stack].filter(Boolean).join(' | ') : e.message;
+                showError(detail);
               });
               window.addEventListener('unhandledrejection', function (e) {
                 var r = e.reason;
-                showError((r && (r.stack || r.message)) || String(r));
+                var detail = r ? [r.name, r.message, r.stack].filter(Boolean).join(' | ') : String(r);
+                showError(detail);
               });
             })();
           `}
