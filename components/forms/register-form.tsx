@@ -39,7 +39,7 @@ export function RegisterForm({
   const [referral, setReferral] = React.useState("");
 
   const costUsd = entrance ? tierCostUsd(entrance) : undefined;
-  const payment = useTokenPayment(costUsd, stableToken, windowAddress);
+  const payment = useTokenPayment(costUsd, stableToken, windowAddress, balance?.value);
 
   const {
     execute,

@@ -21,7 +21,7 @@ export function ChargeAccountForm({ entrance }: { entrance: number | undefined }
   const { t } = useTranslation();
 
   const costUsd = entrance ? tierCostUsd(entrance) : undefined;
-  const payment = useTokenPayment(costUsd, stableToken, windowAddress);
+  const payment = useTokenPayment(costUsd, stableToken, windowAddress, balance?.value);
 
   const {
     execute,

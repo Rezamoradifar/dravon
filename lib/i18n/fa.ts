@@ -142,6 +142,7 @@ export const fa: Dictionary = {
     maxBnbToSend: "حداکثر BNB برای ارسال",
     estimatedFromPrice: "تخمین از قیمت زنده: ~{amount} BNB (کمی مازاد از پیش پر شده است). ",
     swapNote: "قرارداد فقط به‌اندازه کافی BNB را برای مبلغ دقیق USDT تبدیل می‌کند و مابقی را برمی‌گرداند.",
+    insufficientBnbBalance: "این مقدار از موجودی BNB کیف‌پول شما بیشتر است. مقدار را کم کنید یا به کیف‌پول BNB اضافه کنید.",
   },
   txProgress: {
     estimatedGas: "گاز تخمینی: {amount} واحد",

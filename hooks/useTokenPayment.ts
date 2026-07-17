@@ -22,7 +22,12 @@ export type PaymentMethod = "usdt" | "bnb";
  * `msg.value`, which the contract swaps for the exact USDT amount via PancakeSwap V3
  * and refunds any unused BNB. This hook manages both paths.
  */
-export function useTokenPayment(costUsd: number | undefined, stableToken: Address | undefined, spender: Address) {
+export function useTokenPayment(
+  costUsd: number | undefined,
+  stableToken: Address | undefined,
+  spender: Address,
+  nativeBalance?: bigint,
+) {
   const { address } = useAccount();
   const publicClient = usePublicClient();
   const [method, setMethod] = React.useState<PaymentMethod>("usdt");
@@ -92,12 +97,15 @@ export function useTokenPayment(costUsd: number | undefined, stableToken: Addres
 
   let value: bigint | undefined;
   let isPaymentValid = false;
+  let hasInsufficientBnbBalance = false;
   if (method === "usdt") {
     isPaymentValid = !needsApproval && requiredUsdt !== undefined;
     value = undefined;
   } else {
     const parsedBnb = bnbAmount !== "" && Number(bnbAmount) > 0 ? parseEther(bnbAmount) : undefined;
-    isPaymentValid = parsedBnb !== undefined;
+    hasInsufficientBnbBalance =
+      parsedBnb !== undefined && nativeBalance !== undefined && parsedBnb > nativeBalance;
+    isPaymentValid = parsedBnb !== undefined && !hasInsufficientBnbBalance;
     value = parsedBnb;
   }
 
@@ -107,6 +115,7 @@ export function useTokenPayment(costUsd: number | undefined, stableToken: Addres
     requiredUsdt,
     allowance,
     needsApproval,
+    hasInsufficientBnbBalance,
     approve,
     isApproving,
     bnbAmount,

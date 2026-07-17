@@ -63,6 +63,9 @@ export function PaymentMethodPanel({
               : ""}
             {t("paymentMethod.swapNote")}
           </p>
+          {payment.hasInsufficientBnbBalance && (
+            <p className="text-xs text-destructive">{t("paymentMethod.insufficientBnbBalance")}</p>
+          )}
         </div>
       )}
     </div>

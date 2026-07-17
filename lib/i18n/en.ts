@@ -140,6 +140,7 @@ export const en = {
     maxBnbToSend: "Max BNB to send",
     estimatedFromPrice: "Estimated from live price: ~{amount} BNB (a small buffer is pre-filled). ",
     swapNote: "The contract swaps just enough BNB for the exact USDT amount and refunds the rest.",
+    insufficientBnbBalance: "This amount is more than your wallet's BNB balance. Lower it or add BNB to your wallet.",
   },
   txProgress: {
     estimatedGas: "Estimated gas: {amount} units",
