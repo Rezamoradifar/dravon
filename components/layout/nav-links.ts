@@ -15,6 +15,7 @@ import {
   Megaphone,
   Terminal,
   HelpCircle,
+  Gamepad2,
 } from "lucide-react";
 
 export interface NavLink {
@@ -37,6 +38,7 @@ export const NAV_LINKS: NavLink[] = [
   { href: "/learn", labelKey: "nav.learn", icon: GraduationCap },
   { href: "/products", labelKey: "nav.products", icon: LayoutGrid },
   { href: "/news", labelKey: "nav.news", icon: Megaphone },
+  { href: "/games", labelKey: "nav.games", icon: Gamepad2 },
   { href: "/contract-actions", labelKey: "nav.contractActions", icon: Terminal },
   { href: "/account", labelKey: "nav.account", icon: ShieldAlert },
   { href: "/admin", labelKey: "nav.admin", icon: ShieldCheck, adminOnly: true },

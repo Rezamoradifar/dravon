@@ -14,6 +14,7 @@ export const en = {
     learn: "Learning Center",
     products: "Products",
     news: "News",
+    games: "Game Center",
     contractActions: "Contract Actions",
     account: "Account Actions",
     admin: "Admin Panel",
@@ -471,6 +472,13 @@ export const en = {
     title: "Products",
     description: "Every module that ships with this dashboard, and its real status - nothing here is for sale.",
     open: "Open",
+  },
+  gamesPage: {
+    title: "Game Center",
+    description: "A dedicated space for on-chain games and interactive experiences.",
+    comingSoonTitle: "Coming soon",
+    comingSoonBody: "We're building out the Game Center. Games will be announced here once they're ready.",
+    hint: "No games are live yet - nothing here awards rewards or affects your account.",
   },
   newsPage: {
     title: "News & Announcements",
