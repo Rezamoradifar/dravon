@@ -518,6 +518,12 @@ export const fa: Dictionary = {
     description: "این صفحه وجود ندارد.",
     backToDashboard: "بازگشت به داشبورد",
   },
+  errorBoundary: {
+    title: "مشکلی پیش آمد",
+    body: "این بخش با یک خطای غیرمنتظره مواجه شد. متن زیر خطای واقعی است - در صورت نیاز به گزارش، از آن اسکرین‌شات بگیرید.",
+    unknown: "خطای نامشخص",
+    retry: "تلاش دوباره",
+  },
   networkActivityFeed: {
     title: "فعالیت زنده شبکه",
     description: "ثبت‌نام‌ها و شارژهای واقعی روی پنجره فعال، رمزگشایی‌شده از BscScan.",

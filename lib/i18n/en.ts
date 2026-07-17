@@ -516,6 +516,12 @@ export const en = {
     description: "This page does not exist.",
     backToDashboard: "Back to dashboard",
   },
+  errorBoundary: {
+    title: "Something went wrong",
+    body: "This section hit an unexpected error. The message below is the real error - please screenshot it if you need to report this.",
+    unknown: "Unknown error",
+    retry: "Try again",
+  },
   networkActivityFeed: {
     title: "Live Network Activity",
     description: "Real registrations and top-ups on the active window, decoded from BscScan.",
