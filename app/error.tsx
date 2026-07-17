@@ -6,6 +6,7 @@ import { AlertTriangle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
+import { tryRecoverFromChunkError } from "@/lib/chunkRecovery";
 
 export default function ErrorBoundary({
   error,
@@ -18,6 +19,7 @@ export default function ErrorBoundary({
 
   React.useEffect(() => {
     console.error("Route error boundary caught:", error);
+    tryRecoverFromChunkError(error);
   }, [error]);
 
   return (

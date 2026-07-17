@@ -56,8 +56,34 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Script id="crash-diagnostic" strategy="beforeInteractive">
           {`
             (function () {
+              var RELOAD_KEY = '__chunk_reload_attempted';
+
+              function isChunkLoadError(message) {
+                return /loading chunk [\\w.-]+ failed|chunkloaderror/i.test(String(message || ''));
+              }
+
+              // A stale tab still holding an old build's HTML will reference a
+              // _next/static chunk hash that a newer deploy has since deleted -
+              // that 404s as "Loading chunk X failed". A single reload fetches
+              // the current HTML (see next.config.mjs's no-cache header) with
+              // correct hashes, which fixes it silently without ever showing an
+              // error. Guarded by sessionStorage so a genuinely broken deploy
+              // still falls through to the visible overlay instead of looping.
+              function tryAutoRecover(message) {
+                if (!isChunkLoadError(message)) return false;
+                try {
+                  if (sessionStorage.getItem(RELOAD_KEY)) return false;
+                  sessionStorage.setItem(RELOAD_KEY, '1');
+                } catch (e) {
+                  return false;
+                }
+                location.reload();
+                return true;
+              }
+
               function showError(message) {
                 try {
+                  if (tryAutoRecover(message)) return;
                   if (document.getElementById('__crash_overlay')) return;
                   var el = document.createElement('div');
                   el.id = '__crash_overlay';

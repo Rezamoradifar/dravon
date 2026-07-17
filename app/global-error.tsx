@@ -1,5 +1,9 @@
 "use client";
 
+import * as React from "react";
+
+import { tryRecoverFromChunkError } from "@/lib/chunkRecovery";
+
 /**
  * Only renders if the root layout itself throws - at that point the
  * LanguageProvider/theme/etc. may not be mounted, so this can't rely on any
@@ -13,6 +17,10 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  React.useEffect(() => {
+    tryRecoverFromChunkError(error);
+  }, [error]);
+
   return (
     <html lang="en">
       <body
