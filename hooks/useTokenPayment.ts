@@ -47,7 +47,18 @@ export function useTokenPayment(costUsd: number | undefined, stableToken: Addres
     requiredUsdt !== undefined &&
     (allowance === undefined || allowance < requiredUsdt);
 
-  const estimatedBnb = costUsd !== undefined && bnbPrice ? costUsd / bnbPrice : undefined;
+  /**
+   * The contract swaps sent BNB for the exact required USDT internally via
+   * PancakeSwap and refunds any unused BNB. Our BNB estimate here comes from an
+   * off-chain price feed (Chainlink/CoinGecko) that never matches the pool's
+   * spot price to the cent and doesn't include the swap's own fee, so an amount
+   * computed from the raw USD cost can land just short and revert. This fixed
+   * cent buffer absorbs that ordinary drift on top of the 5% safety margin below.
+   */
+  const PAYMENT_BUFFER_USD = 0.01;
+
+  const estimatedBnb =
+    costUsd !== undefined && bnbPrice ? (costUsd + PAYMENT_BUFFER_USD) / bnbPrice : undefined;
 
   React.useEffect(() => {
     if (estimatedBnb !== undefined && bnbAmount === "") {
