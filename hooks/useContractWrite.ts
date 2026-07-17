@@ -16,6 +16,8 @@ import { roundWindowAbi } from "@/contracts/roundWindowAbi";
 import { parseContractError } from "@/lib/errors";
 import { explorerTxLink } from "@/lib/format";
 import { fireConfetti } from "@/lib/confetti";
+import { vibrate } from "@/lib/haptics";
+import { pushNotification } from "@/lib/notifications";
 import { logActivity, updateActivityStatus } from "@/hooks/useActivityLog";
 import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
 
@@ -95,6 +97,16 @@ export function useContractWrite(functionName: RoundWindowFunctionName) {
       if (receipt?.status === "reverted") {
         updateActivityStatus(txHash, "failed");
         toast.error("Transaction reverted on-chain.", { id: toastId });
+        if (address) {
+          pushNotification({
+            kind: "tx-failed",
+            owner: address,
+            titleKey: "notifications.txFailed",
+            bodyKey: "notifications.txFailedBody",
+            bodyParams: { function: functionName },
+          });
+        }
+        vibrate("error");
         return null;
       }
 
@@ -103,13 +115,24 @@ export function useContractWrite(functionName: RoundWindowFunctionName) {
         id: toastId,
         description: link ? link : txHash,
       });
+      if (address) {
+        pushNotification({
+          kind: "tx-confirmed",
+          owner: address,
+          titleKey: "notifications.txConfirmed",
+          bodyKey: "notifications.txConfirmedBody",
+          bodyParams: { function: functionName },
+        });
+      }
       fireConfetti();
+      vibrate("success");
       return txHash;
     } catch (error) {
       toast.error("Transaction failed", {
         id: toastId,
         description: parseContractError(error),
       });
+      vibrate("error");
       throw error;
     }
   }

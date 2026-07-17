@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { isAddress, type Address } from "viem";
-import { useAccount, useBalance } from "wagmi";
+import { useAccount, useBalance, useChainId } from "wagmi";
 import { Wand2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -12,12 +12,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { TxProgress } from "@/components/shared/tx-progress";
 import { PaymentMethodPanel } from "@/components/registration/payment-method-panel";
+import { RegistrationStepper, type RegistrationStep } from "@/components/registration/registration-stepper";
 import { useContractWrite } from "@/hooks/useContractWrite";
 import { useBestReferral } from "@/hooks/useBestReferral";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useTokenPayment } from "@/hooks/useTokenPayment";
 import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
 import { tierCostUsd } from "@/lib/packages";
+import { PRIMARY_CHAIN_ID } from "@/lib/wagmi";
 import { useTranslation } from "@/contexts/language-context";
 
 export function RegisterForm({
@@ -28,6 +30,7 @@ export function RegisterForm({
   initialDirect?: string;
 }) {
   const { address } = useAccount();
+  const chainId = useChainId();
   const { data: balance } = useBalance({ address });
   const { stableToken } = useDashboardData();
   const { address: windowAddress } = useLatestRoundWindow();
@@ -55,6 +58,18 @@ export function RegisterForm({
   const isDirectValid = isAddress(direct);
   const isReferralValid = isAddress(referral);
   const canSubmit = Boolean(entrance) && isDirectValid && isReferralValid && payment.isPaymentValid;
+
+  const currentStep: RegistrationStep = !address
+    ? "connect"
+    : chainId !== PRIMARY_CHAIN_ID
+      ? "network"
+      : isConfirmed
+        ? "success"
+        : isConfirming
+          ? "pending"
+          : !isDirectValid || !isReferralValid
+            ? "referrer"
+            : "confirm";
 
   async function handleFindReferral() {
     if (!isDirectValid) {
@@ -100,6 +115,9 @@ export function RegisterForm({
           </div>
         )}
       </CardHeader>
+      <CardContent className="pb-0">
+        <RegistrationStepper current={currentStep} />
+      </CardContent>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           {!entrance && (

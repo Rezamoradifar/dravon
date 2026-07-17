@@ -11,6 +11,7 @@ import { wagmiConfig } from "@/lib/wagmi";
 import { Toaster } from "@/components/ui/sonner";
 import { WalletViewProvider } from "@/context/wallet-view-context";
 import { LanguageProvider } from "@/contexts/language-context";
+import { NotificationWatchers } from "@/components/shared/notification-watchers";
 
 function RainbowKitWithTheme({ children }: { children: React.ReactNode }) {
   const { resolvedTheme } = useTheme();
@@ -38,6 +39,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <QueryClientProvider client={queryClient}>
             <RainbowKitWithTheme>
               <WalletViewProvider>
+                <NotificationWatchers />
                 {children}
                 <Toaster position="top-right" richColors closeButton />
               </WalletViewProvider>

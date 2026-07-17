@@ -3,6 +3,7 @@
 import { PageHeader } from "@/components/shared/page-header";
 import { WalletSearch } from "@/components/user/wallet-search";
 import { UserDashboardCards } from "@/components/user/user-dashboard-cards";
+import { TeamBreakdownCard } from "@/components/shared/team-breakdown-card";
 import { useWalletView } from "@/context/wallet-view-context";
 import { useTranslation } from "@/contexts/language-context";
 
@@ -18,6 +19,11 @@ export default function UserDashboardPage() {
         <p className="mt-2 text-xs text-muted-foreground">{t("userPage.walletPersists")}</p>
       </div>
       <UserDashboardCards address={viewedAddress} />
+      {viewedAddress && (
+        <div className="mt-4 grid grid-cols-1 lg:grid-cols-2">
+          <TeamBreakdownCard address={viewedAddress} />
+        </div>
+      )}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { ConnectWalletGuard } from "@/components/shared/connect-wallet-guard";
 import { VoteShutdownCard } from "@/components/forms/vote-shutdown-card";
 import { TerminateAccountCard } from "@/components/forms/terminate-account-card";
 import { ResetWalletForm } from "@/components/forms/reset-wallet-form";
+import { PreferencesCard } from "@/components/account/preferences-card";
 import { useTranslation } from "@/contexts/language-context";
 
 export default function AccountActionsPage() {
@@ -15,6 +16,11 @@ export default function AccountActionsPage() {
     <div>
       <PageHeader title={t("accountPage.title")} description={t("accountPage.description")} />
       <NetworkBanner />
+
+      <div className="mb-4">
+        <PreferencesCard />
+      </div>
+
       <ConnectWalletGuard>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <VoteShutdownCard />

@@ -2,7 +2,9 @@
 
 import * as React from "react";
 import dynamic from "next/dynamic";
+import { AnimatePresence } from "framer-motion";
 import { RefreshCw } from "lucide-react";
+import type { Address } from "viem";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { WalletSearch } from "@/components/user/wallet-search";
@@ -12,8 +14,10 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ReferralLinkCard } from "@/components/genealogy/referral-link-card";
 import { ReferralGrowthChart } from "@/components/genealogy/referral-growth-chart";
+import { NodeDetailPanel } from "@/components/genealogy/node-detail-panel";
 import { useUserTree } from "@/hooks/useUserTree";
 import { useWalletView } from "@/context/wallet-view-context";
+import { countSubtreeMembers } from "@/lib/binary-tree";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/contexts/language-context";
 
@@ -27,6 +31,7 @@ export default function GenealogyPage() {
 
   const [lenInput, setLenInput] = React.useState("15");
   const [len, setLen] = React.useState(15);
+  const [selectedIndex, setSelectedIndex] = React.useState<number | null>(null);
 
   const { addresses, isLoading, isFetching, isError, errorMessage, refetch } = useUserTree(viewedAddress, len);
   const { t } = useTranslation();
@@ -35,6 +40,16 @@ export default function GenealogyPage() {
     const parsed = Number(lenInput);
     if (Number.isInteger(parsed) && parsed > 0) setLen(parsed);
   }
+
+  function handleNodeClick(index: number, address: string) {
+    if (!address) return;
+    setSelectedIndex(index);
+  }
+
+  const selectedAddress =
+    selectedIndex !== null && addresses ? (addresses[selectedIndex] as Address | undefined) : undefined;
+  const selectedMemberCount =
+    selectedIndex !== null && addresses ? countSubtreeMembers(addresses, selectedIndex) : 0;
 
   return (
     <div>
@@ -82,7 +97,23 @@ export default function GenealogyPage() {
           {errorMessage ?? t("genealogyPage.loadFailed")}
         </p>
       )}
-      {viewedAddress && !isLoading && !isError && addresses && <TreeGraph addresses={addresses} />}
+      {viewedAddress && !isLoading && !isError && addresses && (
+        <div className="space-y-3">
+          <p className="text-xs text-muted-foreground">{t("genealogyPage.nodeHint")}</p>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
+            <TreeGraph addresses={addresses} onNodeClick={handleNodeClick} />
+            <AnimatePresence mode="wait">
+              {selectedAddress && (
+                <NodeDetailPanel
+                  address={selectedAddress}
+                  memberCount={selectedMemberCount}
+                  onClose={() => setSelectedIndex(null)}
+                />
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

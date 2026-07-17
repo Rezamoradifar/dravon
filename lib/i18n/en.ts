@@ -206,6 +206,7 @@ export const en = {
     loadTree: "Load tree",
     connectOrSearch: "Connect a wallet or search an address.",
     loadFailed: "Could not load the tree for this wallet.",
+    nodeHint: "Click any node to see its status and subordinate count.",
   },
   referralLink: {
     title: "Referral Link",
@@ -214,6 +215,23 @@ export const en = {
   },
   treeNode: {
     emptySlot: "Empty slot",
+  },
+  teamBreakdown: {
+    title: "My Team",
+    left: "Left team",
+    right: "Right team",
+    hint: "Real member counts from your binary tree, computed client-side from getUserTree.",
+  },
+  nodeDetailPanel: {
+    title: "Node Details",
+    close: "Close",
+    address: "Address",
+    status: "Status",
+    loading: "Loading...",
+    active: "Active",
+    inactive: "Inactive",
+    entranceTier: "Entrance Tier",
+    subordinates: "Subordinate Members",
   },
   referralGrowth: {
     title: "Points Across Recent Rounds",
@@ -498,6 +516,34 @@ export const en = {
     toppedUpRaw: "Topped up to box #{entrance}",
     notConfigured: "Add NEXT_PUBLIC_BSCSCAN_API_KEY to enable the live network activity feed.",
     empty: "No recent activity on this window yet.",
+  },
+  notifications: {
+    title: "Notifications",
+    empty: "No notifications yet.",
+    rewardReceived: "Reward received",
+    rewardReceivedBody: "Your earned balance increased by ${amount}.",
+    newReferral: "New referral joined your team",
+    newReferralBody: "{address} joined your direct binary slots.",
+    txConfirmed: "Transaction confirmed",
+    txConfirmedBody: "{function}() confirmed on-chain.",
+    txFailed: "Transaction failed",
+    txFailedBody: "{function}() reverted on-chain.",
+  },
+  preferences: {
+    title: "Preferences",
+    description: "Device-level settings for this browser.",
+    haptics: "Haptic feedback",
+    hapticsHint: "Short vibration on successful actions (if your device supports it).",
+    on: "On",
+    off: "Off",
+  },
+  registrationStepper: {
+    connect: "Connect Wallet",
+    network: "Check Network",
+    referrer: "Check Referrer",
+    confirm: "Confirm Registration",
+    pending: "Transaction Pending",
+    success: "Registration Successful",
   },
 };
 

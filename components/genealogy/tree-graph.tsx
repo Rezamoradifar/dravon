@@ -8,6 +8,7 @@ import {
   MiniMap,
   type Edge,
   type Node,
+  type NodeMouseHandler,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
@@ -63,8 +64,19 @@ function buildTree(addresses: string[]): { nodes: Node[]; edges: Edge[] } {
   return { nodes, edges };
 }
 
-export function TreeGraph({ addresses }: { addresses: string[] }) {
+export function TreeGraph({
+  addresses,
+  onNodeClick,
+}: {
+  addresses: string[];
+  onNodeClick?: (index: number, address: string) => void;
+}) {
   const { nodes, edges } = React.useMemo(() => buildTree(addresses), [addresses]);
+
+  const handleNodeClick: NodeMouseHandler = (_, node) => {
+    const index = Number(node.id);
+    onNodeClick?.(index, addresses[index]);
+  };
 
   return (
     <div className="h-[560px] w-full overflow-hidden rounded-xl border">
@@ -77,6 +89,7 @@ export function TreeGraph({ addresses }: { addresses: string[] }) {
         proOptions={{ hideAttribution: true }}
         nodesConnectable={false}
         elementsSelectable={false}
+        onNodeClick={onNodeClick ? handleNodeClick : undefined}
       >
         <Background gap={24} />
         <Controls showInteractive={false} />
