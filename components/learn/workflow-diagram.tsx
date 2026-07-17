@@ -7,13 +7,13 @@ export function WorkflowDiagram({ steps }: { steps: { title: string; description
   return (
     <div className="flex flex-col gap-3 md:flex-row md:items-stretch md:gap-2">
       {steps.map((step, index) => (
-        <div key={step.title} className="flex flex-1 items-stretch gap-2">
+        <div key={step.title} className="flex min-w-0 flex-1 items-stretch gap-2">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.3, delay: index * 0.08 }}
-            className="card-glow flex-1 rounded-xl border bg-card p-4"
+            className="card-glow min-w-0 flex-1 rounded-xl border bg-card p-4"
           >
             <div className="mb-2 flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
               {index + 1}

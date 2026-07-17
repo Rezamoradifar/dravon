@@ -1,7 +1,7 @@
 "use client";
 
 import { AreaChart, Area, ResponsiveContainer } from "recharts";
-import { ArrowDownRight, ArrowUpRight, Fuel, Activity } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Fuel, Activity, AlertTriangle } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,8 +13,8 @@ import { cn } from "@/lib/utils";
 import { useTranslation } from "@/contexts/language-context";
 
 export function PriceTicker() {
-  const { symbol, price, change24h, sparkline, source, isLoading } = useNativePrice();
-  const { gasPriceGwei, isHealthy, blockNumber } = useNetworkStatus();
+  const { symbol, price, change24h, sparkline, source, isLoading, hasError } = useNativePrice();
+  const { gasPriceGwei, isHealthy, blockNumber, hasConnectionError } = useNetworkStatus();
   const { t } = useTranslation();
 
   const isUp = (change24h ?? 0) >= 0;
@@ -27,7 +27,12 @@ export function PriceTicker() {
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {symbol} {t("priceTicker.priceSuffix")}
           </p>
-          {isLoading || price === undefined ? (
+          {hasError ? (
+            <p className="mt-1.5 flex items-center gap-1.5 text-sm text-destructive">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              {t("priceTicker.unavailable")}
+            </p>
+          ) : isLoading || price === undefined ? (
             <Skeleton className="mt-2 h-7 w-24" />
           ) : (
             <div className="mt-1 flex items-center gap-2">
@@ -88,12 +93,22 @@ export function PriceTicker() {
           <span
             className={cn(
               "h-2 w-2 rounded-full",
-              isHealthy === undefined ? "bg-muted-foreground" : isHealthy ? "bg-success" : "bg-destructive",
+              hasConnectionError
+                ? "bg-destructive"
+                : isHealthy === undefined
+                  ? "bg-muted-foreground animate-pulse"
+                  : isHealthy
+                    ? "bg-success"
+                    : "bg-destructive",
             )}
           />
           <Activity className="h-4 w-4 text-muted-foreground" />
-          <span className="text-muted-foreground">
-            {blockNumber !== undefined ? `Block #${blockNumber.toString()}` : t("common.connecting")}
+          <span className={cn("text-muted-foreground", hasConnectionError && "text-destructive")}>
+            {hasConnectionError
+              ? t("priceTicker.connectionFailed")
+              : blockNumber !== undefined
+                ? `Block #${blockNumber.toString()}`
+                : t("common.connecting")}
           </span>
         </div>
       </CardContent>

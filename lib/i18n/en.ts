@@ -42,6 +42,8 @@ export const en = {
     priceSuffix: "Price",
     viaCoinGecko: "via CoinGecko",
     viaOracle: "via on-chain oracle",
+    unavailable: "Price unavailable",
+    connectionFailed: "Connection failed",
   },
   walletCard: {
     title: "Your Wallet",

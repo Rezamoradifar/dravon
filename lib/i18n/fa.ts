@@ -44,6 +44,8 @@ export const fa: Dictionary = {
     priceSuffix: "قیمت",
     viaCoinGecko: "از طریق CoinGecko",
     viaOracle: "از طریق اوراکل آن‌چین",
+    unavailable: "قیمت در دسترس نیست",
+    connectionFailed: "اتصال ناموفق بود",
   },
   walletCard: {
     title: "کیف‌پول شما",

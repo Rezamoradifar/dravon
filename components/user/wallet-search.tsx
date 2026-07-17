@@ -34,7 +34,7 @@ export function WalletSearch({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3">
-      <div className="min-w-[280px] flex-1 space-y-1.5">
+      <div className="min-w-0 flex-1 space-y-1.5 sm:min-w-[280px]">
         <Label htmlFor="wallet-search">{t("walletSearch.label")}</Label>
         <Input
           id="wallet-search"

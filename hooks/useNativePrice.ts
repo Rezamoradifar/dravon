@@ -68,7 +68,11 @@ function useCoingeckoPrice(coingeckoId: string | undefined): CoingeckoState {
 export function useNativePrice() {
   const coingecko = useCoingeckoPrice(feed?.coingeckoId);
 
-  const { data: chainlinkData, isLoading: chainlinkLoading } = useReadContract({
+  const {
+    data: chainlinkData,
+    isLoading: chainlinkLoading,
+    isError: chainlinkIsError,
+  } = useReadContract({
     address: feed?.chainlinkFeed,
     abi: chainlinkAggregatorAbi,
     functionName: "latestRoundData",
@@ -95,6 +99,8 @@ export function useNativePrice() {
     : onchainPrice
       ? "chainlink"
       : undefined;
+  const isLoading = coingecko.isLoading && chainlinkLoading;
+  const hasError = !isLoading && price === undefined && coingecko.isError && chainlinkIsError;
 
   return {
     symbol: feed?.symbol ?? "Native",
@@ -103,6 +109,7 @@ export function useNativePrice() {
     sparkline: coingecko.sparkline,
     onchainPrice,
     source,
-    isLoading: coingecko.isLoading && chainlinkLoading,
+    isLoading,
+    hasError,
   };
 }

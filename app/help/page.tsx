@@ -17,7 +17,7 @@ export default function HelpPage() {
           <HelpToc />
         </aside>
 
-        <div className="space-y-10">
+        <div className="min-w-0 space-y-10">
           <HelpContent />
         </div>
       </div>
