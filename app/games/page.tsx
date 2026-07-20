@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { Gamepad2, Sparkles } from "lucide-react";
+import { Dices, Sparkles } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/contexts/language-context";
 
 export default function GamesPage() {
@@ -14,20 +16,37 @@ export default function GamesPage() {
     <div>
       <PageHeader title={t("gamesPage.title")} description={t("gamesPage.description")} />
 
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
-        <Card className="card-glow">
-          <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Gamepad2 className="h-7 w-7" />
-            </div>
-            <p className="text-lg font-semibold">{t("gamesPage.comingSoonTitle")}</p>
-            <p className="max-w-md text-sm text-muted-foreground">{t("gamesPage.comingSoonBody")}</p>
-            <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Sparkles className="h-3.5 w-3.5" />
-              {t("gamesPage.hint")}
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+          <Card className="card-glow flex h-full flex-col">
+            <CardHeader className="flex-row items-center gap-3 space-y-0">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Dices className="h-5 w-5" />
+              </div>
+              <div>
+                <CardTitle className="text-base">{t("gamesPage.backgammonName")}</CardTitle>
+                <CardDescription>{t("gamesPage.backgammonTagline")}</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="mt-auto">
+              <Button asChild className="w-full">
+                <Link href="/games/backgammon">{t("gamesPage.playFree")}</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, delay: 0.1 }}
+        className="mt-4"
+      >
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Sparkles className="h-3.5 w-3.5" />
+          {t("gamesPage.hint")}
+        </div>
       </motion.div>
     </div>
   );

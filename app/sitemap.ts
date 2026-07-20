@@ -26,6 +26,7 @@ const ROUTES = [
   "/products",
   "/news",
   "/games",
+  "/games/backgammon",
   "/contract-actions",
   "/account",
 ];
