@@ -496,6 +496,8 @@ export const fa: Dictionary = {
     modeLocal: "دو نفره روی یک دستگاه",
     newGame: "بازی جدید",
     roll: "پرتاب تاس",
+    soundOn: "صدا روشن",
+    soundOff: "صدا خاموش",
     yourTurn: "نوبت شماست",
     aiTurn: "نوبت کامپیوتر...",
     aiThinking: "در حال فکر کردن...",

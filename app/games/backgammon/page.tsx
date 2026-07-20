@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Board } from "@/components/games/backgammon/board";
 import { GameControls } from "@/components/games/backgammon/game-controls";
 import { useBackgammon } from "@/hooks/useBackgammon";
+import { useBackgammonSound } from "@/hooks/useBackgammonSound";
 import { fireConfetti } from "@/lib/confetti";
 import type { GameMode } from "@/lib/backgammon/types";
 import { useTranslation } from "@/contexts/language-context";
@@ -18,6 +19,7 @@ export default function BackgammonPage() {
   const { t } = useTranslation();
   const [mode, setMode] = React.useState<GameMode>("ai");
   const game = useBackgammon(mode);
+  const sound = useBackgammonSound();
 
   const wonBefore = React.useRef(false);
   React.useEffect(() => {
@@ -58,9 +60,11 @@ export default function BackgammonPage() {
           canRoll={game.canRoll}
           isAiTurn={game.isAiTurn}
           message={game.message}
+          soundEnabled={sound.enabled}
           onModeChange={handleModeChange}
           onRoll={game.roll}
           onNewGame={() => game.newGame()}
+          onToggleSound={sound.toggle}
         />
 
         {game.state.winner && (

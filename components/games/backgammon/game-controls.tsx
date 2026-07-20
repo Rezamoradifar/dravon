@@ -1,6 +1,6 @@
 "use client";
 
-import { Dice5, RotateCcw } from "lucide-react";
+import { Dice5, RotateCcw, Volume2, VolumeX } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,18 +14,22 @@ export function GameControls({
   canRoll,
   isAiTurn,
   message,
+  soundEnabled,
   onModeChange,
   onRoll,
   onNewGame,
+  onToggleSound,
 }: {
   mode: GameMode;
   state: GameState;
   canRoll: boolean;
   isAiTurn: boolean;
   message: string | null;
+  soundEnabled: boolean;
   onModeChange: (mode: GameMode) => void;
   onRoll: () => void;
   onNewGame: () => void;
+  onToggleSound: () => void;
 }) {
   const { t } = useTranslation();
 
@@ -50,10 +54,22 @@ export function GameControls({
             <TabsTrigger value="local">{t("backgammon.modeLocal")}</TabsTrigger>
           </TabsList>
         </Tabs>
-        <Button variant="outline" size="sm" className="gap-1.5" onClick={onNewGame}>
-          <RotateCcw className="h-3.5 w-3.5" />
-          {t("backgammon.newGame")}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={onToggleSound}
+            aria-label={soundEnabled ? t("backgammon.soundOn") : t("backgammon.soundOff")}
+            title={soundEnabled ? t("backgammon.soundOn") : t("backgammon.soundOff")}
+          >
+            {soundEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+          </Button>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={onNewGame}>
+            <RotateCcw className="h-3.5 w-3.5" />
+            {t("backgammon.newGame")}
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">

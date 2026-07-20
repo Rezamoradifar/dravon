@@ -494,6 +494,8 @@ export const en = {
     modeLocal: "Local 2-player",
     newGame: "New game",
     roll: "Roll dice",
+    soundOn: "Sound on",
+    soundOff: "Sound off",
     yourTurn: "Your turn",
     aiTurn: "Computer's turn...",
     aiThinking: "Thinking...",

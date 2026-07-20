@@ -126,7 +126,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <Sidebar />
                 </div>
               </aside>
-              <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
+              <main className="min-w-0 flex-1 px-4 py-6 md:px-8 md:py-8">
                 <div className="mx-auto w-full max-w-7xl">
                   <PageTransition>{children}</PageTransition>
                 </div>

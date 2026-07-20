@@ -11,6 +11,7 @@ import {
   startTurn,
 } from "@/lib/backgammon/engine";
 import { playAiTurn } from "@/lib/backgammon/ai";
+import { playSound } from "@/lib/backgammon/sound";
 import type { GameMode, GameState, Move, MoveSource, Player } from "@/lib/backgammon/types";
 import { vibrate } from "@/lib/haptics";
 
@@ -44,12 +45,28 @@ export function useBackgammon(mode: GameMode) {
       return () => clearTimeout(t);
     }
     if (!hasAnyLegalMove(state, state.turn)) {
+      if (message !== "noMoves") {
+        playSound("noMoves");
+        vibrate("warning");
+      }
       setMessage("noMoves");
       const t = setTimeout(() => setState((s) => endTurn(s)), 900);
       return () => clearTimeout(t);
     }
     setMessage(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
+
+  // Celebrate a win once, the moment it happens.
+  const wonRef = React.useRef(false);
+  React.useEffect(() => {
+    if (state.winner && !wonRef.current) {
+      wonRef.current = true;
+      playSound("win");
+      vibrate("success");
+    }
+    if (!state.winner) wonRef.current = false;
+  }, [state.winner]);
 
   // Drive the AI's own turn: roll, then play every die with the heuristic bot.
   React.useEffect(() => {
@@ -72,6 +89,8 @@ export function useBackgammon(mode: GameMode) {
     if (!canRoll) return;
     setState((s) => startTurn(s));
     setSelected(null);
+    playSound("roll");
+    vibrate("tap");
   }
 
   function selectSource(source: MoveSource) {
@@ -86,9 +105,28 @@ export function useBackgammon(mode: GameMode) {
   function moveTo(to: number | null) {
     const move: Move | undefined = legalDestinationsFromSelected.find((m) => m.to === to);
     if (!move) return;
+
+    const isBearOff = move.to === null;
+    const isHit =
+      !isBearOff &&
+      (() => {
+        const dest = state.points[(move.to as number) - 1];
+        return dest.owner !== null && dest.owner !== state.turn && dest.count === 1;
+      })();
+
     setState((s) => applyMove(s, move));
     setSelected(null);
-    vibrate("tap");
+
+    if (isBearOff) {
+      playSound("bearOff");
+      vibrate("success");
+    } else if (isHit) {
+      playSound("hit");
+      vibrate("warning");
+    } else {
+      playSound("move");
+      vibrate("tap");
+    }
   }
 
   function newGame(nextMode?: GameMode) {
