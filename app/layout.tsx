@@ -87,6 +87,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               function showError(message) {
                 try {
                   if (tryAutoRecover(message)) return;
+                  // Once the app has hydrated, an uncaught error is no longer
+                  // "the page never rendered" - it's some unrelated async
+                  // hiccup (a WalletConnect relay reconnect, a flaky RPC call)
+                  // that the working UI can shrug off. Blocking the whole
+                  // screen for that is worse than the error itself. Only the
+                  // pre-hydration case (this script's actual purpose) still
+                  // gets the overlay; real post-hydration render errors are
+                  // already handled by app/error.tsx and app/global-error.tsx.
+                  if (window.__appHydrated) return;
                   if (document.getElementById('__crash_overlay')) return;
                   var el = document.createElement('div');
                   el.id = '__crash_overlay';

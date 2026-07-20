@@ -48,6 +48,14 @@ function RainbowKitWithTheme({ children }: { children: React.ReactNode }) {
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = React.useState(() => new QueryClient());
 
+  // Lets the pre-hydration crash-diagnostic script (app/layout.tsx) tell a
+  // wallet in-app browser hard-crashing before React ever mounts apart from
+  // an ordinary post-hydration async error (a WalletConnect relay hiccup, a
+  // flaky RPC call) - only the former means the page is actually broken.
+  React.useEffect(() => {
+    (window as typeof window & { __appHydrated?: boolean }).__appHydrated = true;
+  }, []);
+
   return (
     <LanguageProvider>
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
