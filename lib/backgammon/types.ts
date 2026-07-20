@@ -30,3 +30,5 @@ export interface Move {
 }
 
 export type GameMode = "ai" | "local";
+
+export type Difficulty = "easy" | "medium" | "hard";

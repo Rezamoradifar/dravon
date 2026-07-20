@@ -12,18 +12,29 @@ import {
 } from "@/lib/backgammon/engine";
 import { playAiTurn } from "@/lib/backgammon/ai";
 import { playSound } from "@/lib/backgammon/sound";
-import type { GameMode, GameState, Move, MoveSource, Player } from "@/lib/backgammon/types";
+import type { Difficulty, GameMode, GameState, Move, MoveSource, Player } from "@/lib/backgammon/types";
 import { vibrate } from "@/lib/haptics";
 
 const HUMAN_PLAYER: Player = "white";
 const AI_TURN_DELAY_MS = 650;
 
-export function useBackgammon(mode: GameMode) {
+export function useBackgammon(mode: GameMode, difficulty: Difficulty = "medium") {
   const [state, setState] = React.useState<GameState>(() => createInitialState());
   const [selected, setSelected] = React.useState<MoveSource | null>(null);
   const [message, setMessage] = React.useState<string | null>(null);
 
+  // Snapshots of state before each move made this turn, so the current
+  // player can undo a misclick before the turn ends. Cleared whenever the
+  // turn changes (see the effect below) or a new game/turn starts.
+  const historyRef = React.useRef<GameState[]>([]);
+  const [canUndo, setCanUndo] = React.useState(false);
+
   const isAiTurn = mode === "ai" && state.turn !== HUMAN_PLAYER;
+
+  React.useEffect(() => {
+    historyRef.current = [];
+    setCanUndo(false);
+  }, [state.turn]);
 
   const legalMoves = React.useMemo(
     () => (state.hasRolled && !state.winner ? getLegalMoves(state, state.turn) : []),
@@ -78,15 +89,17 @@ export function useBackgammon(mode: GameMode) {
       return () => clearTimeout(t);
     }
     if (state.dice.length > 0) {
-      const t = setTimeout(() => setState((s) => playAiTurn(s, s.turn)), AI_TURN_DELAY_MS);
+      const t = setTimeout(() => setState((s) => playAiTurn(s, s.turn, difficulty)), AI_TURN_DELAY_MS);
       return () => clearTimeout(t);
     }
-  }, [mode, state]);
+  }, [mode, state, difficulty]);
 
   const canRoll = !state.hasRolled && !state.winner && !(mode === "ai" && isAiTurn);
 
   function roll() {
     if (!canRoll) return;
+    historyRef.current = [];
+    setCanUndo(false);
     setState((s) => startTurn(s));
     setSelected(null);
     playSound("roll");
@@ -114,6 +127,8 @@ export function useBackgammon(mode: GameMode) {
         return dest.owner !== null && dest.owner !== state.turn && dest.count === 1;
       })();
 
+    historyRef.current.push(state);
+    setCanUndo(true);
     setState((s) => applyMove(s, move));
     setSelected(null);
 
@@ -129,7 +144,17 @@ export function useBackgammon(mode: GameMode) {
     }
   }
 
+  function undo() {
+    const previous = historyRef.current.pop();
+    if (!previous) return;
+    setCanUndo(historyRef.current.length > 0);
+    setState(previous);
+    setSelected(null);
+  }
+
   function newGame(nextMode?: GameMode) {
+    historyRef.current = [];
+    setCanUndo(false);
     setState(createInitialState());
     setSelected(null);
     setMessage(null);
@@ -144,10 +169,12 @@ export function useBackgammon(mode: GameMode) {
     message,
     isAiTurn,
     canRoll,
+    canUndo: canUndo && !isAiTurn && !state.winner,
     humanPlayer: HUMAN_PLAYER,
     roll,
     selectSource,
     moveTo,
+    undo,
     newGame,
     clearSelection: () => setSelected(null),
   };

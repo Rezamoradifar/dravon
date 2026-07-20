@@ -1,35 +1,44 @@
 "use client";
 
-import { Dice5, RotateCcw, Volume2, VolumeX } from "lucide-react";
+import { Dice5, RotateCcw, Undo2, Volume2, VolumeX } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DiceTray } from "./dice";
-import type { GameMode, GameState } from "@/lib/backgammon/types";
+import type { Difficulty, GameMode, GameState } from "@/lib/backgammon/types";
 import { useTranslation } from "@/contexts/language-context";
 
 export function GameControls({
   mode,
   state,
   canRoll,
+  canUndo,
   isAiTurn,
   message,
   soundEnabled,
+  difficulty,
   onModeChange,
   onRoll,
+  onUndo,
   onNewGame,
   onToggleSound,
+  onDifficultyChange,
 }: {
   mode: GameMode;
   state: GameState;
   canRoll: boolean;
+  canUndo: boolean;
   isAiTurn: boolean;
   message: string | null;
   soundEnabled: boolean;
+  difficulty: Difficulty;
   onModeChange: (mode: GameMode) => void;
   onRoll: () => void;
+  onUndo: () => void;
   onNewGame: () => void;
   onToggleSound: () => void;
+  onDifficultyChange: (difficulty: Difficulty) => void;
 }) {
   const { t } = useTranslation();
 
@@ -48,13 +57,38 @@ export function GameControls({
   return (
     <div className="flex flex-col gap-3 rounded-xl border bg-card p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Tabs value={mode} onValueChange={(v) => onModeChange(v as GameMode)}>
-          <TabsList>
-            <TabsTrigger value="ai">{t("backgammon.modeAi")}</TabsTrigger>
-            <TabsTrigger value="local">{t("backgammon.modeLocal")}</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex flex-wrap items-center gap-2">
+          <Tabs value={mode} onValueChange={(v) => onModeChange(v as GameMode)}>
+            <TabsList>
+              <TabsTrigger value="ai">{t("backgammon.modeAi")}</TabsTrigger>
+              <TabsTrigger value="local">{t("backgammon.modeLocal")}</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          {mode === "ai" && (
+            <Select value={difficulty} onValueChange={(v) => onDifficultyChange(v as Difficulty)}>
+              <SelectTrigger className="h-9 w-[130px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="easy">{t("backgammon.difficultyEasy")}</SelectItem>
+                <SelectItem value="medium">{t("backgammon.difficultyMedium")}</SelectItem>
+                <SelectItem value="hard">{t("backgammon.difficultyHard")}</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+        </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            disabled={!canUndo}
+            onClick={onUndo}
+            aria-label={t("backgammon.undo")}
+            title={t("backgammon.undo")}
+          >
+            <Undo2 className="h-3.5 w-3.5" />
+          </Button>
           <Button
             variant="outline"
             size="sm"

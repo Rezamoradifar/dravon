@@ -70,9 +70,9 @@ export function Board({
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full landscape:flex landscape:justify-center">
       <div
-        className="mx-auto flex w-full flex-col gap-2 rounded-xl border bg-[hsl(30_35%_18%)] p-3 shadow-inner"
+        className="mx-auto flex w-full flex-col gap-2 rounded-xl border bg-[hsl(30_35%_18%)] p-3 shadow-inner landscape:h-[min(78vh,560px)] landscape:w-auto"
         style={{ aspectRatio: "16 / 10" }}
       >
         <div className="flex flex-1 gap-1">
