@@ -487,6 +487,10 @@ export const fa: Dictionary = {
     playFree: "بازی رایگان",
     backgammonName: "تخته‌نرد",
     backgammonTagline: "بازی کلاسیک تخته - در برابر کامپیوتر یا دو نفره روی یک دستگاه بازی کنید.",
+    onchainBackgammonName: "تخته‌نرد آنچین",
+    onchainBackgammonTagline: "بازی واقعی ۱ در برابر ۱ با کیف‌پول خودت روی BNB Chain. شرط‌بندی اختیاریه.",
+    playOnChain: "بازی آنچین",
+    onchainComingSoon: "به‌زودی روی تست‌نت",
   },
   backgammon: {
     title: "تخته‌نرد",
