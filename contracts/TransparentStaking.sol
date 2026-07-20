@@ -39,6 +39,23 @@ import {Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
 ///  - Plan terms (duration + rate) are immutable once created; the owner can
 ///    only disable a plan for *future* stakes, never alter the terms of a
 ///    stake that already exists.
+///
+/// Emergency council (disaster recovery, not an owner backdoor):
+/// -----------------------------------------------------------------------
+/// A fixed set of 10 council addresses is set once in the constructor and
+/// can never be changed afterwards by anyone, including the owner - so the
+/// council can never be quietly repacked. If 6-of-10 vote
+/// `voteEmergencyWithdraw()`, the contract is paused (new stakes only - all
+/// `claim()`/`withdraw()` calls stay open) and a 72-hour timelock starts.
+/// Only after the timelock elapses can anyone call `executeEmergencyWithdraw()`,
+/// which sweeps the full token balance to `emergencyRecipient` - a single
+/// address fixed at deploy time. The council members are never the
+/// recipient; they only hold the trigger, never the payout, which is what
+/// stops a colluding majority from simply voting themselves the funds. The
+/// 72-hour window is the real user protection: it exists so every depositor
+/// has time to self-withdraw before a sweep executes. Cancelling an
+/// in-progress emergency also requires a 6-of-10 vote, so neither the owner
+/// nor a single council member can unilaterally start or stop it.
 contract TransparentStaking is ReentrancyGuard, Pausable, Ownable2Step {
     using SafeERC20 for IERC20;
 
@@ -65,6 +82,32 @@ contract TransparentStaking is ReentrancyGuard, Pausable, Ownable2Step {
     /// immediately and only if the dedicated referral reserve can cover it.
     /// Hard-capped at 5% and immutable.
     uint16 public immutable referralBps;
+
+    // ============ EMERGENCY COUNCIL ============
+
+    uint256 public constant COUNCIL_SIZE = 10;
+    uint256 public constant EMERGENCY_QUORUM = 6;
+    uint256 public constant EMERGENCY_TIMELOCK = 72 hours;
+
+    /// @notice The 10 council addresses. Set once in the constructor - there is no
+    /// function anywhere in this contract that can add, remove or replace a member,
+    /// so the council can never be repacked after deployment, not even by the owner.
+    address[COUNCIL_SIZE] public council;
+
+    /// @notice Sole destination of an executed emergency withdrawal. Fixed at deploy
+    /// time and immutable. Deliberately never one of the council members themselves -
+    /// the council can only trigger the sweep, never receive it, so a colluding
+    /// majority cannot simply vote themselves the funds.
+    address public immutable emergencyRecipient;
+
+    mapping(address => bool) public emergencyWithdrawVotes;
+    uint256 public emergencyWithdrawVoteCount;
+    /// @notice Timestamp quorum was reached; 0 means no emergency withdrawal is pending.
+    uint256 public emergencyApprovedAt;
+    bool public emergencyExecuted;
+
+    mapping(address => bool) public emergencyCancelVotes;
+    uint256 public emergencyCancelVoteCount;
 
     // ============ PLANS ============
 
@@ -129,6 +172,11 @@ contract TransparentStaking is ReentrancyGuard, Pausable, Ownable2Step {
     event RewardClaimed(address indexed user, uint256 grossAmount, uint256 fee, uint256 netAmount);
     event ReferralPaid(address indexed referrer, address indexed referee, uint256 amount);
     event Withdrawn(address indexed user, uint256 principalReturned, uint256 exitFee, bool early);
+    event EmergencyWithdrawVoted(address indexed voter, uint256 totalVotes);
+    event EmergencyWithdrawApproved(uint256 timelockEndsAt);
+    event EmergencyWithdrawCancelVoted(address indexed voter, uint256 totalVotes);
+    event EmergencyWithdrawCancelled();
+    event EmergencyWithdrawExecuted(address indexed recipient, uint256 amount);
 
     // ============ CONSTRUCTOR ============
 
@@ -138,18 +186,31 @@ contract TransparentStaking is ReentrancyGuard, Pausable, Ownable2Step {
         uint16 _claimFeeBps,
         uint16 _maxEarlyExitFeeBps,
         uint16 _referralBps,
+        address[COUNCIL_SIZE] memory _council,
+        address _emergencyRecipient,
         address initialOwner
     ) Ownable(initialOwner) {
         require(_asset != address(0) && _treasury != address(0), "zero address");
         require(_claimFeeBps <= 1_000, "claim fee too high");        // hard cap 10%
         require(_maxEarlyExitFeeBps <= 1_500, "exit fee too high");  // hard cap 15%
         require(_referralBps <= 500, "referral too high");           // hard cap 5%
+        require(_emergencyRecipient != address(0), "zero emergency recipient");
+
+        for (uint256 i = 0; i < COUNCIL_SIZE; i++) {
+            require(_council[i] != address(0), "zero council member");
+            require(_council[i] != _emergencyRecipient, "council cannot be recipient");
+            for (uint256 j = 0; j < i; j++) {
+                require(_council[i] != _council[j], "duplicate council member");
+            }
+        }
 
         asset = IERC20(_asset);
         treasury = _treasury;
         claimFeeBps = _claimFeeBps;
         maxEarlyExitFeeBps = _maxEarlyExitFeeBps;
         referralBps = _referralBps;
+        council = _council;
+        emergencyRecipient = _emergencyRecipient;
     }
 
     // ============ OWNER: PLAN MANAGEMENT ============
@@ -223,6 +284,77 @@ contract TransparentStaking is ReentrancyGuard, Pausable, Ownable2Step {
 
     function unpause() external onlyOwner {
         _unpause();
+    }
+
+    // ============ EMERGENCY COUNCIL ============
+
+    modifier onlyCouncil() {
+        bool found = false;
+        for (uint256 i = 0; i < COUNCIL_SIZE; i++) {
+            if (council[i] == msg.sender) { found = true; break; }
+        }
+        require(found, "not council");
+        _;
+    }
+
+    /// @notice Vote to approve a full emergency withdrawal to `emergencyRecipient`.
+    /// Once 6 of the 10 council members have voted, the contract is paused (new
+    /// stakes only) and a 72-hour timelock begins - existing depositors can still
+    /// `claim()`/`withdraw()` throughout this entire window.
+    function voteEmergencyWithdraw() external onlyCouncil {
+        require(!emergencyExecuted, "already executed");
+        require(emergencyApprovedAt == 0, "already approved");
+        require(!emergencyWithdrawVotes[msg.sender], "already voted");
+
+        emergencyWithdrawVotes[msg.sender] = true;
+        emergencyWithdrawVoteCount++;
+        emit EmergencyWithdrawVoted(msg.sender, emergencyWithdrawVoteCount);
+
+        if (emergencyWithdrawVoteCount >= EMERGENCY_QUORUM) {
+            emergencyApprovedAt = block.timestamp;
+            if (!paused()) _pause();
+            emit EmergencyWithdrawApproved(block.timestamp + EMERGENCY_TIMELOCK);
+        }
+    }
+
+    /// @notice Vote to cancel a pending (not yet executed) emergency withdrawal.
+    /// Also requires 6 of 10 - neither the owner nor a lone council member can
+    /// unilaterally reverse a decision the council already approved.
+    function voteCancelEmergencyWithdraw() external onlyCouncil {
+        require(emergencyApprovedAt != 0, "not approved");
+        require(!emergencyExecuted, "already executed");
+        require(!emergencyCancelVotes[msg.sender], "already voted");
+
+        emergencyCancelVotes[msg.sender] = true;
+        emergencyCancelVoteCount++;
+        emit EmergencyWithdrawCancelVoted(msg.sender, emergencyCancelVoteCount);
+
+        if (emergencyCancelVoteCount >= EMERGENCY_QUORUM) {
+            emergencyApprovedAt = 0;
+            emergencyWithdrawVoteCount = 0;
+            emergencyCancelVoteCount = 0;
+            for (uint256 i = 0; i < COUNCIL_SIZE; i++) {
+                emergencyWithdrawVotes[council[i]] = false;
+                emergencyCancelVotes[council[i]] = false;
+            }
+            emit EmergencyWithdrawCancelled();
+        }
+    }
+
+    /// @notice Sweep the full token balance to the fixed `emergencyRecipient` once the
+    /// 72-hour timelock has elapsed. Callable by anyone (permissionless execution) -
+    /// there is nothing left to gate once quorum and the timelock are satisfied.
+    /// Irreversible: any depositor who has not self-withdrawn before this executes
+    /// loses access to the swept funds, which is why the timelock exists.
+    function executeEmergencyWithdraw() external nonReentrant {
+        require(emergencyApprovedAt != 0, "not approved");
+        require(!emergencyExecuted, "already executed");
+        require(block.timestamp >= emergencyApprovedAt + EMERGENCY_TIMELOCK, "timelock active");
+
+        emergencyExecuted = true;
+        uint256 amount = asset.balanceOf(address(this));
+        asset.safeTransfer(emergencyRecipient, amount);
+        emit EmergencyWithdrawExecuted(emergencyRecipient, amount);
     }
 
     // ============ USER ACTIONS ============
