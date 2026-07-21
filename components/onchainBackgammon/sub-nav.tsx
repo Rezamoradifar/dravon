@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Dices, Trophy, History, Users, Settings } from "lucide-react";
+import { Dices, Trophy, History, Users, Settings, Terminal } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/games/backgammon-onchain/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/games/backgammon-onchain/history", label: "History", icon: History },
   { href: "/games/backgammon-onchain/referral", label: "Referral", icon: Users },
+  { href: "/games/backgammon-onchain/contract", label: "Contract", icon: Terminal },
   { href: "/games/backgammon-onchain/settings", label: "Settings", icon: Settings },
 ];
 
