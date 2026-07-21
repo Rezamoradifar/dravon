@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAccount, usePublicClient, useWriteContract } from "wagmi";
 import { decodeEventLog, parseEther, formatEther, formatUnits, parseUnits } from "viem";
@@ -308,13 +309,22 @@ export default function LobbyPage() {
               >
                 <span className="font-mono text-slate-300">{table.creator ? shortenAddress(table.creator) : "?"}</span>
                 <span className="font-medium">{formatStake(table.stake, table.stakeToken)}</span>
-                <button
-                  onClick={() => void joinTable(table)}
-                  disabled={isOwn || joiningGameId === table.gameId}
-                  className="rounded-full bg-indigo-500 px-4 py-1.5 text-xs font-medium text-white disabled:opacity-40"
-                >
-                  {isOwn ? "Your table" : joiningGameId === table.gameId ? "Joining..." : "Join"}
-                </button>
+                {isOwn ? (
+                  <Link
+                    href={`/games/backgammon-onchain/game/${table.gameId}`}
+                    className="rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium text-white hover:bg-white/20"
+                  >
+                    Your table - open
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => void joinTable(table)}
+                    disabled={joiningGameId === table.gameId}
+                    className="rounded-full bg-indigo-500 px-4 py-1.5 text-xs font-medium text-white disabled:opacity-40"
+                  >
+                    {joiningGameId === table.gameId ? "Joining..." : "Join"}
+                  </button>
+                )}
               </li>
             );
           })}
@@ -333,15 +343,26 @@ export default function LobbyPage() {
         {!activeTables && <p className="text-sm text-slate-400">Loading...</p>}
         {activeTables && activeTables.length === 0 && <p className="text-sm text-slate-400">No matches in progress right now.</p>}
         <ul className="flex flex-col gap-2">
-          {activeTables?.map((table) => (
-            <li key={table.gameId} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm">
-              <span className="text-slate-400">
-                {table.players.map((p) => shortenAddress(p.address)).join(" vs ")}
-              </span>
-              <span className="font-medium">{formatStake(table.stake, table.stakeToken)}</span>
-              <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-slate-300">{table.state}</span>
-            </li>
-          ))}
+          {activeTables?.map((table) => {
+            const isMine = address ? table.players.some((p) => p.address.toLowerCase() === address.toLowerCase()) : false;
+            return (
+              <li key={table.gameId} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm">
+                <span className="text-slate-400">
+                  {table.players.map((p) => shortenAddress(p.address)).join(" vs ")}
+                </span>
+                <span className="font-medium">{formatStake(table.stake, table.stakeToken)}</span>
+                <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-slate-300">{table.state}</span>
+                {isMine && (
+                  <Link
+                    href={`/games/backgammon-onchain/game/${table.gameId}`}
+                    className="rounded-full bg-indigo-500 px-4 py-1.5 text-xs font-medium text-white hover:bg-indigo-400"
+                  >
+                    Resume
+                  </Link>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </section>
     </div>
