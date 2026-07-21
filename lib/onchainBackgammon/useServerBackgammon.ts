@@ -18,17 +18,20 @@ export function useServerBackgammon(params: {
   const [state, setState] = React.useState<GameState | null>(null);
   const [selected, setSelected] = React.useState<MoveSource | null>(null);
   const [message, setMessage] = React.useState<string | null>(null);
+  const [turnDeadline, setTurnDeadline] = React.useState<number | null>(null);
 
   React.useEffect(() => {
     return onMessage((serverMessage) => {
       switch (serverMessage.type) {
         case "roomJoined":
           if (serverMessage.gameId === gameId && serverMessage.state) setState(serverMessage.state);
+          if (serverMessage.gameId === gameId) setTurnDeadline(serverMessage.turnDeadline);
           break;
         case "rolled":
           setState((prev) =>
             prev ? { ...prev, turn: serverMessage.turn, dice: serverMessage.dice, lastRoll: serverMessage.dice, hasRolled: true } : prev,
           );
+          setTurnDeadline(serverMessage.turnDeadline);
           setMessage(null);
           playSound("roll");
           vibrate("tap");
@@ -36,6 +39,7 @@ export function useServerBackgammon(params: {
         case "moved":
           setState(serverMessage.state);
           setSelected(null);
+          if (serverMessage.turnDeadline !== undefined) setTurnDeadline(serverMessage.turnDeadline);
           if (serverMessage.move.to === null) {
             playSound("bearOff");
             vibrate("success");
@@ -54,11 +58,16 @@ export function useServerBackgammon(params: {
           break;
         case "turnEnded":
           setState((prev) => (prev ? { ...prev, turn: serverMessage.turn, dice: [], hasRolled: false } : prev));
+          setTurnDeadline(serverMessage.turnDeadline);
           setMessage(null);
           setSelected(null);
           break;
+        case "turnDeadline":
+          setTurnDeadline(serverMessage.turnDeadline);
+          break;
         case "gameOver":
           setState((prev) => (prev ? { ...prev, winner: serverMessage.winner } : prev));
+          setTurnDeadline(null);
           playSound("win");
           vibrate("success");
           break;
@@ -112,6 +121,7 @@ export function useServerBackgammon(params: {
     isMyTurn,
     canRoll,
     isInteractive,
+    turnDeadline,
     roll,
     selectSource,
     moveTo,

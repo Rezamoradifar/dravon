@@ -8,11 +8,12 @@ import type { GameState, Move } from "./backgammonTypes";
 export type ServerMessage =
   | { type: "matched"; opponentAddress: string; opponentWalletId: string; amICreator: boolean; stake: string }
   | { type: "gameCreated"; onChainGameId: string }
-  | { type: "roomJoined"; gameId: string; color: "white" | "black" | null; state: GameState | null }
-  | { type: "rolled"; turn: "white" | "black"; dice: number[]; turnNumber: number }
-  | { type: "moved"; move: Move; wasHit: boolean; state: GameState }
+  | { type: "roomJoined"; gameId: string; color: "white" | "black" | null; state: GameState | null; turnDeadline: number | null }
+  | { type: "rolled"; turn: "white" | "black"; dice: number[]; turnNumber: number; turnDeadline: number | null }
+  | { type: "moved"; move: Move; wasHit: boolean; state: GameState; turnDeadline?: number | null }
   | { type: "noLegalMoves"; turn: "white" | "black" }
-  | { type: "turnEnded"; turn: "white" | "black" }
+  | { type: "turnEnded"; turn: "white" | "black"; turnDeadline: number | null }
+  | { type: "turnDeadline"; turnDeadline: number | null }
   | { type: "gameOver"; winner: "white" | "black" };
 
 type ClientMessage =

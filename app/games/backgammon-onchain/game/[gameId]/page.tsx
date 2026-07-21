@@ -11,6 +11,7 @@ import { apiFetch } from "@/lib/onchainBackgammon/api";
 import { GAME_MANAGER_ADDRESS } from "@/contracts/onchainBackgammon/addresses";
 import { Board } from "@/components/onchainBackgammon/board";
 import { DiceTray } from "@/components/onchainBackgammon/dice";
+import { TurnCountdown } from "@/components/onchainBackgammon/turn-countdown";
 import gameManagerAbi from "@/contracts/onchainBackgammon/abi/GameManager.json";
 import type { Player } from "@/lib/onchainBackgammon/backgammonTypes";
 
@@ -138,6 +139,7 @@ export default function GamePage() {
           )}
         </div>
         <div className="flex items-center gap-3">
+          {!game.state.winner && <TurnCountdown deadline={game.turnDeadline} isMyTurn={game.isMyTurn} />}
           <DiceTray lastRoll={game.state.lastRoll} remaining={game.state.dice} />
           <button
             onClick={game.roll}
