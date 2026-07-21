@@ -39,3 +39,20 @@ export interface GameHistoryEntry {
   winner: string | null;
   completedAt: string | null;
 }
+
+export interface OpenTable {
+  gameId: string;
+  stake: string;
+  stakeToken: string;
+  creator: string | null;
+  createdAt: string;
+}
+
+export interface ActiveTable {
+  gameId: string;
+  state: string;
+  stake: string;
+  stakeToken: string;
+  players: { address: string; color: "WHITE" | "BLACK" }[];
+  startedAt: string | null;
+}
