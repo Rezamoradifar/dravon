@@ -30,6 +30,23 @@ export interface LeaderboardRow {
   gamesPlayed: number;
   currentStreak: number;
   bestStreak: number;
+  level: number;
+}
+
+export type CosmeticSlot = "DICE" | "BOARD";
+
+export interface ShopCatalogItem {
+  id: string;
+  slot: CosmeticSlot;
+  name: string;
+  priceBnb: string;
+  priceUsdt: string;
+  colorHex: string;
+}
+
+export interface ShopMe {
+  owned: string[];
+  equipped: { dice: string; board: string };
 }
 
 export interface GameHistoryEntry {

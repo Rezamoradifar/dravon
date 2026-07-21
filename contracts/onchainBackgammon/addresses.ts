@@ -25,6 +25,14 @@ export const PLAYER_REGISTRY_ADDRESS = (process.env.NEXT_PUBLIC_ONCHAIN_PLAYER_R
 export const MOCK_USDT_ADDRESS = (process.env.NEXT_PUBLIC_ONCHAIN_MOCK_USDT_ADDRESS ??
   "0xc097fe10fcd9bf1728390cf742e2a835900929b9") as Address;
 
+/** Where cosmetics-shop payments land - the backend independently verifies
+ * every purchase against this same address before granting the item (see
+ * backend/src/routes/shop.ts), so this must match its SHOP_TREASURY_ADDRESS/
+ * OWNER_FEE_WALLET. Defaults to GameManager's own owner fee wallet (see
+ * DEPLOYMENT.md) since there's no reason to stand up a second treasury. */
+export const SHOP_TREASURY_ADDRESS = (process.env.NEXT_PUBLIC_ONCHAIN_SHOP_TREASURY_ADDRESS ??
+  "0x63c5B98AEfd69658B652d5F35FFda3C6c06847E3") as Address;
+
 /** The already-deployed backend on Railway - auth, matchmaking/live-game
  * relay, and the contract event indexer all live there, not in dravon. */
 export const ONCHAIN_BACKGAMMON_API_URL =

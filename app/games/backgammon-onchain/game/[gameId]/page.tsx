@@ -7,11 +7,13 @@ import { useAccount, usePublicClient, useWriteContract } from "wagmi";
 import { useAuth } from "@/lib/onchainBackgammon/auth";
 import { useGameSocket } from "@/lib/onchainBackgammon/useGameSocket";
 import { useServerBackgammon } from "@/lib/onchainBackgammon/useServerBackgammon";
-import { apiFetch } from "@/lib/onchainBackgammon/api";
+import { useMyEquippedSkins } from "@/lib/onchainBackgammon/useMyEquippedSkins";
+import { apiFetch, type LeaderboardRow } from "@/lib/onchainBackgammon/api";
 import { GAME_MANAGER_ADDRESS } from "@/contracts/onchainBackgammon/addresses";
 import { Board } from "@/components/onchainBackgammon/board";
 import { DiceTray } from "@/components/onchainBackgammon/dice";
 import { TurnCountdown } from "@/components/onchainBackgammon/turn-countdown";
+import { LevelBadge } from "@/components/onchainBackgammon/level-badge";
 import gameManagerAbi from "@/contracts/onchainBackgammon/abi/GameManager.json";
 import type { Player } from "@/lib/onchainBackgammon/backgammonTypes";
 
@@ -30,11 +32,30 @@ export default function GamePage() {
   const { onMessage, send } = useGameSocket(token);
   const publicClient = usePublicClient();
   const { writeContractAsync } = useWriteContract();
+  const { diceColorHex, boardColorHex } = useMyEquippedSkins(token);
 
   const [lookup, setLookup] = React.useState<GameLookup | null>(null);
   const [myColor, setMyColor] = React.useState<Player | null>(null);
   const [isStarting, setIsStarting] = React.useState(false);
+  const [levels, setLevels] = React.useState<Record<string, number>>({});
   const joinedRoomRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (!lookup) return;
+    let cancelled = false;
+    Promise.all(
+      lookup.players.map((p) =>
+        apiFetch<LeaderboardRow>(`/leaderboard/${p.address}`).then((row) => [p.address.toLowerCase(), row.level] as const),
+      ),
+    )
+      .then((pairs) => {
+        if (!cancelled) setLevels(Object.fromEntries(pairs));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [lookup]);
 
   // Poll the backend until the indexer has seen this game (createGame/joinGame confirmed on-chain).
   React.useEffect(() => {
@@ -125,7 +146,7 @@ export default function GamePage() {
     <div className="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-8">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 p-4">
         <div>
-          <p className="text-sm font-medium">
+          <p className="flex items-center gap-2 text-sm font-medium">
             {game.state.winner
               ? game.state.winner === myColor
                 ? "You win!"
@@ -133,6 +154,12 @@ export default function GamePage() {
               : game.isMyTurn
                 ? "Your turn"
                 : `Opponent's turn${opponent ? ` (${opponent.address.slice(0, 6)}...)` : ""}`}
+            {game.isMyTurn && address && levels[address.toLowerCase()] !== undefined && (
+              <LevelBadge level={levels[address.toLowerCase()]} />
+            )}
+            {!game.isMyTurn && opponent && levels[opponent.address.toLowerCase()] !== undefined && (
+              <LevelBadge level={levels[opponent.address.toLowerCase()]} />
+            )}
           </p>
           {game.message === "noMoves" && !game.state.winner && (
             <p className="text-xs text-red-400">No legal moves - turn skipped</p>
@@ -140,7 +167,7 @@ export default function GamePage() {
         </div>
         <div className="flex items-center gap-3">
           {!game.state.winner && <TurnCountdown deadline={game.turnDeadline} isMyTurn={game.isMyTurn} />}
-          <DiceTray lastRoll={game.state.lastRoll} remaining={game.state.dice} />
+          <DiceTray lastRoll={game.state.lastRoll} remaining={game.state.dice} colorHex={diceColorHex} />
           <button
             onClick={game.roll}
             disabled={!game.canRoll}
@@ -161,6 +188,7 @@ export default function GamePage() {
         onSelectBar={() => game.selectSource({ type: "bar" })}
         onMoveToPoint={(point) => game.moveTo(point)}
         onBearOff={() => game.moveTo(null)}
+        colorHex={boardColorHex}
       />
 
       <p className="text-center text-xs text-slate-500">

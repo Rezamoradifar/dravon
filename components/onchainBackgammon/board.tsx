@@ -10,6 +10,8 @@ const TOP_RIGHT = [19, 20, 21, 22, 23, 24];
 const BOTTOM_LEFT = [12, 11, 10, 9, 8, 7];
 const BOTTOM_RIGHT = [6, 5, 4, 3, 2, 1];
 
+const DEFAULT_BOARD_COLOR = "#2b1d12";
+
 export function Board({
   state,
   selected,
@@ -20,6 +22,7 @@ export function Board({
   onSelectBar,
   onMoveToPoint,
   onBearOff,
+  colorHex = DEFAULT_BOARD_COLOR,
 }: {
   state: GameState;
   selected: MoveSource | null;
@@ -30,6 +33,7 @@ export function Board({
   onSelectBar: () => void;
   onMoveToPoint: (point: number) => void;
   onBearOff: () => void;
+  colorHex?: string;
 }) {
   const selectablePoints = new Set(
     legalMoves.filter((m) => m.source.type === "point").map((m) => (m.source as { point: number }).point),
@@ -69,8 +73,8 @@ export function Board({
   return (
     <div className="w-full landscape:flex landscape:justify-center">
       <div
-        className="mx-auto flex w-full flex-col gap-2 rounded-xl border border-white/10 bg-[#2b1d12] p-3 shadow-inner landscape:h-[min(78vh,560px)] landscape:w-auto"
-        style={{ aspectRatio: "16 / 10" }}
+        className="mx-auto flex w-full flex-col gap-2 rounded-xl border border-white/10 p-3 shadow-inner landscape:h-[min(78vh,560px)] landscape:w-auto"
+        style={{ aspectRatio: "16 / 10", backgroundColor: colorHex }}
       >
         <div className="flex flex-1 gap-1">
           <div className="flex flex-1 gap-1">{TOP_LEFT.map((p) => renderPoint(p, "down"))}</div>
