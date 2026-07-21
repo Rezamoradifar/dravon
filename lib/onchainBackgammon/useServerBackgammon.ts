@@ -5,6 +5,8 @@ import * as React from "react";
 import { getLegalMoves } from "./legalMoves";
 import type { GameState, MoveSource, Player } from "./backgammonTypes";
 import type { ServerMessage } from "./useGameSocket";
+import { playSound } from "@/lib/backgammon/sound";
+import { vibrate } from "@/lib/haptics";
 
 export function useServerBackgammon(params: {
   gameId: string;
@@ -28,13 +30,27 @@ export function useServerBackgammon(params: {
             prev ? { ...prev, turn: serverMessage.turn, dice: serverMessage.dice, lastRoll: serverMessage.dice, hasRolled: true } : prev,
           );
           setMessage(null);
+          playSound("roll");
+          vibrate("tap");
           break;
         case "moved":
           setState(serverMessage.state);
           setSelected(null);
+          if (serverMessage.move.to === null) {
+            playSound("bearOff");
+            vibrate("success");
+          } else if (serverMessage.wasHit) {
+            playSound("hit");
+            vibrate("warning");
+          } else {
+            playSound("move");
+            vibrate("tap");
+          }
           break;
         case "noLegalMoves":
           setMessage("noMoves");
+          playSound("noMoves");
+          vibrate("warning");
           break;
         case "turnEnded":
           setState((prev) => (prev ? { ...prev, turn: serverMessage.turn, dice: [], hasRolled: false } : prev));
@@ -43,6 +59,8 @@ export function useServerBackgammon(params: {
           break;
         case "gameOver":
           setState((prev) => (prev ? { ...prev, winner: serverMessage.winner } : prev));
+          playSound("win");
+          vibrate("success");
           break;
       }
     });

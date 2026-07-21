@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAccount, usePublicClient, useWriteContract } from "wagmi";
 import { decodeEventLog, parseEther, formatEther, formatUnits, parseUnits } from "viem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Coins, DollarSign, Loader2, Plus, Users } from "lucide-react";
+import { Coins, DollarSign, Dice5, Loader2, Plus, Users } from "lucide-react";
 
 import { useAuth } from "@/lib/onchainBackgammon/auth";
 import { apiFetch, type OpenTable, type ActiveTable } from "@/lib/onchainBackgammon/api";
@@ -307,6 +307,7 @@ export default function LobbyPage() {
                 key={table.gameId}
                 className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm"
               >
+                <Dice5 className="h-4 w-4 shrink-0 animate-bounce text-emerald-400/70" />
                 <span className="font-mono text-slate-300">{table.creator ? shortenAddress(table.creator) : "?"}</span>
                 <span className="font-medium">{formatStake(table.stake, table.stakeToken)}</span>
                 {isOwn ? (
@@ -347,6 +348,7 @@ export default function LobbyPage() {
             const isMine = address ? table.players.some((p) => p.address.toLowerCase() === address.toLowerCase()) : false;
             return (
               <li key={table.gameId} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm">
+                <Dice5 className="h-4 w-4 shrink-0 animate-spin text-red-400/70 [animation-duration:2s]" />
                 <span className="text-slate-400">
                   {table.players.map((p) => shortenAddress(p.address)).join(" vs ")}
                 </span>

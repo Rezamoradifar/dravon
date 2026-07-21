@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Dices, Trophy, History, Users, Settings, BookOpenText } from "lucide-react";
+import { Dices, Trophy, History, Users, Settings, BookOpenText, Vault } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/games/backgammon-onchain/lobby", label: "Play", icon: Dices },
   { href: "/games/backgammon-onchain/how-to-play", label: "How to play", icon: BookOpenText },
   { href: "/games/backgammon-onchain/leaderboard", label: "Leaderboard", icon: Trophy },
+  { href: "/games/backgammon-onchain/revenue", label: "Revenue plan", icon: Vault },
   { href: "/games/backgammon-onchain/history", label: "History", icon: History },
   { href: "/games/backgammon-onchain/referral", label: "Referral", icon: Users },
   { href: "/games/backgammon-onchain/settings", label: "Settings", icon: Settings },

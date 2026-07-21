@@ -35,6 +35,8 @@ export interface LeaderboardRow {
 export interface GameHistoryEntry {
   gameId: string;
   state: string;
+  stake: string;
+  stakeToken: string;
   players: { address: string; color: "WHITE" | "BLACK" }[];
   winner: string | null;
   completedAt: string | null;
