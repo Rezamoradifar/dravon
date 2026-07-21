@@ -11,7 +11,7 @@ import type { Address } from "viem";
 export const ONCHAIN_BACKGAMMON_CHAIN_ID = bscTestnet.id;
 
 export const GAME_MANAGER_ADDRESS = (process.env.NEXT_PUBLIC_ONCHAIN_GAME_MANAGER_ADDRESS ??
-  "0xfdb66aa580ed444f5295242132ad1c2b3d2cf72b") as Address;
+  "0x2d2c6450ffae4f76d90215ae5a3d3e8fb5e1ce18") as Address;
 
 export const PLAYER_REGISTRY_ADDRESS = (process.env.NEXT_PUBLIC_ONCHAIN_PLAYER_REGISTRY_ADDRESS ??
   "0x73d9b06f77521aa0ff5e04c3593bc2ba821a1868") as Address;
