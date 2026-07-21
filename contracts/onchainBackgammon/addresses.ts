@@ -11,10 +11,19 @@ import type { Address } from "viem";
 export const ONCHAIN_BACKGAMMON_CHAIN_ID = bscTestnet.id;
 
 export const GAME_MANAGER_ADDRESS = (process.env.NEXT_PUBLIC_ONCHAIN_GAME_MANAGER_ADDRESS ??
-  "0xeb4c47679557ccd57c0a985cb5785adf61aa7633") as Address;
+  "0xfdb66aa580ed444f5295242132ad1c2b3d2cf72b") as Address;
 
 export const PLAYER_REGISTRY_ADDRESS = (process.env.NEXT_PUBLIC_ONCHAIN_PLAYER_REGISTRY_ADDRESS ??
-  "0xcab3b98f2853e7c4f79a38eac6a90732eecc9a09") as Address;
+  "0x73d9b06f77521aa0ff5e04c3593bc2ba821a1868") as Address;
+
+/** A 6-decimal ERC-20 test token standing in for USDT on BSC Testnet (no
+ * canonical testnet Tether deployment exists) - the only token currently
+ * allowlisted as a GameManager stake option besides native BNB. Has a public
+ * `faucet(uint256 wholeTokens)` anyone can call to mint themselves test
+ * funds. Never use this address on mainnet - point at the real USDT
+ * contract for the target chain there instead. */
+export const MOCK_USDT_ADDRESS = (process.env.NEXT_PUBLIC_ONCHAIN_MOCK_USDT_ADDRESS ??
+  "0xc097fe10fcd9bf1728390cf742e2a835900929b9") as Address;
 
 /** The already-deployed backend on Railway - auth, matchmaking/live-game
  * relay, and the contract event indexer all live there, not in dravon. */
