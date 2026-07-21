@@ -69,6 +69,8 @@ const config: Config = {
           "sans-serif",
         ],
         vazirmatn: ["var(--font-vazirmatn)", "ui-sans-serif", "system-ui", "sans-serif"],
+        // Scoped to app/games/backgammon-onchain - see that subtree's layout.tsx.
+        gaming: ["var(--font-gaming)", "ui-sans-serif", "system-ui", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {
