@@ -220,12 +220,6 @@ export const en = {
   treeNode: {
     emptySlot: "Empty slot",
   },
-  teamBreakdown: {
-    title: "My Team",
-    left: "Left team",
-    right: "Right team",
-    hint: "Real member counts from your binary tree, computed client-side from getUserTree.",
-  },
   nodeDetailPanel: {
     title: "Node Details",
     close: "Close",

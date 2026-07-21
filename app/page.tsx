@@ -1,7 +1,5 @@
 "use client";
 
-import { useAccount } from "wagmi";
-
 import { PageHeader } from "@/components/shared/page-header";
 import { NetworkBanner } from "@/components/shared/network-banner";
 import { PriceTicker } from "@/components/shared/price-ticker";
@@ -12,11 +10,9 @@ import { RoundOverviewCards } from "@/components/dashboard/round-overview-cards"
 import { NetworkGrowthChart } from "@/components/dashboard/network-growth-chart";
 import { ActivityPanel } from "@/components/dashboard/activity-panel";
 import { NetworkActivityFeed } from "@/components/dashboard/network-activity-feed";
-import { TeamBreakdownCard } from "@/components/shared/team-breakdown-card";
 import { useTranslation } from "@/contexts/language-context";
 
 export default function DashboardPage() {
-  const { address } = useAccount();
   const { t } = useTranslation();
 
   return (
@@ -33,7 +29,6 @@ export default function DashboardPage() {
         </div>
         <div className="space-y-4">
           <WalletInfoCard />
-          <TeamBreakdownCard address={address} />
         </div>
       </div>
 

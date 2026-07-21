@@ -222,12 +222,6 @@ export const fa: Dictionary = {
   treeNode: {
     emptySlot: "جایگاه خالی",
   },
-  teamBreakdown: {
-    title: "تیم من",
-    left: "تیم چپ",
-    right: "تیم راست",
-    hint: "تعداد واقعی اعضا از درخت باینری شما، محاسبه‌شده در سمت کلاینت از getUserTree.",
-  },
   nodeDetailPanel: {
     title: "جزئیات گره",
     close: "بستن",
