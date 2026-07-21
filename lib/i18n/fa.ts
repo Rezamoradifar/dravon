@@ -490,7 +490,6 @@ export const fa: Dictionary = {
     onchainBackgammonName: "تخته‌نرد آنچین",
     onchainBackgammonTagline: "بازی واقعی ۱ در برابر ۱ با کیف‌پول خودت روی BNB Chain. شرط‌بندی اختیاریه.",
     playOnChain: "بازی آنچین",
-    onchainComingSoon: "به‌زودی روی تست‌نت",
   },
   backgammon: {
     title: "تخته‌نرد",

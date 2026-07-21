@@ -9,8 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/contexts/language-context";
 
-const ONCHAIN_BACKGAMMON_URL = process.env.NEXT_PUBLIC_ONCHAIN_BACKGAMMON_URL;
-
 export default function GamesPage() {
   const { t } = useTranslation();
 
@@ -50,17 +48,9 @@ export default function GamesPage() {
               </div>
             </CardHeader>
             <CardContent className="mt-auto">
-              {ONCHAIN_BACKGAMMON_URL ? (
-                <Button asChild className="w-full">
-                  <a href={ONCHAIN_BACKGAMMON_URL} target="_blank" rel="noopener noreferrer">
-                    {t("gamesPage.playOnChain")}
-                  </a>
-                </Button>
-              ) : (
-                <Button className="w-full" disabled>
-                  {t("gamesPage.onchainComingSoon")}
-                </Button>
-              )}
+              <Button asChild className="w-full">
+                <Link href="/games/backgammon-onchain">{t("gamesPage.playOnChain")}</Link>
+              </Button>
             </CardContent>
           </Card>
         </motion.div>

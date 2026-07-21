@@ -3,6 +3,7 @@ import { http, fallback } from "wagmi";
 import {
   mainnet,
   bsc,
+  bscTestnet,
   polygon,
   arbitrum,
   optimism,
@@ -12,7 +13,10 @@ import {
 import { CHAIN_ID } from "@/contracts/addresses";
 import { RPC_ENDPOINTS } from "@/lib/rpcEndpoints";
 
-const SUPPORTED_CHAINS = [mainnet, bsc, polygon, arbitrum, optimism, base] as const;
+// bscTestnet is here only for the on-chain Backgammon feature
+// (contracts/onchainBackgammon/addresses.ts) - the rest of the dashboard
+// only ever targets mainnet chains via CHAIN_ID above.
+const SUPPORTED_CHAINS = [mainnet, bsc, bscTestnet, polygon, arbitrum, optimism, base] as const;
 
 function orderByPrimary(chains: readonly Chain[], primaryId: number) {
   const primary = chains.find((chain) => chain.id === primaryId);

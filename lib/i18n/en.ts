@@ -488,7 +488,6 @@ export const en = {
     onchainBackgammonName: "On-Chain Backgammon",
     onchainBackgammonTagline: "Real 1v1 matches with your own wallet on BNB Chain. Stakes are optional.",
     playOnChain: "Play on-chain",
-    onchainComingSoon: "Live on testnet soon",
   },
   backgammon: {
     title: "Backgammon",
