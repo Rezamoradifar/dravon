@@ -141,9 +141,12 @@ function Section({
       </h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
         {items.map((item) => {
-          const owned = me?.owned.includes(item.id) ?? false;
-          const equipped = item.slot === "DICE" ? me?.equipped.dice === item.id : me?.equipped.board === item.id;
           const isFree = item.priceBnb === "0";
+          // Free defaults are always owned client-side too - never wait on
+          // /shop/me (or worse, fall back to showing a Buy button that
+          // asks for a signed transaction) for something that costs nothing.
+          const owned = isFree || (me?.owned.includes(item.id) ?? false);
+          const equipped = item.slot === "DICE" ? me?.equipped.dice === item.id : me?.equipped.board === item.id;
           const isBusy = busyItemId === item.id;
 
           return (
