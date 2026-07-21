@@ -37,29 +37,63 @@ type Listener = (message: ServerMessage) => void;
 export function useGameSocket(token: string | null) {
   const socketRef = React.useRef<WebSocket | null>(null);
   const listenersRef = React.useRef<Set<Listener>>(new Set());
+  // Messages sent before the handshake finishes (e.g. clicking "Find a
+  // match" right after signing in, before onopen fires) used to be dropped
+  // silently - send() checked readyState and simply did nothing, while the
+  // caller had no way to know. Queuing here and flushing on open means a
+  // send() call can never be lost to that race, regardless of how fast the
+  // caller sends after connecting.
+  const pendingRef = React.useRef<ClientMessage[]>([]);
   const [isOpen, setIsOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (!token) return;
+    const authToken = token;
 
-    const socket = new WebSocket(`${WS_BASE_URL}/ws?token=${encodeURIComponent(token)}`);
-    socketRef.current = socket;
+    let stopped = false;
+    let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
 
-    socket.onopen = () => setIsOpen(true);
-    socket.onclose = () => setIsOpen(false);
-    socket.onmessage = (event) => {
-      let message: ServerMessage;
-      try {
-        message = JSON.parse(event.data) as ServerMessage;
-      } catch {
-        return;
-      }
-      for (const listener of listenersRef.current) listener(message);
-    };
+    function connect() {
+      const socket = new WebSocket(`${WS_BASE_URL}/ws?token=${encodeURIComponent(authToken)}`);
+      socketRef.current = socket;
+
+      socket.onopen = () => {
+        setIsOpen(true);
+        for (const message of pendingRef.current) socket.send(JSON.stringify(message));
+        pendingRef.current = [];
+      };
+      // A dropped connection (network blip, server restart) used to just
+      // sit closed forever - nothing ever reconnected it, so a player
+      // mid-queue or mid-game would silently stop hearing from the server
+      // with no way back short of a full page reload. Reconnecting here
+      // (unless this effect is tearing down, e.g. on sign-out) at least
+      // restores the transport; server-side queue state still needs the
+      // caller to re-send "queue" once reconnected, since the backend drops
+      // a disconnected socket's queue entry immediately (see matchmaker.ts).
+      socket.onclose = () => {
+        setIsOpen(false);
+        if (stopped) return;
+        reconnectTimer = setTimeout(connect, 1500);
+      };
+      socket.onmessage = (event) => {
+        let message: ServerMessage;
+        try {
+          message = JSON.parse(event.data) as ServerMessage;
+        } catch {
+          return;
+        }
+        for (const listener of listenersRef.current) listener(message);
+      };
+    }
+
+    connect();
 
     return () => {
-      socket.close();
+      stopped = true;
+      clearTimeout(reconnectTimer);
+      socketRef.current?.close();
       socketRef.current = null;
+      pendingRef.current = [];
     };
   }, [token]);
 
@@ -73,6 +107,8 @@ export function useGameSocket(token: string | null) {
   const send = React.useCallback((message: ClientMessage) => {
     if (socketRef.current?.readyState === WebSocket.OPEN) {
       socketRef.current.send(JSON.stringify(message));
+    } else {
+      pendingRef.current.push(message);
     }
   }, []);
 

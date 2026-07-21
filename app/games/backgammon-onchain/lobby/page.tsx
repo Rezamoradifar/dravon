@@ -17,7 +17,7 @@ type Status = "idle" | "queued" | "matched" | "creating" | "waitingForOpponentCr
 export default function LobbyPage() {
   const { isConnected } = useAccount();
   const { isAuthenticated, isSigningIn, login, token } = useAuth();
-  const { onMessage, send } = useGameSocket(token);
+  const { isOpen: isSocketOpen, onMessage, send } = useGameSocket(token);
   const publicClient = usePublicClient();
   const { writeContractAsync } = useWriteContract();
   const router = useRouter();
@@ -29,6 +29,18 @@ export default function LobbyPage() {
   const [matchedStake, setMatchedStake] = React.useState<bigint>(BigInt(0));
   const [onChainGameId, setOnChainGameId] = React.useState<string | null>(null);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+  const queuedStakeRef = React.useRef<string | null>(null);
+
+  // The backend drops a socket's queue entry the instant its connection
+  // closes (see matchmaker.ts) - if useGameSocket's own reconnect logic
+  // brings the transport back while we're still waiting, re-announce
+  // ourselves so a dropped connection doesn't strand us out of the queue
+  // with the UI still showing "Waiting for an opponent..."
+  React.useEffect(() => {
+    if (isSocketOpen && status === "queued" && queuedStakeRef.current !== null) {
+      send({ type: "queue", stake: queuedStakeRef.current });
+    }
+  }, [isSocketOpen, status, send]);
 
   React.useEffect(() => {
     return onMessage((message) => {
@@ -115,6 +127,7 @@ export default function LobbyPage() {
       setStatus("error");
       return;
     }
+    queuedStakeRef.current = stakeWei.toString();
     send({ type: "queue", stake: stakeWei.toString() });
     setStatus("queued");
   }
@@ -156,13 +169,24 @@ export default function LobbyPage() {
             />
             <p className="text-xs text-slate-500">You&apos;ll only be matched with someone queuing the same stake.</p>
           </div>
-          <button onClick={findMatch} className="rounded-full bg-indigo-500 px-8 py-3 font-medium text-white hover:bg-indigo-400">
-            Find a match
+          <button
+            onClick={findMatch}
+            disabled={!isSocketOpen}
+            className="rounded-full bg-indigo-500 px-8 py-3 font-medium text-white disabled:opacity-50 hover:enabled:bg-indigo-400"
+          >
+            {isSocketOpen ? "Find a match" : "Connecting..."}
           </button>
         </div>
       )}
 
-      {status === "queued" && <p className="text-slate-300">Waiting for an opponent...</p>}
+      {status === "queued" && (
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-slate-300">Waiting for an opponent...</p>
+          {!isSocketOpen && (
+            <p className="text-xs text-amber-400">Connection dropped - reconnecting, you&apos;ll stay in queue once it&apos;s back.</p>
+          )}
+        </div>
+      )}
 
       {status === "matched" && opponentAddress && (
         <p className="text-slate-300">
