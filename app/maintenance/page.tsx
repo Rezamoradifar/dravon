@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useAccount } from "wagmi";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { toast } from "sonner";
 
 import { useTranslation } from "@/contexts/language-context";
@@ -10,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { VoteShutdownCard } from "@/components/forms/vote-shutdown-card";
 
 export default function MaintenancePage() {
   const { t } = useTranslation();
@@ -45,12 +47,18 @@ export default function MaintenancePage() {
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-10">
       <div className="w-full max-w-lg space-y-6">
+        <div className="flex justify-center">
+          <ConnectButton showBalance={false} chainStatus="icon" accountStatus="address" />
+        </div>
+
         <div className="text-center">
           <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{t("maintenance.title")}</h1>
           <p className="mt-3 text-sm text-muted-foreground md:text-base">
             {t("maintenance.description")}
           </p>
         </div>
+
+        <VoteShutdownCard />
 
         <Card className="border-border/60 bg-card/60 backdrop-blur-md">
           <CardHeader>
