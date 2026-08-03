@@ -58,6 +58,9 @@ export const en = {
     roundEnteredUSD: "Round Entered USD",
     totalEnteredUSD: "Total Entered USD",
     nextBinaryPay: "Next Binary Pay",
+    stageLabel: "Round Stage",
+    stage: "Stage {stage} · {label}",
+    stageHint: "This round's stage, from getMainBulkInfo - fixed for the whole round, unlike the live factory.stage().",
     loadError: "Failed to load round statistics.",
   },
   dashboardCards: {

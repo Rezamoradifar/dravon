@@ -60,6 +60,9 @@ export const fa: Dictionary = {
     roundEnteredUSD: "ورودی راند (دلار)",
     totalEnteredUSD: "کل ورودی (دلار)",
     nextBinaryPay: "پرداخت باینری بعدی",
+    stageLabel: "مرحله راند",
+    stage: "مرحله {stage} · {label}",
+    stageHint: "مرحله این راند، از getMainBulkInfo - برای کل راند ثابت است، برخلاف factory.stage() که لحظه‌ای است.",
     loadError: "بارگذاری آمار راند ناموفق بود.",
   },
   dashboardCards: {

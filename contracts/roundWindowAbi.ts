@@ -6,9 +6,14 @@ export const roundWindowAbi = [
   },
   { inputs: [], name: "AlreadyVoted", type: "error" },
   { inputs: [], name: "EmergencyShutdown", type: "error" },
+  // Both new in v2: FlashRequired fires when a user has used both renewals
+  // allowed in the current cycle and must flash before topping up again -
+  // temporary and self-clearing, distinct from MaxReached (balance capped).
+  { inputs: [], name: "FlashRequired", type: "error" },
   { inputs: [], name: "InsufficientPayment", type: "error" },
   { inputs: [], name: "InvalidAddress", type: "error" },
   { inputs: [], name: "InvalidStartBox", type: "error" },
+  { inputs: [], name: "MaxReached", type: "error" },
   {
     inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     name: "MinimumNodesRequired",
@@ -121,16 +126,6 @@ export const roundWindowAbi = [
       { internalType: "string[]", name: "dirFlash", type: "string[]" },
       { internalType: "string[]", name: "binaryFlash", type: "string[]" },
     ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      { internalType: "address", name: "addr", type: "address" },
-      { internalType: "uint256", name: "len", type: "uint256" },
-    ],
-    name: "getUserTree",
-    outputs: [{ internalType: "address[]", name: "addrList", type: "address[]" }],
     stateMutability: "view",
     type: "function",
   },

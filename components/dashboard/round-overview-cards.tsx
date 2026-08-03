@@ -1,6 +1,6 @@
 "use client";
 
-import { Users, Gem, Coins, TrendingUp, Landmark, Zap, Layers } from "lucide-react";
+import { Users, Gem, Coins, TrendingUp, Landmark, Zap, Layers, ShieldCheck } from "lucide-react";
 
 import { StatCard } from "@/components/shared/stat-card";
 import { StatGridSkeleton } from "@/components/shared/stat-grid-skeleton";
@@ -13,8 +13,13 @@ export function RoundOverviewCards({ roundsAgo = 0 }: { roundsAgo?: number }) {
   const { info, isLoading, isError } = useMainBulkInfo(roundsAgo);
   const { t } = useTranslation();
 
-  if (isLoading) return <StatGridSkeleton count={7} />;
+  if (isLoading) return <StatGridSkeleton count={8} />;
   if (isError || !info) return <p className="text-sm text-destructive">{t("roundOverview.loadError")}</p>;
+
+  // stage_ comes from this round's own getMainBulkInfo, so it labels the round
+  // being viewed (roundsAgo) correctly even when it differs from today's live
+  // factory.stage() - a stage never changes mid-round.
+  const stage = info.stage >= 1 && info.stage <= 4 ? info.stage : 4;
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -50,6 +55,13 @@ export function RoundOverviewCards({ roundsAgo = 0 }: { roundsAgo?: number }) {
         label={t("roundOverview.nextBinaryPay")}
         icon={Zap}
         value={formatContractNumericString(info.nextBinaryPay)}
+      />
+      <StatCard
+        index={7}
+        label={t("roundOverview.stageLabel")}
+        icon={ShieldCheck}
+        value={t("roundOverview.stage", { stage: String(stage), label: t(`stageIndicator.stage${stage}.label`) })}
+        hint={t("roundOverview.stageHint")}
       />
     </div>
   );

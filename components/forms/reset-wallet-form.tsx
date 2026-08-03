@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { isAddress, type Address } from "viem";
+import { isAddress, zeroAddress, type Address } from "viem";
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -26,7 +26,9 @@ export function ResetWalletForm() {
     hash,
   } = useContractWrite("resetWalletAddress");
 
-  const isValid = isAddress(newAddr);
+  // The contract now hard-reverts with InvalidAddress on the zero address -
+  // catch it client-side so the error is a form hint, not a failed tx.
+  const isValid = isAddress(newAddr) && newAddr.toLowerCase() !== zeroAddress;
 
   async function handleConfirm() {
     if (!isValid) return;

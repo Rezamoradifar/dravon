@@ -12,6 +12,18 @@ export const factoryAbi = [
     type: "function",
   },
   {
+    // Moved here from the Window contract in SmartContract v2 - it no longer
+    // needs an open window, so callers don't need a window address at all.
+    inputs: [
+      { internalType: "address", name: "addr", type: "address" },
+      { internalType: "uint256", name: "len", type: "uint256" },
+    ],
+    name: "getUserTree",
+    outputs: [{ internalType: "address[]", name: "addrList", type: "address[]" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     anonymous: false,
     inputs: [
       { indexed: true, internalType: "address", name: "oldWindow", type: "address" },
