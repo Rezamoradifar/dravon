@@ -46,7 +46,7 @@ export const viewport: Viewport = {
 // While true, middleware.ts rewrites every route to /maintenance, so the
 // normal Navbar/Sidebar chrome (which only links to now-unreachable pages)
 // is skipped in favor of just rendering that page directly.
-const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE !== "false";
+const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === "true";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

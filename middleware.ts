@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Temporary full-site lockdown while a major contract-migration update is
-// prepared. Everything except the maintenance page itself (and the API route
-// it posts feedback to) gets transparently served the maintenance page
-// instead, with the original URL left untouched in the address bar. Flip
-// MAINTENANCE_MODE=false (see .env.example) and redeploy to lift it - no
-// code changes needed.
-const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE !== "false";
+// Full-site lockdown, used while a major contract-migration update is being
+// prepared. Off by default now that the migration (stage controller + weekly
+// window) has shipped - everything except the maintenance page itself (and
+// the API route it posts feedback to) would otherwise get transparently
+// served the maintenance page instead, with the original URL left untouched
+// in the address bar. Set MAINTENANCE_MODE=true (see .env.example) and
+// redeploy to lock the site again for a future migration - no code changes
+// needed.
+const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === "true";
 
 const ALLOWED_PATHS = ["/maintenance", "/api/feedback"];
 
