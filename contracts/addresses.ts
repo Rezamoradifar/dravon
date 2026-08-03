@@ -19,6 +19,11 @@ export const WINDOW_ADDRESS = readAddressEnv(
   "NEXT_PUBLIC_WINDOW_ADDRESS",
 );
 
+export const WEEKLY_WINDOW_ADDRESS = readAddressEnv(
+  process.env.NEXT_PUBLIC_WEEKLY_WINDOW_ADDRESS,
+  "NEXT_PUBLIC_WEEKLY_WINDOW_ADDRESS",
+);
+
 export const ADMIN_ADDRESS = process.env.NEXT_PUBLIC_ADMIN_ADDRESS as
   | Address
   | undefined;

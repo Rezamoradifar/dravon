@@ -3,6 +3,7 @@
 import { PageHeader } from "@/components/shared/page-header";
 import { WalletSearch } from "@/components/user/wallet-search";
 import { UserDashboardCards } from "@/components/user/user-dashboard-cards";
+import { WeeklyWindowCard } from "@/components/shared/weekly-window-card";
 import { useWalletView } from "@/context/wallet-view-context";
 import { useTranslation } from "@/contexts/language-context";
 
@@ -18,6 +19,9 @@ export default function UserDashboardPage() {
         <p className="mt-2 text-xs text-muted-foreground">{t("userPage.walletPersists")}</p>
       </div>
       <UserDashboardCards address={viewedAddress} />
+      <div className="mt-6">
+        <WeeklyWindowCard address={viewedAddress} />
+      </div>
     </div>
   );
 }

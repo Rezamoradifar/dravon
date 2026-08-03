@@ -10,6 +10,8 @@ import { RoundOverviewCards } from "@/components/dashboard/round-overview-cards"
 import { NetworkGrowthChart } from "@/components/dashboard/network-growth-chart";
 import { ActivityPanel } from "@/components/dashboard/activity-panel";
 import { NetworkActivityFeed } from "@/components/dashboard/network-activity-feed";
+import { StageIndicator } from "@/components/shared/stage-indicator";
+import { WeeklyWindowCard } from "@/components/shared/weekly-window-card";
 import { useTranslation } from "@/contexts/language-context";
 
 export default function DashboardPage() {
@@ -37,6 +39,11 @@ export default function DashboardPage() {
       <h2 className="mb-3 mt-8 text-lg font-semibold">{t("dashboardPage.currentRoundOverview")}</h2>
       <p className="mb-4 text-sm text-muted-foreground">{t("dashboardPage.currentRoundHint")}</p>
       <RoundOverviewCards roundsAgo={0} />
+
+      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <StageIndicator />
+        <WeeklyWindowCard />
+      </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">

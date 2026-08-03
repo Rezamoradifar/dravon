@@ -3,6 +3,7 @@ export function FloatingLights() {
     <div className="floating-lights" aria-hidden="true">
       <span style={{ top: "-10%", left: "5%", width: 420, height: 420 }} />
       <span
+        className="floating-lights-accent"
         style={{ top: "20%", right: "-8%", width: 380, height: 380, animationDelay: "-6s" }}
       />
       <span

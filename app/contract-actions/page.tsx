@@ -47,12 +47,13 @@ function useActions(): Array<{
     },
     {
       functionName: "distributeMatchingBonuses",
-      signature: "distributeMatchingBonuses(uint256,bool)",
+      signature: "distributeMatchingBonuses(uint256,uint256,bool)",
       title: t("contractActionsPage.distributeMatchingBonuses.title"),
       description: t("contractActionsPage.distributeMatchingBonuses.description"),
       icon: Gift,
       fields: [
         { key: "nodes", label: t("contractActionsPage.distributeMatchingBonuses.nodes"), type: "uint", placeholder: t("contractActionsPage.distributeMatchingBonuses.nodesPlaceholder") },
+        { key: "weekNodes", label: t("contractActionsPage.distributeMatchingBonuses.weekNodes"), type: "uint", placeholder: t("contractActionsPage.distributeMatchingBonuses.weekNodesPlaceholder") },
         { key: "devPool", label: t("contractActionsPage.distributeMatchingBonuses.devPool"), type: "bool" },
       ],
     },

@@ -8,6 +8,41 @@ export interface MainBulkInfo {
   roundEnteredUSD: string;
   allEnteredUSD: string;
   nextBinaryPay: string;
+  /** That round's own pool stage (1 healthiest - 4 floor), not today's. */
+  stage: number;
+}
+
+export interface StageInfo {
+  /** Current pool stage, 1 (healthiest) to 4 (floor). */
+  stage: number;
+  /** Rounds of full-price ($3/point) runway the free reserve could cover, in hundredths. */
+  lastCoverage: bigint;
+  /** Percent of a top-up's enterUSD routed to the weekly window at this stage. */
+  weeklyPct: number;
+  /** Upper bound on points-per-round on top of the worth-tier cap. */
+  pointCeiling: number;
+  /** Renewals allowed between forced flashes, or 0 for no limit. */
+  topupsPerFlash: number;
+  /** Consecutive good rounds counted toward the next stage upgrade. */
+  goodStreak: number;
+}
+
+export interface WeekBulkInfo {
+  week: bigint;
+  pool: bigint;
+  points: bigint;
+  earners: bigint;
+  paidSoFar: bigint;
+  ended: boolean;
+  finished: boolean;
+  pointValue: bigint;
+}
+
+export interface UserWeekInfo {
+  matched: bigint;
+  raw: bigint;
+  credited: bigint;
+  owed: bigint;
 }
 
 export interface UserBulkInfo {

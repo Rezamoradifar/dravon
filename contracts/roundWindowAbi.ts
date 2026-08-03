@@ -53,11 +53,19 @@ export const roundWindowAbi = [
   {
     inputs: [
       { internalType: "uint256", name: "nodes", type: "uint256" },
+      { internalType: "uint256", name: "weekNodes", type: "uint256" },
       { internalType: "bool", name: "devPool", type: "bool" },
     ],
     name: "distributeMatchingBonuses",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "stage",
+    outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -78,6 +86,7 @@ export const roundWindowAbi = [
       { internalType: "string", name: "roundEnteredUSD_", type: "string" },
       { internalType: "string", name: "allEnteredUSD_", type: "string" },
       { internalType: "string", name: "NextBinaryPay", type: "string" },
+      { internalType: "uint8", name: "stage_", type: "uint8" },
     ],
     stateMutability: "view",
     type: "function",

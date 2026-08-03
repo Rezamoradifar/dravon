@@ -264,6 +264,8 @@ export const en = {
     title: "Distribute Matching Bonuses",
     nodes: "Nodes",
     nodesPlaceholder: "Number of nodes to process",
+    weekNodes: "Weekly Nodes",
+    weekNodesPlaceholder: "Weekly earners to pay alongside this round (0 = skip)",
     invalidNodes: "Enter a positive integer",
     devPool: "Dev Pool",
     false: "False",
@@ -294,6 +296,8 @@ export const en = {
       description: "Process matching bonus distribution for a batch of nodes.",
       nodes: "Nodes",
       nodesPlaceholder: "Number of nodes to process",
+      weekNodes: "Weekly Nodes",
+      weekNodesPlaceholder: "Weekly earners to pay alongside this round (0 = skip)",
       devPool: "Dev Pool",
     },
     init: {
@@ -616,6 +620,45 @@ export const en = {
     submitAnother: "Submit another response",
     error: "Something went wrong. Please try again.",
     walletDetected: "Connected wallet ({address}) will be included automatically.",
+  },
+  stageIndicator: {
+    title: "Pool Health",
+    stageBadge: "Stage {stage}",
+    runway: "Runway",
+    runwayDays: "{days} days",
+    weeklyPct: "Weekly cut",
+    pointCeiling: "Point ceiling",
+    topupsPerFlash: "Renewals/flash",
+    goodStreak: "{streak}/{needed} good rounds toward the next upgrade",
+    stage1: {
+      label: "Healthy",
+      description: "The pool is well-covered. Full payout rates and the most generous weekly-window funding are in force.",
+    },
+    stage2: {
+      label: "Good",
+      description: "Coverage has eased slightly. The weekly-window cut and point ceiling are trimmed a notch to rebuild reserve.",
+    },
+    stage3: {
+      label: "Caution",
+      description: "Coverage is thinner. Payout levers are tightened further to protect the round pool's runway.",
+    },
+    stage4: {
+      label: "Floor",
+      description: "The strictest settings are active: nothing is diverted to the weekly window, and renewal limits are lifted so the pool gets liquidity first.",
+    },
+  },
+  weeklyWindow: {
+    title: "Weekly $500 Match",
+    weekLabel: "Week #{week}",
+    statusRunning: "Collecting",
+    statusSettling: "Settling",
+    statusFinished: "Closed",
+    pool: "Pool",
+    points: "Points",
+    earners: "Earners",
+    yourProgress: "Your progress",
+    milestonesHit: "{count} matched",
+    credited: "{credited} credited points",
   },
 };
 

@@ -19,6 +19,7 @@ import { useTranslation } from "@/contexts/language-context";
 
 export function MatchingBonusForm() {
   const [nodes, setNodes] = React.useState("");
+  const [weekNodes, setWeekNodes] = React.useState("0");
   const [devPool, setDevPool] = React.useState("false");
   const { t } = useTranslation();
 
@@ -35,17 +36,19 @@ export function MatchingBonusForm() {
 
   const nodesNum = Number(nodes);
   const isNodesValid = nodes !== "" && Number.isInteger(nodesNum) && nodesNum > 0;
+  const weekNodesNum = Number(weekNodes);
+  const isWeekNodesValid = weekNodes !== "" && Number.isInteger(weekNodesNum) && weekNodesNum >= 0;
 
   async function handleEstimate() {
-    if (!isNodesValid) return;
-    await estimateGas([BigInt(nodesNum), devPool === "true"]);
+    if (!isNodesValid || !isWeekNodesValid) return;
+    await estimateGas([BigInt(nodesNum), BigInt(weekNodesNum), devPool === "true"]);
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!isNodesValid) return;
+    if (!isNodesValid || !isWeekNodesValid) return;
     try {
-      await execute([BigInt(nodesNum), devPool === "true"]);
+      await execute([BigInt(nodesNum), BigInt(weekNodesNum), devPool === "true"]);
     } catch {
       // reported via toast
     }
@@ -55,7 +58,7 @@ export function MatchingBonusForm() {
     <Card className="card-glow">
       <CardHeader>
         <CardTitle>{t("matchingBonus.title")}</CardTitle>
-        <CardDescription>distributeMatchingBonuses(nodes, devPool)</CardDescription>
+        <CardDescription>distributeMatchingBonuses(nodes, weekNodes, devPool)</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
@@ -69,6 +72,20 @@ export function MatchingBonusForm() {
               onChange={(e) => setNodes(e.target.value)}
             />
             {nodes !== "" && !isNodesValid && (
+              <p className="text-xs text-destructive">{t("matchingBonus.invalidNodes")}</p>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="weekNodes">{t("matchingBonus.weekNodes")}</Label>
+            <Input
+              id="weekNodes"
+              inputMode="numeric"
+              placeholder={t("matchingBonus.weekNodesPlaceholder")}
+              value={weekNodes}
+              onChange={(e) => setWeekNodes(e.target.value)}
+            />
+            {weekNodes !== "" && !isWeekNodesValid && (
               <p className="text-xs text-destructive">{t("matchingBonus.invalidNodes")}</p>
             )}
           </div>

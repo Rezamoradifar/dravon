@@ -26,6 +26,7 @@ export function useMainBulkInfo(roundsAgo: bigint | number = 0) {
         roundEnteredUSD: data[4],
         allEnteredUSD: data[5],
         nextBinaryPay: data[6],
+        stage: data[7],
       }
     : undefined;
 
