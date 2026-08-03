@@ -41,6 +41,13 @@ export const viewport: Viewport = {
   ],
 };
 
+// Mirrors middleware.ts's own check - kept in sync manually since a root
+// layout can't read the request pathname/env in a way middleware can share.
+// While true, middleware.ts rewrites every route to /maintenance, so the
+// normal Navbar/Sidebar chrome (which only links to now-unreachable pages)
+// is skipped in favor of just rendering that page directly.
+const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE !== "false";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -127,21 +134,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Script>
         <Providers>
           <FloatingLights />
-          <div className="flex min-h-screen flex-col">
-            <Navbar />
-            <div className="flex flex-1">
-              <aside className="hidden w-64 shrink-0 border-r border-border/60 md:block">
-                <div className="sticky top-16">
-                  <Sidebar />
-                </div>
-              </aside>
-              <main className="min-w-0 flex-1 px-4 py-6 md:px-8 md:py-8">
-                <div className="mx-auto w-full max-w-7xl">
-                  <PageTransition>{children}</PageTransition>
-                </div>
-              </main>
+          {MAINTENANCE_MODE ? (
+            children
+          ) : (
+            <div className="flex min-h-screen flex-col">
+              <Navbar />
+              <div className="flex flex-1">
+                <aside className="hidden w-64 shrink-0 border-r border-border/60 md:block">
+                  <div className="sticky top-16">
+                    <Sidebar />
+                  </div>
+                </aside>
+                <main className="min-w-0 flex-1 px-4 py-6 md:px-8 md:py-8">
+                  <div className="mx-auto w-full max-w-7xl">
+                    <PageTransition>{children}</PageTransition>
+                  </div>
+                </main>
+              </div>
             </div>
-          </div>
+          )}
         </Providers>
       </body>
     </html>

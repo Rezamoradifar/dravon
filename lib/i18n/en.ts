@@ -601,6 +601,22 @@ export const en = {
     pending: "Transaction Pending",
     success: "Registration Successful",
   },
+  maintenance: {
+    title: "A major update is on the way",
+    description:
+      "The site is temporarily offline while we prepare a stronger, upgraded version. We'd love your feedback in the meantime.",
+    formTitle: "Share your feedback",
+    messageLabel: "Your feedback",
+    messagePlaceholder: "What would you like to see, or what feedback do you have?",
+    contactLabel: "Contact (optional)",
+    contactPlaceholder: "Telegram, email, or wallet address",
+    submit: "Submit",
+    submitting: "Submitting...",
+    submitted: "Thanks - your feedback has been recorded.",
+    submitAnother: "Submit another response",
+    error: "Something went wrong. Please try again.",
+    walletDetected: "Connected wallet ({address}) will be included automatically.",
+  },
 };
 
 export type Dictionary = typeof en;

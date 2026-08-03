@@ -24,6 +24,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# maintenance-mode feedback submissions (see app/api/feedback/route.ts)
+/data/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
