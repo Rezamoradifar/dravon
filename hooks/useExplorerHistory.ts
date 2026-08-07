@@ -37,7 +37,10 @@ export function useExplorerHistory(address?: string) {
     async function load() {
       setIsLoading(true);
       try {
-        const url = `https://api.bscscan.com/api?module=account&action=txlist&address=${walletAddress}&startblock=0&endblock=99999999&sort=desc&apikey=${BSCSCAN_API_KEY}`;
+        // BscScan's old api.bscscan.com/api (v1) is deprecated - all chains,
+        // including BSC, now go through Etherscan's unified v2 gateway with
+        // an explicit chainid. Same API key, same response shape.
+        const url = `https://api.etherscan.io/v2/api?chainid=${PRIMARY_CHAIN_ID}&module=account&action=txlist&address=${walletAddress}&startblock=0&endblock=99999999&sort=desc&apikey=${BSCSCAN_API_KEY}`;
         const res = await fetch(url);
         const json = await res.json();
         const results: Array<{ hash: string; to: string; input: string; timeStamp: string; isError: string }> =

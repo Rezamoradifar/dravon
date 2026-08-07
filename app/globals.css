@@ -8,31 +8,31 @@ html[dir="rtl"] body {
 
 @layer base {
   :root {
-    --background: 150 20% 98%;
-    --foreground: 155 30% 8%;
+    --background: 210 25% 98%;
+    --foreground: 220 25% 8%;
 
     --card: 0 0% 100%;
-    --card-foreground: 155 30% 8%;
+    --card-foreground: 220 25% 8%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 155 30% 8%;
+    --popover-foreground: 220 25% 8%;
 
-    --primary: 150 75% 32%;
-    --primary-foreground: 150 20% 98%;
+    --primary: 187 90% 38%;
+    --primary-foreground: 0 0% 100%;
 
     /* Complementary accent used only for gradients/highlights (text-gradient,
        floating-lights' second tone) - never a Tailwind `accent` semantic color.
-       Warm gold paired with the emerald primary for a "growth + money" feel. */
-    --accent-2: 42 88% 48%;
+       Neon magenta paired with the cyan primary for a cyberpunk-trader duotone. */
+    --accent-2: 328 85% 55%;
 
-    --secondary: 150 18% 94%;
-    --secondary-foreground: 155 30% 8%;
+    --secondary: 210 20% 94%;
+    --secondary-foreground: 220 25% 8%;
 
-    --muted: 150 18% 94%;
-    --muted-foreground: 155 10% 42%;
+    --muted: 210 20% 94%;
+    --muted-foreground: 220 10% 42%;
 
-    --accent: 150 18% 94%;
-    --accent-foreground: 155 30% 8%;
+    --accent: 210 20% 94%;
+    --accent-foreground: 220 25% 8%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
@@ -40,46 +40,46 @@ html[dir="rtl"] body {
     --success: 152 69% 40%;
     --success-foreground: 210 40% 98%;
 
-    --border: 150 15% 88%;
-    --input: 150 15% 88%;
-    --ring: 150 75% 32%;
+    --border: 210 15% 88%;
+    --input: 210 15% 88%;
+    --ring: 187 90% 38%;
 
     --radius: 0.85rem;
   }
 
   .dark {
-    --background: 155 18% 4%;
-    --foreground: 140 25% 96%;
+    --background: 220 30% 3%;
+    --foreground: 190 30% 96%;
 
-    --card: 155 16% 7%;
-    --card-foreground: 140 25% 96%;
+    --card: 220 26% 6%;
+    --card-foreground: 190 30% 96%;
 
-    --popover: 155 16% 7%;
-    --popover-foreground: 140 25% 96%;
+    --popover: 220 26% 6%;
+    --popover-foreground: 190 30% 96%;
 
-    --primary: 150 72% 50%;
-    --primary-foreground: 155 30% 6%;
+    --primary: 187 95% 55%;
+    --primary-foreground: 220 30% 4%;
 
-    --accent-2: 42 92% 58%;
+    --accent-2: 328 90% 62%;
 
-    --secondary: 155 15% 13%;
-    --secondary-foreground: 140 25% 96%;
+    --secondary: 220 22% 12%;
+    --secondary-foreground: 190 30% 96%;
 
-    --muted: 155 15% 13%;
-    --muted-foreground: 140 12% 65%;
+    --muted: 220 22% 12%;
+    --muted-foreground: 200 15% 65%;
 
-    --accent: 155 15% 13%;
-    --accent-foreground: 140 25% 96%;
+    --accent: 220 22% 12%;
+    --accent-foreground: 190 30% 96%;
 
     --destructive: 0 68% 42%;
     --destructive-foreground: 210 40% 98%;
 
     --success: 152 65% 48%;
-    --success-foreground: 155 30% 6%;
+    --success-foreground: 220 30% 4%;
 
-    --border: 155 14% 14%;
-    --input: 155 14% 14%;
-    --ring: 150 72% 50%;
+    --border: 220 20% 14%;
+    --input: 220 20% 14%;
+    --ring: 187 95% 55%;
   }
 }
 
@@ -97,6 +97,16 @@ html[dir="rtl"] body {
       radial-gradient(circle at 100% 30%, hsl(var(--accent-2) / 0.07), transparent 45%),
       radial-gradient(circle at 15% 90%, hsl(var(--primary) / 0.05), transparent 40%);
     background-attachment: fixed;
+  }
+  /* Near-black reads flat without a stronger neon haze than the light theme needs. */
+  .dark body {
+    background-image: radial-gradient(
+        circle at 20% 0%,
+        hsl(var(--primary) / 0.16),
+        transparent 40%
+      ),
+      radial-gradient(circle at 100% 30%, hsl(var(--accent-2) / 0.13), transparent 45%),
+      radial-gradient(circle at 15% 90%, hsl(var(--primary) / 0.1), transparent 40%);
   }
 }
 
@@ -138,6 +148,21 @@ html[dir="rtl"] body {
       0 1px 0 0 hsl(var(--foreground) / 0.04) inset,
       0 16px 44px -14px hsl(var(--primary) / 0.4);
     transform: translateY(-1px);
+  }
+  /* A brighter, dual-tone neon rim against the near-black background - the
+     light theme's softer glow would barely read here. */
+  .dark .card-glow {
+    box-shadow:
+      0 0 0 1px hsl(var(--border)),
+      0 1px 0 0 hsl(var(--foreground) / 0.05) inset,
+      0 10px 34px -12px hsl(var(--primary) / 0.4);
+  }
+  .dark .card-glow:hover {
+    box-shadow:
+      0 0 0 1px hsl(var(--primary) / 0.4),
+      0 1px 0 0 hsl(var(--foreground) / 0.05) inset,
+      0 18px 48px -14px hsl(var(--primary) / 0.55),
+      0 8px 28px -16px hsl(var(--accent-2) / 0.4);
   }
 
   /* Signature premium text treatment for page titles/hero copy - see PageHeader. */
@@ -194,7 +219,7 @@ html[dir="rtl"] body {
     background: hsl(var(--accent-2) / 0.5) !important;
   }
   .dark .floating-lights span {
-    opacity: 0.22;
+    opacity: 0.3;
   }
 
   .skeleton-shimmer {
