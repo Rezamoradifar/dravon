@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { useHapticsSetting } from "@/hooks/useHapticsSetting";
 import { useVoiceSetting } from "@/hooks/useVoiceSetting";
+import { vibrate } from "@/lib/haptics";
 import { speakWelcome } from "@/lib/voice";
 import { useTranslation } from "@/contexts/language-context";
 
@@ -29,14 +30,21 @@ export function PreferencesCard() {
               <p className="text-xs text-muted-foreground">{t("preferences.hapticsHint")}</p>
             </div>
           </div>
-          <Button
-            type="button"
-            variant={enabled ? "default" : "outline"}
-            size="sm"
-            onClick={() => setEnabled(!enabled)}
-          >
-            {enabled ? t("preferences.on") : t("preferences.off")}
-          </Button>
+          <div className="flex items-center gap-2">
+            {enabled && (
+              <Button type="button" variant="ghost" size="sm" onClick={() => vibrate("success")}>
+                {t("preferences.hapticsTest")}
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant={enabled ? "default" : "outline"}
+              size="sm"
+              onClick={() => setEnabled(!enabled)}
+            >
+              {enabled ? t("preferences.on") : t("preferences.off")}
+            </Button>
+          </div>
         </div>
 
         <div className="mt-3 flex items-center justify-between gap-4 rounded-lg border p-3">

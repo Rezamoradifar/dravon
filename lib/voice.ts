@@ -37,6 +37,21 @@ function pickEnglishVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice 
   );
 }
 
+function speak(synth: SpeechSynthesis) {
+  synth.cancel(); // don't stack onto any lingering utterance
+  const line = WELCOME_LINES[Math.floor(Math.random() * WELCOME_LINES.length)];
+  const utterance = new SpeechSynthesisUtterance(line);
+  utterance.lang = "en-US";
+  utterance.rate = 1.05;
+  utterance.pitch = 1.1;
+  utterance.volume = 1;
+
+  const voice = pickEnglishVoice(synth.getVoices());
+  if (voice) utterance.voice = voice;
+
+  synth.speak(utterance);
+}
+
 /**
  * Speaks a short, energetic welcome line via the browser's built-in
  * SpeechSynthesis API - no audio files to host, works offline, and respects
@@ -50,18 +65,25 @@ export function speakWelcome() {
   if (!synth) return;
 
   try {
-    synth.cancel(); // don't stack onto any lingering utterance
-    const line = WELCOME_LINES[Math.floor(Math.random() * WELCOME_LINES.length)];
-    const utterance = new SpeechSynthesisUtterance(line);
-    utterance.lang = "en-US";
-    utterance.rate = 1.05;
-    utterance.pitch = 1.1;
-    utterance.volume = 1;
-
-    const voice = pickEnglishVoice(synth.getVoices());
-    if (voice) utterance.voice = voice;
-
-    synth.speak(utterance);
+    // Chrome (and most Chromium-based Android browsers) return an empty
+    // voice list on the very first call after page load - the real list
+    // only exists once the async 'voiceschanged' event fires. Speaking
+    // before then doesn't throw, it just silently uses no voice at all on
+    // some versions. Wait briefly for that event; fall back to speaking
+    // with whatever's available (or none) rather than hanging forever.
+    if (synth.getVoices().length > 0) {
+      speak(synth);
+      return;
+    }
+    let spoken = false;
+    const fire = () => {
+      if (spoken) return;
+      spoken = true;
+      synth.removeEventListener("voiceschanged", fire);
+      speak(synth);
+    };
+    synth.addEventListener("voiceschanged", fire);
+    setTimeout(fire, 300);
   } catch {
     // SpeechSynthesis unsupported/blocked - silently no-op
   }
