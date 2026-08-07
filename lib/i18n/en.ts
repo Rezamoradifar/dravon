@@ -50,6 +50,15 @@ export const en = {
     title: "Your Wallet",
     connectPrompt: "Connect a wallet to see your balance.",
   },
+  assistant: {
+    title: "Ask the Assistant",
+    subtitle: "Instant answers about the system, no waiting.",
+    hint: "Ask anything about registration, packages, stages, the weekly window, or errors you've seen.",
+    placeholder: "Type your question...",
+    send: "Send",
+    close: "Close",
+    noMatch: "No close match found - try rephrasing, or check the full Help page.",
+  },
   pulsePage: {
     live: "Live",
     title: "Network Pulse",

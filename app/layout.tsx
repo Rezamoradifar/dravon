@@ -8,6 +8,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { Sidebar } from "@/components/layout/sidebar";
 import { PageTransition } from "@/components/layout/page-transition";
 import { FloatingLights } from "@/components/layout/floating-lights";
+import { AskAssistant } from "@/components/assistant/ask-assistant";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const vazirmatn = Vazirmatn({ subsets: ["arabic"], variable: "--font-vazirmatn", display: "swap" });
@@ -151,6 +152,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </div>
                 </main>
               </div>
+              <AskAssistant />
             </div>
           )}
         </Providers>
