@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ReferralLinkCard } from "@/components/genealogy/referral-link-card";
 import { ReferralGrowthChart } from "@/components/genealogy/referral-growth-chart";
+import { ReferralStreakBadge } from "@/components/genealogy/referral-streak-badge";
 import { NodeDetailPanel } from "@/components/genealogy/node-detail-panel";
 import { useUserTree } from "@/hooks/useUserTree";
 import { useWalletView } from "@/context/wallet-view-context";
@@ -66,9 +67,10 @@ export default function GenealogyPage() {
         }
       />
 
-      <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <ReferralLinkCard />
         <ReferralGrowthChart address={viewedAddress} />
+        <ReferralStreakBadge address={viewedAddress} />
       </div>
 
       <div className="mb-6 space-y-4 rounded-xl border bg-card p-4">

@@ -242,6 +242,20 @@ export const fa: Dictionary = {
     connectOrSearch: "کیف‌پول را وصل کنید یا یک آدرس جستجو کنید.",
     noData: "داده‌ای برای راندها موجود نیست.",
   },
+  referralStreak: {
+    title: "زنجیره‌ی معرفی",
+    description: "تعداد راندهای پیاپی که این کیف‌پول پاداش مستقیم گرفته - فعالیت واقعی، خوانده‌شده از getUserRoundInfo.",
+    connectOrSearch: "کیف‌پول را وصل کنید یا یک آدرس جستجو کنید.",
+    noStreak: "هنوز زنجیره‌ای فعال نیست - با اولین ثبت‌نام یا ارتقایی که این کیف‌پول را اسپانسر مستقیم خود معرفی کند، شروع می‌شود.",
+    rounds: "({days} روز)",
+    activeRounds: "{count} راند فعال در ۱۵ روز اخیر",
+    tier: {
+      spark: "جرقه",
+      rising: "رو به رشد",
+      strong: "قدرتمند",
+      legendary: "افسانه‌ای",
+    },
+  },
   common2: {
     estimateGas: "تخمین گاز",
     estimating: "در حال تخمین...",

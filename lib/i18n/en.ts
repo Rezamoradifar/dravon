@@ -240,6 +240,20 @@ export const en = {
     connectOrSearch: "Connect a wallet or search an address.",
     noData: "No round data available.",
   },
+  referralStreak: {
+    title: "Referral Streak",
+    description: "Consecutive rounds this wallet earned a direct bonus - real activity, read from getUserRoundInfo.",
+    connectOrSearch: "Connect a wallet or search an address.",
+    noStreak: "No active streak yet - it starts the next time someone registers or upgrades naming this wallet as their direct sponsor.",
+    rounds: "({days} days)",
+    activeRounds: "{count} active rounds in the last 15 days",
+    tier: {
+      spark: "Spark",
+      rising: "Rising",
+      strong: "Strong",
+      legendary: "Legendary",
+    },
+  },
   common2: {
     estimateGas: "Estimate gas",
     estimating: "Estimating...",
