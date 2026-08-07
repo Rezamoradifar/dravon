@@ -3,6 +3,7 @@ export const en = {
     brand: "Round Dashboard",
     toggleNavigation: "Toggle navigation",
     dashboard: "Dashboard",
+    pulse: "Network Pulse",
     help: "Help & User Guide",
     register: "Register",
     charge: "Charge Account",
@@ -48,6 +49,19 @@ export const en = {
   walletCard: {
     title: "Your Wallet",
     connectPrompt: "Connect a wallet to see your balance.",
+  },
+  pulsePage: {
+    live: "Live",
+    title: "Network Pulse",
+    stageBadge: "Stage {stage} · {label}",
+    fullscreen: "Toggle fullscreen",
+    totalVolume: "All-Time Volume",
+    roundVolume: "This Round's Volume",
+    activeUsers: "Users This Round",
+    roundPoints: "Round Points",
+    weeklyPool: "Weekly Pool",
+    pointValue: "Point Value",
+    footnote: "All figures read live from the round window contract on BNB Smart Chain.",
   },
   roundOverview: {
     roundWindow: "Round Window",

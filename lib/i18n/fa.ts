@@ -5,6 +5,7 @@ export const fa: Dictionary = {
     brand: "داشبورد راند",
     toggleNavigation: "نمایش/پنهان کردن منو",
     dashboard: "داشبورد",
+    pulse: "نبض شبکه",
     help: "راهنما و آموزش استفاده",
     register: "ثبت‌نام",
     charge: "شارژ حساب",
@@ -50,6 +51,19 @@ export const fa: Dictionary = {
   walletCard: {
     title: "کیف‌پول شما",
     connectPrompt: "برای دیدن موجودی، کیف‌پول خود را وصل کنید.",
+  },
+  pulsePage: {
+    live: "زنده",
+    title: "نبض شبکه",
+    stageBadge: "مرحله {stage} · {label}",
+    fullscreen: "حالت تمام‌صفحه",
+    totalVolume: "حجم کل (از ابتدا)",
+    roundVolume: "حجم این راند",
+    activeUsers: "کاربران این راند",
+    roundPoints: "امتیاز راند",
+    weeklyPool: "استخر هفتگی",
+    pointValue: "ارزش امتیاز",
+    footnote: "همه‌ی اعداد به‌صورت زنده از قرارداد پنجره‌ی راند روی شبکه‌ی BNB Smart Chain خوانده می‌شوند.",
   },
   roundOverview: {
     roundWindow: "پنجره راند",

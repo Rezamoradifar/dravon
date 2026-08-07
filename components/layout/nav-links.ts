@@ -16,6 +16,7 @@ import {
   Terminal,
   HelpCircle,
   Gamepad2,
+  Radio,
 } from "lucide-react";
 
 export interface NavLink {
@@ -27,6 +28,7 @@ export interface NavLink {
 
 export const NAV_LINKS: NavLink[] = [
   { href: "/", labelKey: "nav.dashboard", icon: LayoutDashboard },
+  { href: "/pulse", labelKey: "nav.pulse", icon: Radio },
   { href: "/help", labelKey: "nav.help", icon: HelpCircle },
   { href: "/register", labelKey: "nav.register", icon: UserPlus },
   { href: "/charge", labelKey: "nav.charge", icon: Wallet },
