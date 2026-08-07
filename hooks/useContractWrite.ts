@@ -17,6 +17,7 @@ import { parseContractError } from "@/lib/errors";
 import { explorerTxLink } from "@/lib/format";
 import { fireConfetti } from "@/lib/confetti";
 import { vibrate } from "@/lib/haptics";
+import { speakWelcome } from "@/lib/voice";
 import { pushNotification } from "@/lib/notifications";
 import { logActivity, updateActivityStatus } from "@/hooks/useActivityLog";
 import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
@@ -126,6 +127,10 @@ export function useContractWrite(functionName: RoundWindowFunctionName) {
       }
       fireConfetti();
       vibrate("success");
+      // Only the very first "begin" call is a new registration - chargeAccount
+      // and everything else already has a user, so this stays a one-time
+      // welcome moment rather than firing on every confirmed transaction.
+      if (functionName === "begin") speakWelcome();
       return txHash;
     } catch (error) {
       toast.error("Transaction failed", {
