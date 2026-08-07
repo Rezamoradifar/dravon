@@ -245,6 +245,7 @@ export const en = {
     description: "Consecutive rounds this wallet earned a direct bonus - real activity, read from getUserRoundInfo.",
     connectOrSearch: "Connect a wallet or search an address.",
     noStreak: "No active streak yet - it starts the next time someone registers or upgrades naming this wallet as their direct sponsor.",
+    unavailable: "Round history isn't available from the contract yet for this wallet - try again once more rounds have passed.",
     rounds: "({days} days)",
     activeRounds: "{count} active rounds in the last 15 days",
     tier: {

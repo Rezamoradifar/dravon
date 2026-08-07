@@ -25,7 +25,7 @@ function roundsToDays(rounds: number): number {
 }
 
 export function ReferralStreakBadge({ address }: { address?: Address }) {
-  const { streak, isLoading } = useReferralStreak(address);
+  const { streak, isLoading, isError } = useReferralStreak(address);
   const { t } = useTranslation();
 
   if (!address) {
@@ -55,7 +55,25 @@ export function ReferralStreakBadge({ address }: { address?: Address }) {
     );
   }
 
-  if (!streak) return null;
+  if (!streak) {
+    // getUserRoundInfo can revert on-chain for a real, registered wallet when
+    // the contract's own round arithmetic has too little history to work
+    // with yet (observed directly against the live window) - show that as a
+    // clear "not yet available" state instead of silently rendering nothing.
+    return (
+      <Card className="card-glow">
+        <CardHeader>
+          <CardTitle className="text-base">{t("referralStreak.title")}</CardTitle>
+          <CardDescription>{t("referralStreak.description")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            {isError ? t("referralStreak.unavailable") : t("referralStreak.noStreak")}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const tier = tierFor(streak.currentStreak);
 
