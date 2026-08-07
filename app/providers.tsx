@@ -12,6 +12,16 @@ import { Toaster } from "@/components/ui/sonner";
 import { WalletViewProvider } from "@/context/wallet-view-context";
 import { LanguageProvider } from "@/contexts/language-context";
 import { NotificationWatchers } from "@/components/shared/notification-watchers";
+import { identiconDataUri } from "@/lib/identicon";
+
+// Same deterministic per-address identicon used everywhere else in the app
+// (AddressAvatar) - RainbowKit renders this for the connected account instead
+// of its own default avatar, so the navbar and the rest of the app agree on
+// "what this wallet looks like".
+function CustomAvatar({ address, size }: { address: string; ensImage?: string | null; size: number }) {
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={identiconDataUri(address, size)} width={size} height={size} alt="" style={{ borderRadius: 999 }} />;
+}
 
 /**
  * next-themes only knows the real resolvedTheme after mount (it can't know the
@@ -35,9 +45,10 @@ function RainbowKitWithTheme({ children }: { children: React.ReactNode }) {
     <RainbowKitProvider
       theme={
         isDark
-          ? darkTheme({ accentColor: "hsl(245 83% 67%)", borderRadius: "medium" })
-          : lightTheme({ accentColor: "hsl(244 75% 59%)", borderRadius: "medium" })
+          ? darkTheme({ accentColor: "hsl(187 95% 55%)", borderRadius: "medium" })
+          : lightTheme({ accentColor: "hsl(187 90% 38%)", borderRadius: "medium" })
       }
+      avatar={CustomAvatar}
       modalSize="compact"
     >
       {children}

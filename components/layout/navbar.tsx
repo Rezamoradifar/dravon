@@ -42,7 +42,7 @@ export function Navbar() {
           <LanguageToggle />
           <ThemeToggle />
           <NotificationBell />
-          <ConnectButton showBalance={false} chainStatus="icon" accountStatus="address" />
+          <ConnectButton showBalance={false} chainStatus="icon" accountStatus="full" />
         </div>
       </div>
 

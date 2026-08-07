@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AddressPill } from "@/components/shared/address-pill";
+import { AddressAvatar } from "@/components/shared/address-avatar";
 import { useUserRegistration } from "@/hooks/useUserRegistration";
 import { useTranslation } from "@/contexts/language-context";
 
@@ -33,7 +34,10 @@ export function NodeDetailPanel({
     >
     <Card className="card-glow">
       <CardHeader className="flex-row items-center justify-between gap-4 space-y-0">
-        <CardTitle className="text-base">{t("nodeDetailPanel.title")}</CardTitle>
+        <div className="flex items-center gap-3">
+          <AddressAvatar address={address} size={36} />
+          <CardTitle className="text-base">{t("nodeDetailPanel.title")}</CardTitle>
+        </div>
         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose} aria-label={t("nodeDetailPanel.close")}>
           <X className="h-4 w-4" />
         </Button>
