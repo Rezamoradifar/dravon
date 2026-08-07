@@ -8,30 +8,31 @@ html[dir="rtl"] body {
 
 @layer base {
   :root {
-    --background: 240 25% 99%;
-    --foreground: 234 40% 10%;
+    --background: 150 20% 98%;
+    --foreground: 155 30% 8%;
 
     --card: 0 0% 100%;
-    --card-foreground: 234 40% 10%;
+    --card-foreground: 155 30% 8%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 234 40% 10%;
+    --popover-foreground: 155 30% 8%;
 
-    --primary: 248 78% 60%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 150 75% 32%;
+    --primary-foreground: 150 20% 98%;
 
     /* Complementary accent used only for gradients/highlights (text-gradient,
-       floating-lights' second tone) - never a Tailwind `accent` semantic color. */
-    --accent-2: 189 85% 55%;
+       floating-lights' second tone) - never a Tailwind `accent` semantic color.
+       Warm gold paired with the emerald primary for a "growth + money" feel. */
+    --accent-2: 42 88% 48%;
 
-    --secondary: 240 30% 96%;
-    --secondary-foreground: 234 40% 10%;
+    --secondary: 150 18% 94%;
+    --secondary-foreground: 155 30% 8%;
 
-    --muted: 240 30% 96%;
-    --muted-foreground: 234 12% 46%;
+    --muted: 150 18% 94%;
+    --muted-foreground: 155 10% 42%;
 
-    --accent: 240 30% 96%;
-    --accent-foreground: 234 40% 10%;
+    --accent: 150 18% 94%;
+    --accent-foreground: 155 30% 8%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
@@ -39,46 +40,46 @@ html[dir="rtl"] body {
     --success: 152 69% 40%;
     --success-foreground: 210 40% 98%;
 
-    --border: 234 24% 90%;
-    --input: 234 24% 90%;
-    --ring: 248 78% 60%;
+    --border: 150 15% 88%;
+    --input: 150 15% 88%;
+    --ring: 150 75% 32%;
 
     --radius: 0.85rem;
   }
 
   .dark {
-    --background: 234 42% 5%;
-    --foreground: 210 40% 98%;
+    --background: 155 18% 4%;
+    --foreground: 140 25% 96%;
 
-    --card: 233 38% 8%;
-    --card-foreground: 210 40% 98%;
+    --card: 155 16% 7%;
+    --card-foreground: 140 25% 96%;
 
-    --popover: 233 38% 8%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 155 16% 7%;
+    --popover-foreground: 140 25% 96%;
 
-    --primary: 248 92% 72%;
-    --primary-foreground: 234 42% 8%;
+    --primary: 150 72% 50%;
+    --primary-foreground: 155 30% 6%;
 
-    --accent-2: 189 90% 62%;
+    --accent-2: 42 92% 58%;
 
-    --secondary: 232 30% 15%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 155 15% 13%;
+    --secondary-foreground: 140 25% 96%;
 
-    --muted: 232 30% 15%;
-    --muted-foreground: 226 16% 68%;
+    --muted: 155 15% 13%;
+    --muted-foreground: 140 12% 65%;
 
-    --accent: 232 30% 15%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 155 15% 13%;
+    --accent-foreground: 140 25% 96%;
 
     --destructive: 0 68% 42%;
     --destructive-foreground: 210 40% 98%;
 
     --success: 152 65% 48%;
-    --success-foreground: 234 42% 8%;
+    --success-foreground: 155 30% 6%;
 
-    --border: 232 26% 16%;
-    --input: 232 26% 16%;
-    --ring: 248 92% 72%;
+    --border: 155 14% 14%;
+    --input: 155 14% 14%;
+    --ring: 150 72% 50%;
   }
 }
 
