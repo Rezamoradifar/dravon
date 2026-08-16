@@ -4,6 +4,7 @@ export const en = {
     toggleNavigation: "Toggle navigation",
     dashboard: "Dashboard",
     pulse: "Network Pulse",
+    weeklyFund: "Weekly Fund",
     help: "Help & User Guide",
     register: "Register",
     charge: "Charge Account",
@@ -49,6 +50,18 @@ export const en = {
   walletCard: {
     title: "Your Wallet",
     connectPrompt: "Connect a wallet to see your balance.",
+  },
+  weeklyFundPage: {
+    title: "Weekly Fund",
+    description: "The $500/$500 matching pool - general standing and your own.",
+    generalTitle: "General",
+    personalTitle: "Yours",
+    connectOrSearch: "Connect a wallet or search an address.",
+    loadError: "Failed to load weekly fund data.",
+    leftLeg: "Left Leg",
+    rightLeg: "Right Leg",
+    creditedPoints: "Credited Points",
+    owed: "Owed",
   },
   assistant: {
     title: "Ask the Assistant",

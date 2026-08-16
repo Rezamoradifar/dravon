@@ -6,6 +6,7 @@ export const fa: Dictionary = {
     toggleNavigation: "نمایش/پنهان کردن منو",
     dashboard: "داشبورد",
     pulse: "نبض شبکه",
+    weeklyFund: "صندوق هفتگی",
     help: "راهنما و آموزش استفاده",
     register: "ثبت‌نام",
     charge: "شارژ حساب",
@@ -51,6 +52,18 @@ export const fa: Dictionary = {
   walletCard: {
     title: "کیف‌پول شما",
     connectPrompt: "برای دیدن موجودی، کیف‌پول خود را وصل کنید.",
+  },
+  weeklyFundPage: {
+    title: "صندوق هفتگی",
+    description: "استخر تطبیقی $۵۰۰/$۵۰۰ - وضعیت عمومی و وضعیت شخصی شما.",
+    generalTitle: "عمومی",
+    personalTitle: "مال شما",
+    connectOrSearch: "کیف‌پول را وصل کنید یا یک آدرس جستجو کنید.",
+    loadError: "بارگذاری اطلاعات صندوق هفتگی ناموفق بود.",
+    leftLeg: "پای چپ",
+    rightLeg: "پای راست",
+    creditedPoints: "امتیاز اعتباری",
+    owed: "مبلغ دریافتی",
   },
   assistant: {
     title: "پرسش از دستیار",
