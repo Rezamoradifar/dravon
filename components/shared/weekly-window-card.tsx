@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useWeeklyWindowInfo } from "@/hooks/useWeeklyWindowInfo";
+import { useWeekProgress } from "@/hooks/useWeekProgress";
 import { useTranslation } from "@/contexts/language-context";
 
 const WEEK_MATCH_UNIT_USD = 500;
@@ -21,6 +22,7 @@ function fmtUsd(value: bigint | undefined, decimals = 0): string {
 export function WeeklyWindowCard({ address }: { address?: Address } = {}) {
   const { t } = useTranslation();
   const { week, user, isLoading } = useWeeklyWindowInfo(address);
+  const { progress } = useWeekProgress(address, week?.week);
 
   if (isLoading && !week) {
     return (
@@ -81,6 +83,17 @@ export function WeeklyWindowCard({ address }: { address?: Address } = {}) {
 
         {user && (
           <div className="space-y-2 border-t border-border/60 pt-4">
+            {progress && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">{t("weeklyWindow.yourLegs")}</span>
+                <span className="font-medium text-foreground">
+                  {t("weeklyWindow.legsValue", {
+                    left: Math.round(progress.leftUsd).toLocaleString("en-US"),
+                    right: Math.round(progress.rightUsd).toLocaleString("en-US"),
+                  })}
+                </span>
+              </div>
+            )}
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>{t("weeklyWindow.yourProgress")}</span>
               <span className="font-medium text-foreground">

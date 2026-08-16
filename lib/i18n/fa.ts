@@ -706,5 +706,7 @@ export const fa: Dictionary = {
     yourProgress: "پیشرفت شما",
     milestonesHit: "{count} بار زده",
     credited: "{credited} امتیاز اعتباری",
+    yourLegs: "دو پای شما این هفته",
+    legsValue: "چپ: ${left} · راست: ${right}",
   },
 };

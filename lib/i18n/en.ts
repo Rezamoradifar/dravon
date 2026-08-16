@@ -704,6 +704,8 @@ export const en = {
     yourProgress: "Your progress",
     milestonesHit: "{count} matched",
     credited: "{credited} credited points",
+    yourLegs: "Your legs this week",
+    legsValue: "Left ${left} · Right ${right}",
   },
 };
 
