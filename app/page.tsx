@@ -24,13 +24,30 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { LanguageToggle } from "@/components/layout/language-toggle";
 import { useMainBulkInfo } from "@/hooks/useMainBulkInfo";
+import { useCountUp } from "@/hooks/useCountUp";
 import { useTranslation } from "@/contexts/language-context";
 import { getLocalizedHelpFaq } from "@/lib/help-content";
+import { cn } from "@/lib/utils";
 
 function toNumber(value?: string): number {
   if (!value) return 0;
   const n = Number(value);
   return Number.isNaN(n) ? 0 : n;
+}
+
+function AnimatedStat({ value, prefix = "", accent }: { value: number; prefix?: string; accent: "primary" | "accent-2" }) {
+  const animated = useCountUp(value, 1200);
+  return (
+    <div
+      className={cn(
+        "font-mono text-2xl font-bold tabular-nums md:text-3xl",
+        accent === "primary" ? "text-primary" : "text-[hsl(var(--accent-2))]",
+      )}
+    >
+      {prefix}
+      {Math.round(animated).toLocaleString("en-US")}
+    </div>
+  );
 }
 
 const FEATURES = [
@@ -181,21 +198,15 @@ export default function LandingPage() {
       <section className="mx-auto max-w-5xl px-4 pb-20 md:px-8">
         <div className="grid grid-cols-2 gap-4 rounded-2xl border border-border/60 bg-card/40 p-6 backdrop-blur-sm md:grid-cols-4">
           <div className="text-center">
-            <div className="font-mono text-2xl font-bold text-primary md:text-3xl">
-              ${toNumber(info?.allEnteredUSD).toLocaleString("en-US")}
-            </div>
+            <AnimatedStat value={toNumber(info?.allEnteredUSD)} prefix="$" accent="primary" />
             <div className="mt-1 text-xs text-muted-foreground">{t("landing.statVolume")}</div>
           </div>
           <div className="text-center">
-            <div className="font-mono text-2xl font-bold text-[hsl(var(--accent-2))] md:text-3xl">
-              {Number(info?.userCount ?? 0n).toLocaleString("en-US")}
-            </div>
+            <AnimatedStat value={Number(info?.userCount ?? 0n)} accent="accent-2" />
             <div className="mt-1 text-xs text-muted-foreground">{t("landing.statUsers")}</div>
           </div>
           <div className="text-center">
-            <div className="font-mono text-2xl font-bold text-primary md:text-3xl">
-              ${toNumber(info?.pointValue).toLocaleString("en-US")}
-            </div>
+            <AnimatedStat value={toNumber(info?.pointValue)} prefix="$" accent="primary" />
             <div className="mt-1 text-xs text-muted-foreground">{t("landing.statPointValue")}</div>
           </div>
           <div className="text-center">
