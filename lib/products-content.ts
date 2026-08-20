@@ -18,7 +18,47 @@ export const PRODUCTS: Product[] = [
     description:
       "Reads round id, latest window, point value, token addresses and contract status directly from the chain, alongside live native-token price and network status.",
     features: ["Live BNB/native price", "Gas price & block status", "Network growth chart", "Recent activity feed"],
-    href: "/",
+    href: "/dashboard",
+  },
+  {
+    slug: "pool-health",
+    name: "Adaptive Pool Health",
+    status: "Live",
+    tagline: "The pool protects itself, automatically",
+    description:
+      "Every round the contract measures its own coverage and sits in one of 4 stages, tightening payout terms when the pool needs it and loosening them back up once it recovers - all readable live.",
+    features: ["4-stage controller", "Live coverage runway", "Per-stage payout terms", "Upgrade/downgrade history"],
+    href: "/dashboard",
+  },
+  {
+    slug: "weekly-fund",
+    name: "Weekly $500 Fund",
+    status: "Live",
+    tagline: "Match $500 on both legs, earn a weekly point",
+    description:
+      "A separate pool funded by every registration and top-up. General standing and your own left/right leg progress, both on one page.",
+    features: ["General + personal view", "Live left/right leg volume", "Credited points", "Amount owed"],
+    href: "/weekly",
+  },
+  {
+    slug: "network-pulse",
+    name: "Live Network Pulse",
+    status: "Live",
+    tagline: "Big numbers, real data, presentation-ready",
+    description:
+      "Total volume, users, points and the weekly pool, animated live from the same contract everything else reads from - with a fullscreen mode for showing off.",
+    features: ["Animated live counters", "Fullscreen presentation mode", "Zero fabricated numbers"],
+    href: "/pulse",
+  },
+  {
+    slug: "games",
+    name: "Game Center",
+    status: "Live",
+    tagline: "Free backgammon, and a real on-chain wagering platform",
+    description:
+      "A free, no-wallet-needed backgammon game for casual play, plus a separate on-chain backgammon platform with real USDT/BNB stakes, open tables, and a leaderboard.",
+    features: ["Free local & AI backgammon", "Real on-chain wagering", "Open tables lobby", "Leaderboard"],
+    href: "/games",
   },
   {
     slug: "registration",
@@ -37,7 +77,7 @@ export const PRODUCTS: Product[] = [
     tagline: "Visualize your binary network",
     description:
       "Renders getUserTree() as an interactive binary tree graph, with a shareable referral link, QR code, and per-wallet round activity chart.",
-    features: ["Interactive tree graph", "QR code referral link", "Copy-to-clipboard", "Per-round activity chart"],
+    features: ["Interactive tree graph", "QR code referral link", "Copy-to-clipboard", "Referral streak badge"],
     href: "/genealogy",
   },
   {
@@ -161,7 +201,39 @@ export const PRODUCTS_FA: Record<string, LocalizedProductFields> = {
     statusLabel: "فعال",
     tagline: "شبکه باینری خود را تجسم کنید",
     description: "getUserTree() را به‌صورت یک نمودار درخت باینری تعاملی، همراه با لینک معرفی قابل‌اشتراک، کد QR، و نمودار فعالیت راند برای هر کیف‌پول نمایش می‌دهد.",
-    features: ["نمودار درخت تعاملی", "لینک معرفی با کد QR", "کپی در کلیپ‌بورد", "نمودار فعالیت هر راند"],
+    features: ["نمودار درخت تعاملی", "لینک معرفی با کد QR", "کپی در کلیپ‌بورد", "بج زنجیره‌ی معرفی"],
+  },
+  "pool-health": {
+    name: "سلامت استخر هوشمند",
+    statusLabel: "فعال",
+    tagline: "استخر خودش از خودش محافظت می‌کند",
+    description:
+      "قرارداد هر راند پوشش خودش را می‌سنجد و در یکی از ۴ مرحله قرار می‌گیرد؛ وقتی استخر نیاز داشته باشد شرایط پرداخت را سخت‌گیرانه‌تر و بعد از بهبود دوباره سخاوتمندانه‌تر می‌کند - همه به‌صورت زنده قابل‌مشاهده است.",
+    features: ["کنترل‌کننده‌ی ۴ مرحله‌ای", "نمایش زنده‌ی پوشش استخر", "شرایط پرداخت هر مرحله", "تاریخچه‌ی ارتقا/افت مرحله"],
+  },
+  "weekly-fund": {
+    name: "صندوق هفتگی $۵۰۰",
+    statusLabel: "فعال",
+    tagline: "با تطبیق $۵۰۰ در هر دو پا، امتیاز هفتگی بگیرید",
+    description:
+      "یک استخر جداگانه که از هر ثبت‌نام و شارژ حساب تأمین می‌شود. وضعیت عمومی و پیشرفت شخصی پای چپ/راست خودتان، هر دو در یک صفحه.",
+    features: ["نمای عمومی + شخصی", "حجم زنده‌ی پای چپ/راست", "امتیاز اعتباری", "مبلغ دریافتی"],
+  },
+  "network-pulse": {
+    name: "نبض زنده‌ی شبکه",
+    statusLabel: "فعال",
+    tagline: "اعداد بزرگ، داده‌ی واقعی، آماده برای ارائه",
+    description:
+      "حجم کل، کاربران، امتیاز و صندوق هفتگی، به‌صورت زنده و متحرک از همون قراردادی که بقیه‌ی سایت هم ازش می‌خونه - با حالت تمام‌صفحه برای نمایش.",
+    features: ["شمارنده‌های زنده‌ی متحرک", "حالت تمام‌صفحه برای ارائه", "بدون هیچ عدد ساختگی"],
+  },
+  games: {
+    name: "مرکز بازی",
+    statusLabel: "فعال",
+    tagline: "تخته‌نرد رایگان، و یک پلتفرم واقعی شرط‌بندی آنچین",
+    description:
+      "یک بازی تخته‌نرد رایگان و بدون نیاز به کیف‌پول برای بازی معمولی، به‌علاوه یک پلتفرم جداگانه‌ی تخته‌نرد آنچین با شرط‌بندی واقعی USDT/BNB، میزهای باز، و جدول رتبه‌بندی.",
+    features: ["تخته‌نرد رایگان محلی و با هوش مصنوعی", "شرط‌بندی واقعی رو زنجیره", "لابی میزهای باز", "جدول رتبه‌بندی"],
   },
   swap: {
     name: "معاملات پنکیک‌سواپ",

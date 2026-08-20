@@ -6,11 +6,10 @@ import {
   ArrowRight,
   Layers,
   ShieldCheck,
-  Users2,
   Coins,
   Flame,
   Radio,
-  Globe2,
+  Gamepad2,
   Sparkles,
 } from "lucide-react";
 
@@ -26,13 +25,18 @@ function toNumber(value?: string): number {
   return Number.isNaN(n) ? 0 : n;
 }
 
-const FEATURE_ICONS = [ShieldCheck, Coins, Flame, Radio, Globe2, Users2];
+const FEATURES = [
+  { key: "stages", icon: ShieldCheck, href: "/dashboard" },
+  { key: "weekly", icon: Coins, href: "/weekly" },
+  { key: "streak", icon: Flame, href: "/genealogy" },
+  { key: "pulse", icon: Radio, href: "/pulse" },
+  { key: "games", icon: Gamepad2, href: "/games" },
+  { key: "network", icon: Sparkles, href: "/products" },
+] as const;
 
 export default function LandingPage() {
   const { t } = useTranslation();
   const { info } = useMainBulkInfo(0);
-
-  const featureKeys = ["stages", "weekly", "streak", "pulse", "bilingual", "network"] as const;
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
@@ -144,25 +148,23 @@ export default function LandingPage() {
           {t("landing.featuresTitle")}
         </h2>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {featureKeys.map((key, i) => {
-            const Icon = FEATURE_ICONS[i];
-            return (
-              <motion.div
-                key={key}
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.4, delay: i * 0.05 }}
-                className="card-glow rounded-2xl p-6"
-              >
+          {FEATURES.map(({ key, icon: Icon, href }, i) => (
+            <motion.div
+              key={key}
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.4, delay: i * 0.05 }}
+            >
+              <Link href={href} className="card-glow block rounded-2xl p-6 transition-transform hover:-translate-y-1">
                 <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                   <Icon className="h-5 w-5" />
                 </div>
                 <h3 className="mb-1.5 font-semibold">{t(`landing.feature.${key}.title`)}</h3>
                 <p className="text-sm text-muted-foreground">{t(`landing.feature.${key}.description`)}</p>
-              </motion.div>
-            );
-          })}
+              </Link>
+            </motion.div>
+          ))}
         </div>
       </section>
 

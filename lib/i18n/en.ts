@@ -97,6 +97,10 @@ export const en = {
         title: "English & Persian",
         description: "The entire dashboard, from registration to the help center, works fully in both languages.",
       },
+      games: {
+        title: "Game Center",
+        description: "Free casual backgammon, plus a separate on-chain platform with real USDT/BNB wagering and open tables.",
+      },
       network: {
         title: "BNB Smart Chain",
         description: "Every action - registration, top-ups, payouts - is a transaction you sign and can verify on a public block explorer.",
