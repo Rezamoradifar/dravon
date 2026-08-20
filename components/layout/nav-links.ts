@@ -28,7 +28,7 @@ export interface NavLink {
 }
 
 export const NAV_LINKS: NavLink[] = [
-  { href: "/", labelKey: "nav.dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
   { href: "/pulse", labelKey: "nav.pulse", icon: Radio },
   { href: "/weekly", labelKey: "nav.weeklyFund", icon: Coins },
   { href: "/help", labelKey: "nav.help", icon: HelpCircle },

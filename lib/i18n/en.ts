@@ -63,6 +63,49 @@ export const en = {
     creditedPoints: "Credited Points",
     owed: "Owed",
   },
+  landing: {
+    badge: "Live on BNB Smart Chain",
+    heroTitle: "A Binary Network Built for the Long Run",
+    heroSubtitle:
+      "Real on-chain rewards, a self-protecting pool, and a weekly $500 matching bonus - all readable live, all yours to verify on-chain.",
+    ctaPrimary: "Launch Dashboard",
+    ctaSecondary: "See Live Network Pulse",
+    launchApp: "Launch App",
+    statVolume: "All-Time Volume",
+    statUsers: "Registered Users",
+    statPointValue: "Point Value",
+    statNetwork: "Network",
+    featuresTitle: "What You Get",
+    feature: {
+      stages: {
+        title: "Adaptive Pool Health",
+        description: "The pool measures its own health every round and adjusts payout terms automatically to stay solvent - no guesswork, no hidden math.",
+      },
+      weekly: {
+        title: "Weekly $500 Match",
+        description: "Match $500 of volume on both legs in a week and earn a weekly bonus point, on top of regular binary rewards.",
+      },
+      streak: {
+        title: "Referral Streak",
+        description: "Consecutive rounds of real referral activity earn you a visible streak badge - verified straight from on-chain history.",
+      },
+      pulse: {
+        title: "Live Network Pulse",
+        description: "Watch total volume, users, and pool health update in real time, straight from the contract - nothing simulated.",
+      },
+      bilingual: {
+        title: "English & Persian",
+        description: "The entire dashboard, from registration to the help center, works fully in both languages.",
+      },
+      network: {
+        title: "BNB Smart Chain",
+        description: "Every action - registration, top-ups, payouts - is a transaction you sign and can verify on a public block explorer.",
+      },
+    },
+    closingTitle: "Ready to see it live?",
+    closingSubtitle: "Connect your wallet and explore the dashboard - no account, no password, just your wallet.",
+    footer: "Round Dashboard - on-chain, verifiable, always live.",
+  },
   assistant: {
     title: "Ask the Assistant",
     subtitle: "Instant answers about the system, no waiting.",

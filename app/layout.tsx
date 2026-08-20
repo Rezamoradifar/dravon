@@ -4,9 +4,7 @@ import Script from "next/script";
 
 import "./globals.css";
 import { Providers } from "./providers";
-import { Navbar } from "@/components/layout/navbar";
-import { Sidebar } from "@/components/layout/sidebar";
-import { PageTransition } from "@/components/layout/page-transition";
+import { AppShell } from "@/components/layout/app-shell";
 import { FloatingLights } from "@/components/layout/floating-lights";
 import { AskAssistant } from "@/components/assistant/ask-assistant";
 
@@ -135,26 +133,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Script>
         <Providers>
           <FloatingLights />
-          {MAINTENANCE_MODE ? (
-            children
-          ) : (
-            <div className="flex min-h-screen flex-col">
-              <Navbar />
-              <div className="flex flex-1">
-                <aside className="hidden w-64 shrink-0 border-r border-border/60 md:block">
-                  <div className="sticky top-16">
-                    <Sidebar />
-                  </div>
-                </aside>
-                <main className="min-w-0 flex-1 px-4 py-6 md:px-8 md:py-8">
-                  <div className="mx-auto w-full max-w-7xl">
-                    <PageTransition>{children}</PageTransition>
-                  </div>
-                </main>
-              </div>
-              <AskAssistant />
-            </div>
-          )}
+          <AppShell maintenanceMode={MAINTENANCE_MODE}>{children}</AppShell>
+          {!MAINTENANCE_MODE && <AskAssistant />}
         </Providers>
       </body>
     </html>

@@ -1,61 +1,192 @@
 "use client";
 
-import { PageHeader } from "@/components/shared/page-header";
-import { NetworkBanner } from "@/components/shared/network-banner";
-import { PriceTicker } from "@/components/shared/price-ticker";
-import { WalletInfoCard } from "@/components/dashboard/wallet-info-card";
-import { DashboardCards } from "@/components/dashboard/dashboard-cards";
-import { ContractAddressesCard } from "@/components/dashboard/contract-addresses-card";
-import { RoundOverviewCards } from "@/components/dashboard/round-overview-cards";
-import { NetworkGrowthChart } from "@/components/dashboard/network-growth-chart";
-import { ActivityPanel } from "@/components/dashboard/activity-panel";
-import { NetworkActivityFeed } from "@/components/dashboard/network-activity-feed";
-import { StageIndicator } from "@/components/shared/stage-indicator";
-import { WeeklyWindowCard } from "@/components/shared/weekly-window-card";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  Layers,
+  ShieldCheck,
+  Users2,
+  Coins,
+  Flame,
+  Radio,
+  Globe2,
+  Sparkles,
+} from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { LanguageToggle } from "@/components/layout/language-toggle";
+import { useMainBulkInfo } from "@/hooks/useMainBulkInfo";
 import { useTranslation } from "@/contexts/language-context";
 
-export default function DashboardPage() {
+function toNumber(value?: string): number {
+  if (!value) return 0;
+  const n = Number(value);
+  return Number.isNaN(n) ? 0 : n;
+}
+
+const FEATURE_ICONS = [ShieldCheck, Coins, Flame, Radio, Globe2, Users2];
+
+export default function LandingPage() {
   const { t } = useTranslation();
+  const { info } = useMainBulkInfo(0);
+
+  const featureKeys = ["stages", "weekly", "streak", "pulse", "bilingual", "network"] as const;
 
   return (
-    <div>
-      <PageHeader
-        title={t("dashboardPage.title")}
-        description={t("dashboardPage.description")}
-      />
-      <NetworkBanner />
+    <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
+      {/* Ambient background - same neon duotone used across the app */}
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-primary/20 blur-[120px]" />
+        <div className="absolute -right-40 top-1/3 h-[480px] w-[480px] rounded-full bg-[hsl(var(--accent-2)/0.15)] blur-[120px]" />
+        <div className="absolute bottom-0 left-1/3 h-[420px] w-[420px] rounded-full bg-primary/10 blur-[100px]" />
+      </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <PriceTicker />
+      {/* Minimal marketing header */}
+      <header className="sticky top-0 z-40 border-b border-border/40 bg-background/70 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:px-8">
+          <div className="flex items-center gap-2 font-semibold tracking-tight">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <Layers className="h-4 w-4" />
+            </span>
+            {t("nav.brand")}
+          </div>
+          <div className="flex items-center gap-2">
+            <LanguageToggle />
+            <ThemeToggle />
+            <Button asChild size="sm" className="gap-1.5">
+              <Link href="/dashboard">
+                {t("landing.launchApp")}
+                <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
+              </Link>
+            </Button>
+          </div>
         </div>
-        <div className="space-y-4">
-          <WalletInfoCard />
+      </header>
+
+      {/* Hero */}
+      <section className="mx-auto max-w-5xl px-4 pb-16 pt-20 text-center md:px-8 md:pt-28">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary"
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          {t("landing.badge")}
+        </motion.div>
+        <motion.h1
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.05 }}
+          className="text-gradient text-4xl font-bold leading-tight tracking-tight md:text-6xl"
+        >
+          {t("landing.heroTitle")}
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="mx-auto mt-5 max-w-2xl text-base text-muted-foreground md:text-lg"
+        >
+          {t("landing.heroSubtitle")}
+        </motion.p>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+          className="mt-8 flex flex-wrap items-center justify-center gap-3"
+        >
+          <Button asChild size="lg" className="gap-2">
+            <Link href="/dashboard">
+              {t("landing.ctaPrimary")}
+              <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="outline">
+            <Link href="/pulse">{t("landing.ctaSecondary")}</Link>
+          </Button>
+        </motion.div>
+      </section>
+
+      {/* Live stats strip - real numbers, same data source as /pulse */}
+      <section className="mx-auto max-w-5xl px-4 pb-16 md:px-8">
+        <div className="grid grid-cols-2 gap-4 rounded-2xl border border-border/60 bg-card/40 p-6 backdrop-blur-sm md:grid-cols-4">
+          <div className="text-center">
+            <div className="font-mono text-2xl font-bold text-primary md:text-3xl">
+              ${toNumber(info?.allEnteredUSD).toLocaleString("en-US")}
+            </div>
+            <div className="mt-1 text-xs text-muted-foreground">{t("landing.statVolume")}</div>
+          </div>
+          <div className="text-center">
+            <div className="font-mono text-2xl font-bold text-[hsl(var(--accent-2))] md:text-3xl">
+              {Number(info?.userCount ?? 0n).toLocaleString("en-US")}
+            </div>
+            <div className="mt-1 text-xs text-muted-foreground">{t("landing.statUsers")}</div>
+          </div>
+          <div className="text-center">
+            <div className="font-mono text-2xl font-bold text-primary md:text-3xl">
+              ${toNumber(info?.pointValue).toLocaleString("en-US")}
+            </div>
+            <div className="mt-1 text-xs text-muted-foreground">{t("landing.statPointValue")}</div>
+          </div>
+          <div className="text-center">
+            <div className="font-mono text-2xl font-bold text-[hsl(var(--accent-2))] md:text-3xl">BNB Chain</div>
+            <div className="mt-1 text-xs text-muted-foreground">{t("landing.statNetwork")}</div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <DashboardCards />
-
-      <h2 className="mb-3 mt-8 text-lg font-semibold">{t("dashboardPage.currentRoundOverview")}</h2>
-      <p className="mb-4 text-sm text-muted-foreground">{t("dashboardPage.currentRoundHint")}</p>
-      <RoundOverviewCards roundsAgo={0} />
-
-      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <StageIndicator />
-        <WeeklyWindowCard />
-      </div>
-
-      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <NetworkGrowthChart />
+      {/* Feature grid */}
+      <section className="mx-auto max-w-6xl px-4 pb-24 md:px-8">
+        <h2 className="mb-8 text-center text-2xl font-bold tracking-tight md:text-3xl">
+          {t("landing.featuresTitle")}
+        </h2>
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {featureKeys.map((key, i) => {
+            const Icon = FEATURE_ICONS[i];
+            return (
+              <motion.div
+                key={key}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.4, delay: i * 0.05 }}
+                className="card-glow rounded-2xl p-6"
+              >
+                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <h3 className="mb-1.5 font-semibold">{t(`landing.feature.${key}.title`)}</h3>
+                <p className="text-sm text-muted-foreground">{t(`landing.feature.${key}.description`)}</p>
+              </motion.div>
+            );
+          })}
         </div>
-        <ContractAddressesCard />
-      </div>
+      </section>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <NetworkActivityFeed />
-        <ActivityPanel />
-      </div>
+      {/* Closing CTA */}
+      <section className="mx-auto max-w-4xl px-4 pb-24 text-center md:px-8">
+        <div className="card-glow rounded-2xl px-8 py-14">
+          <h2 className="text-gradient text-2xl font-bold tracking-tight md:text-3xl">
+            {t("landing.closingTitle")}
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground md:text-base">
+            {t("landing.closingSubtitle")}
+          </p>
+          <Button asChild size="lg" className="mt-7 gap-2">
+            <Link href="/dashboard">
+              {t("landing.ctaPrimary")}
+              <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+            </Link>
+          </Button>
+        </div>
+      </section>
+
+      <footer className="border-t border-border/40 py-8 text-center text-xs text-muted-foreground">
+        {t("landing.footer")}
+      </footer>
     </div>
   );
 }

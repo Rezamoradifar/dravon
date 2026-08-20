@@ -13,7 +13,7 @@ export default function NotFound() {
       <h1 className="text-3xl font-semibold">{t("notFoundPage.title")}</h1>
       <p className="text-muted-foreground">{t("notFoundPage.description")}</p>
       <Button asChild>
-        <Link href="/">{t("notFoundPage.backToDashboard")}</Link>
+        <Link href="/dashboard">{t("notFoundPage.backToDashboard")}</Link>
       </Button>
     </div>
   );

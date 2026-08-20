@@ -2,6 +2,9 @@ import type { MetadataRoute } from "next";
 
 const ROUTES = [
   "",
+  "/dashboard",
+  "/pulse",
+  "/weekly",
   "/help",
   "/register",
   "/charge",

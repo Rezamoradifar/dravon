@@ -30,7 +30,7 @@ export function Navbar() {
           >
             <Menu />
           </Button>
-          <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
+          <Link href="/dashboard" className="flex items-center gap-2 font-semibold tracking-tight">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <Layers className="h-4 w-4" />
             </span>
