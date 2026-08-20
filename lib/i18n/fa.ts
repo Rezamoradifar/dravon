@@ -4,6 +4,7 @@ export const fa: Dictionary = {
   nav: {
     brand: "داشبورد راند",
     toggleNavigation: "نمایش/پنهان کردن منو",
+    backToLanding: "بازگشت به صفحه‌ی اصلی",
     dashboard: "داشبورد",
     pulse: "نبض شبکه",
     weeklyFund: "صندوق هفتگی",

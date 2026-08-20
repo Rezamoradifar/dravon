@@ -2,6 +2,7 @@ export const en = {
   nav: {
     brand: "Round Dashboard",
     toggleNavigation: "Toggle navigation",
+    backToLanding: "Back to Home",
     dashboard: "Dashboard",
     pulse: "Network Pulse",
     weeklyFund: "Weekly Fund",

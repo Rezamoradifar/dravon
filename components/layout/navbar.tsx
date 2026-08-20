@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Menu, Layers } from "lucide-react";
+import { Menu, Layers, ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
@@ -39,6 +39,17 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button asChild variant="ghost" size="icon" className="sm:hidden" aria-label={t("nav.backToLanding")}>
+            <Link href="/">
+              <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
+            </Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm" className="hidden gap-1.5 sm:inline-flex">
+            <Link href="/">
+              <ArrowLeft className="h-3.5 w-3.5 rtl:rotate-180" />
+              {t("nav.backToLanding")}
+            </Link>
+          </Button>
           <LanguageToggle />
           <ThemeToggle />
           <NotificationBell />
