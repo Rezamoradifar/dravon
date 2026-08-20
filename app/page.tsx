@@ -11,6 +11,13 @@ import {
   Radio,
   Gamepad2,
   Sparkles,
+  Wallet,
+  Package,
+  UserPlus,
+  LayoutDashboard,
+  Dice5,
+  Trophy,
+  HelpCircle,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -18,6 +25,7 @@ import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { LanguageToggle } from "@/components/layout/language-toggle";
 import { useMainBulkInfo } from "@/hooks/useMainBulkInfo";
 import { useTranslation } from "@/contexts/language-context";
+import { getLocalizedHelpFaq } from "@/lib/help-content";
 
 function toNumber(value?: string): number {
   if (!value) return 0;
@@ -34,9 +42,55 @@ const FEATURES = [
   { key: "network", icon: Sparkles, href: "/products" },
 ] as const;
 
+const STEPS = [
+  { key: "connect", icon: Wallet },
+  { key: "choose", icon: Package },
+  { key: "register", icon: UserPlus },
+  { key: "track", icon: LayoutDashboard },
+] as const;
+
+const NAV_ITEMS = [
+  { key: "howItWorks", href: "#how-it-works" },
+  { key: "features", href: "#features" },
+  { key: "games", href: "#games" },
+  { key: "faq", href: "#faq" },
+] as const;
+
+const FOOTER_COLUMNS = [
+  {
+    key: "product",
+    links: [
+      { key: "dashboard", href: "/dashboard" },
+      { key: "register", href: "/register" },
+      { key: "genealogy", href: "/genealogy" },
+      { key: "weeklyFund", href: "/weekly" },
+      { key: "pulse", href: "/pulse" },
+    ],
+  },
+  {
+    key: "learn",
+    links: [
+      { key: "learningCenter", href: "/learn" },
+      { key: "flashLoans", href: "/learn/flash-loans" },
+      { key: "arbitrage", href: "/learn/arbitrage" },
+      { key: "walletSecurity", href: "/learn/wallet-security" },
+    ],
+  },
+  {
+    key: "resources",
+    links: [
+      { key: "help", href: "/help" },
+      { key: "products", href: "/products" },
+      { key: "news", href: "/news" },
+      { key: "games", href: "/games" },
+    ],
+  },
+] as const;
+
 export default function LandingPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { info } = useMainBulkInfo(0);
+  const faqPreview = getLocalizedHelpFaq(locale).slice(0, 4);
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
@@ -47,7 +101,7 @@ export default function LandingPage() {
         <div className="absolute bottom-0 left-1/3 h-[420px] w-[420px] rounded-full bg-primary/10 blur-[100px]" />
       </div>
 
-      {/* Minimal marketing header */}
+      {/* Marketing header with nav menu */}
       <header className="sticky top-0 z-40 border-b border-border/40 bg-background/70 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:px-8">
           <div className="flex items-center gap-2 font-semibold tracking-tight">
@@ -56,6 +110,15 @@ export default function LandingPage() {
             </span>
             {t("nav.brand")}
           </div>
+
+          <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground lg:flex">
+            {NAV_ITEMS.map((item) => (
+              <a key={item.key} href={item.href} className="transition-colors hover:text-foreground">
+                {t(`landing.nav.${item.key}`)}
+              </a>
+            ))}
+          </nav>
+
           <div className="flex items-center gap-2">
             <LanguageToggle />
             <ThemeToggle />
@@ -115,7 +178,7 @@ export default function LandingPage() {
       </section>
 
       {/* Live stats strip - real numbers, same data source as /pulse */}
-      <section className="mx-auto max-w-5xl px-4 pb-16 md:px-8">
+      <section className="mx-auto max-w-5xl px-4 pb-20 md:px-8">
         <div className="grid grid-cols-2 gap-4 rounded-2xl border border-border/60 bg-card/40 p-6 backdrop-blur-sm md:grid-cols-4">
           <div className="text-center">
             <div className="font-mono text-2xl font-bold text-primary md:text-3xl">
@@ -142,8 +205,39 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* How it works */}
+      <section id="how-it-works" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-24 md:px-8">
+        <h2 className="mb-2 text-center text-2xl font-bold tracking-tight md:text-3xl">
+          {t("landing.howItWorksTitle")}
+        </h2>
+        <p className="mx-auto mb-10 max-w-xl text-center text-sm text-muted-foreground">
+          {t("landing.howItWorksSubtitle")}
+        </p>
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {STEPS.map(({ key, icon: Icon }, i) => (
+            <motion.div
+              key={key}
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.4, delay: i * 0.06 }}
+              className="relative rounded-2xl border border-border/60 bg-card/40 p-6 text-center"
+            >
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Icon className="h-5 w-5" />
+              </div>
+              <div className="mb-1.5 text-xs font-semibold text-primary">
+                {t("landing.step", { n: String(i + 1) })}
+              </div>
+              <h3 className="mb-1.5 font-semibold">{t(`landing.steps.${key}.title`)}</h3>
+              <p className="text-sm text-muted-foreground">{t(`landing.steps.${key}.description`)}</p>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
       {/* Feature grid */}
-      <section className="mx-auto max-w-6xl px-4 pb-24 md:px-8">
+      <section id="features" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-24 md:px-8">
         <h2 className="mb-8 text-center text-2xl font-bold tracking-tight md:text-3xl">
           {t("landing.featuresTitle")}
         </h2>
@@ -168,6 +262,72 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Games spotlight */}
+      <section id="games" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-24 md:px-8">
+        <h2 className="mb-2 text-center text-2xl font-bold tracking-tight md:text-3xl">
+          {t("landing.gamesTitle")}
+        </h2>
+        <p className="mx-auto mb-10 max-w-xl text-center text-sm text-muted-foreground">
+          {t("landing.gamesSubtitle")}
+        </p>
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          <Link
+            href="/games/backgammon"
+            className="card-glow group block overflow-hidden rounded-2xl p-8 transition-transform hover:-translate-y-1"
+          >
+            <Dice5 className="mb-4 h-8 w-8 text-primary" />
+            <h3 className="mb-2 text-lg font-semibold">{t("landing.gameFree.title")}</h3>
+            <p className="mb-4 text-sm text-muted-foreground">{t("landing.gameFree.description")}</p>
+            <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
+              {t("landing.playNow")}
+              <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
+            </span>
+          </Link>
+          <Link
+            href="/games/backgammon-onchain"
+            className="card-glow group block overflow-hidden rounded-2xl p-8 transition-transform hover:-translate-y-1"
+          >
+            <Trophy className="mb-4 h-8 w-8 text-[hsl(var(--accent-2))]" />
+            <h3 className="mb-2 text-lg font-semibold">{t("landing.gameOnchain.title")}</h3>
+            <p className="mb-4 text-sm text-muted-foreground">{t("landing.gameOnchain.description")}</p>
+            <span className="inline-flex items-center gap-1.5 text-sm font-medium text-[hsl(var(--accent-2))]">
+              {t("landing.playNow")}
+              <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
+            </span>
+          </Link>
+        </div>
+      </section>
+
+      {/* FAQ preview */}
+      <section id="faq" className="mx-auto max-w-4xl scroll-mt-20 px-4 pb-24 md:px-8">
+        <h2 className="mb-8 text-center text-2xl font-bold tracking-tight md:text-3xl">
+          {t("landing.faqTitle")}
+        </h2>
+        <div className="space-y-3">
+          {faqPreview.map((item, i) => (
+            <motion.div
+              key={item.question}
+              initial={{ opacity: 0, y: 8 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.35, delay: i * 0.05 }}
+              className="rounded-xl border border-border/60 bg-card/40 p-5"
+            >
+              <div className="mb-1.5 flex items-start gap-2 font-medium">
+                <HelpCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                {item.question}
+              </div>
+              <p className="ps-6 text-sm text-muted-foreground">{item.answer}</p>
+            </motion.div>
+          ))}
+        </div>
+        <div className="mt-6 text-center">
+          <Button asChild variant="outline">
+            <Link href="/help">{t("landing.viewAllFaq")}</Link>
+          </Button>
+        </div>
+      </section>
+
       {/* Closing CTA */}
       <section className="mx-auto max-w-4xl px-4 pb-24 text-center md:px-8">
         <div className="card-glow rounded-2xl px-8 py-14">
@@ -186,8 +346,42 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-border/40 py-8 text-center text-xs text-muted-foreground">
-        {t("landing.footer")}
+      {/* Full footer */}
+      <footer className="border-t border-border/40">
+        <div className="mx-auto max-w-6xl px-4 py-14 md:px-8">
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+            <div className="col-span-2 md:col-span-1">
+              <div className="mb-3 flex items-center gap-2 font-semibold tracking-tight">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                  <Layers className="h-3.5 w-3.5" />
+                </span>
+                {t("nav.brand")}
+              </div>
+              <p className="text-xs text-muted-foreground">{t("landing.footerTagline")}</p>
+            </div>
+            {FOOTER_COLUMNS.map((col) => (
+              <div key={col.key}>
+                <h4 className="mb-3 text-sm font-semibold">{t(`landing.footerCol.${col.key}`)}</h4>
+                <ul className="space-y-2">
+                  {col.links.map((link) => (
+                    <li key={link.key}>
+                      <Link
+                        href={link.href}
+                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        {t(`landing.footerLink.${link.key}`)}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-border/40 pt-6 text-xs text-muted-foreground md:flex-row">
+            <span>{t("landing.footer")}</span>
+            <span>{t("landing.footerDisclaimer")}</span>
+          </div>
+        </div>
       </footer>
     </div>
   );
