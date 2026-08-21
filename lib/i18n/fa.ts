@@ -24,6 +24,12 @@ export const fa: Dictionary = {
     account: "عملیات حساب",
     admin: "پنل مدیریت",
     owner: "مالک",
+    section: {
+      overview: "نمای کلی",
+      account: "حساب شما",
+      explore: "کاوش",
+      admin: "پیشرفته",
+    },
   },
   common: {
     toggleTheme: "تغییر پوسته",

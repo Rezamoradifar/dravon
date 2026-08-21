@@ -22,6 +22,12 @@ export const en = {
     account: "Account Actions",
     admin: "Admin Panel",
     owner: "Owner",
+    section: {
+      overview: "Overview",
+      account: "Your Account",
+      explore: "Explore",
+      admin: "Advanced",
+    },
   },
   common: {
     toggleTheme: "Toggle theme",

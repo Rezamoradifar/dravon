@@ -165,6 +165,19 @@ html[dir="rtl"] body {
       0 8px 28px -16px hsl(var(--accent-2) / 0.4);
   }
 
+  /* Active nav-item pill glow, echoing .card-glow's neon rim at a smaller scale. */
+  .nav-active-glow {
+    box-shadow:
+      0 0 0 1px hsl(var(--primary) / 0.5),
+      0 6px 18px -6px hsl(var(--primary) / 0.55);
+  }
+  .dark .nav-active-glow {
+    box-shadow:
+      0 0 0 1px hsl(var(--primary) / 0.55),
+      0 0 20px -2px hsl(var(--primary) / 0.5),
+      0 6px 20px -6px hsl(var(--accent-2) / 0.35);
+  }
+
   /* Signature premium text treatment for page titles/hero copy - see PageHeader. */
   .text-gradient {
     background-image: linear-gradient(

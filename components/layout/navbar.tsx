@@ -59,11 +59,13 @@ export function Navbar() {
 
       <div
         className={cn(
-          "overflow-hidden border-t border-border/60 transition-[max-height] duration-300 md:hidden",
+          "overflow-hidden border-t border-primary/20 bg-background/95 backdrop-blur-md transition-[max-height] duration-300 md:hidden",
           mobileOpen ? "max-h-[80vh]" : "max-h-0",
         )}
       >
-        <Sidebar onNavigate={() => setMobileOpen(false)} />
+        <div className="max-h-[80vh] overflow-y-auto scrollbar-thin">
+          <Sidebar onNavigate={() => setMobileOpen(false)} />
+        </div>
       </div>
     </header>
   );
