@@ -704,6 +704,15 @@ export const en = {
     videoComingSoon: "Video walkthrough coming soon",
     videoComingSoonBody:
       "No video has been produced yet - this space is reserved and clearly marked rather than filled with a placeholder video.",
+    liveNewsTitle: "Live Crypto News",
+    live: "Live",
+    loading: "Loading...",
+    justNow: "Just now",
+    minutesAgo: "{n}m ago",
+    hoursAgo: "{n}h ago",
+    daysAgo: "{n}d ago",
+    liveUnavailable: "Live news is temporarily unavailable",
+    liveUnavailableBody: "Couldn't reach the news feed right now - try refreshing the page in a moment.",
   },
   announcementSlider: {
     explore: "Explore",

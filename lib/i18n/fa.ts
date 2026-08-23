@@ -706,6 +706,15 @@ export const fa: Dictionary = {
     videoComingSoon: "ویدیوی آموزشی به‌زودی",
     videoComingSoonBody:
       "هنوز ویدیویی تولید نشده - این بخش رزرو شده و به‌وضوح مشخص شده، به‌جای پر شدن با یک ویدیوی جایگزین.",
+    liveNewsTitle: "اخبار زنده کریپتو",
+    live: "زنده",
+    loading: "در حال بارگذاری...",
+    justNow: "همین الان",
+    minutesAgo: "{n} دقیقه پیش",
+    hoursAgo: "{n} ساعت پیش",
+    daysAgo: "{n} روز پیش",
+    liveUnavailable: "اخبار زنده موقتاً در دسترس نیست",
+    liveUnavailableBody: "دریافت اخبار در حال حاضر ممکن نشد - چند لحظه دیگر صفحه را دوباره بارگذاری کنید.",
   },
   announcementSlider: {
     explore: "مشاهده",

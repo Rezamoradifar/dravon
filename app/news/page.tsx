@@ -5,6 +5,7 @@ import { PlayCircle } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { AnnouncementSlider } from "@/components/news/announcement-slider";
+import { LiveNewsFeed } from "@/components/news/live-news-feed";
 import { getLocalizedAnnouncements, getLocalizedNewsCards } from "@/lib/news-content";
 import { useTranslation } from "@/contexts/language-context";
 
@@ -20,6 +21,8 @@ export default function NewsPage() {
       <div className="mb-8">
         <AnnouncementSlider items={announcements} />
       </div>
+
+      <LiveNewsFeed />
 
       <h2 className="mb-3 text-lg font-semibold">{t("newsPage.updates")}</h2>
       <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
