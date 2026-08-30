@@ -129,7 +129,6 @@ export const factoryAbi = [
     outputs: [
       { internalType: "uint8", name: "weeklyPct", type: "uint8" },
       { internalType: "uint16", name: "pointCeiling", type: "uint16" },
-      { internalType: "uint8", name: "topupsPerFlash", type: "uint8" },
       { internalType: "uint8", name: "renewalScoreMask", type: "uint8" },
     ],
     stateMutability: "pure",
@@ -141,7 +140,6 @@ export const factoryAbi = [
     outputs: [
       { internalType: "uint8", name: "weeklyPct", type: "uint8" },
       { internalType: "uint16", name: "pointCeiling", type: "uint16" },
-      { internalType: "uint8", name: "topupsPerFlash", type: "uint8" },
       { internalType: "uint8", name: "renewalScoreMask", type: "uint8" },
     ],
     stateMutability: "view",

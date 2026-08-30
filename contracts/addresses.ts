@@ -6,9 +6,9 @@ import { isAddress, type Address } from "viem";
 // required to pick up a fresh redeploy of this file. Set the matching
 // NEXT_PUBLIC_* var (see .env.example) only when pointing at a different
 // deployment (e.g. a future contract migration, or a local testnet).
-const DEFAULT_FACTORY_ADDRESS: Address = "0xFe3D2Bbd15a5c2f860d5d03811bAb5f7B068875C";
-const DEFAULT_WINDOW_ADDRESS: Address = "0x44f56Df89f9F4d9d8F1b4D7C2c72b8D9126f26a2";
-const DEFAULT_WEEKLY_WINDOW_ADDRESS: Address = "0xf16C5235D646E22cDA8FC9E8e20710FD93FF81c6";
+const DEFAULT_FACTORY_ADDRESS: Address = "0x4c7c8060580b6b5Eb50dA04Ad06Fb26B4E7159C3";
+const DEFAULT_WINDOW_ADDRESS: Address = "0x12F43550819f6D7e9D9f180d77059d760b9ef9c9";
+const DEFAULT_WEEKLY_WINDOW_ADDRESS: Address = "0x5A375cF2888eDda9D198caD8E8DAf01a613275a5";
 
 function readAddressEnv(value: string | undefined, fallback: Address, label: string): Address {
   if (!value) return fallback;

@@ -20,6 +20,15 @@ function coverageToDays(coverage: bigint): number {
   return (Number(coverage) / 100) * 0.5;
 }
 
+/** How many of every 4 top-up renewals mint upline points at this stage. */
+function scoredRenewals(mask: number): number {
+  let count = 0;
+  for (let bit = 0; bit < 4; bit++) {
+    if ((mask >> bit) & 1) count++;
+  }
+  return count;
+}
+
 export function StageIndicator() {
   const { t } = useTranslation();
   const { info, isLoading } = useStageInfo();
@@ -85,10 +94,8 @@ export function StageIndicator() {
             <div className="text-[11px] text-muted-foreground">{t("stageIndicator.pointCeiling")}</div>
           </div>
           <div>
-            <div className="text-lg font-bold">
-              {info.topupsPerFlash === 0 ? "∞" : info.topupsPerFlash}
-            </div>
-            <div className="text-[11px] text-muted-foreground">{t("stageIndicator.topupsPerFlash")}</div>
+            <div className="text-lg font-bold">{scoredRenewals(info.renewalScoreMask)}/4</div>
+            <div className="text-[11px] text-muted-foreground">{t("stageIndicator.renewalScore")}</div>
           </div>
         </div>
 

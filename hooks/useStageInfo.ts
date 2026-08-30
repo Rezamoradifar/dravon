@@ -9,7 +9,7 @@ import type { StageInfo } from "@/types/contract";
 /**
  * Reads the pool's live stage-controller state: the current stage (1 healthiest -
  * 4 floor), how many rounds of full-price runway the free reserve covers, and the
- * per-stage lever settings (weeklyPct, pointCeiling, topupsPerFlash) currently in
+ * per-stage lever settings (weeklyPct, pointCeiling, renewalScoreMask) currently in
  * force. See DataStorage.sol's stage/stageParams/_updateStage for the source of truth.
  */
 export function useStageInfo() {
@@ -27,7 +27,7 @@ export function useStageInfo() {
   const lastCoverage = data?.[1]?.result as bigint | undefined;
   const goodStreak = data?.[2]?.result as number | undefined;
   const stageParams = data?.[3]?.result as
-    | readonly [number, number, number, number]
+    | readonly [number, number, number]
     | undefined;
 
   const info: StageInfo | undefined =
@@ -37,7 +37,7 @@ export function useStageInfo() {
           lastCoverage,
           weeklyPct: stageParams[0],
           pointCeiling: stageParams[1],
-          topupsPerFlash: stageParams[2],
+          renewalScoreMask: stageParams[2],
           goodStreak: goodStreak ?? 0,
         }
       : undefined;

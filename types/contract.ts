@@ -21,8 +21,11 @@ export interface StageInfo {
   weeklyPct: number;
   /** Upper bound on points-per-round on top of the worth-tier cap. */
   pointCeiling: number;
-  /** Renewals allowed between forced flashes, or 0 for no limit. */
-  topupsPerFlash: number;
+  /**
+   * Which slots of every 4 top-up renewals mint points for uplines, as a bitmask
+   * over `renewalCount % 4` (e.g. 0xF = every renewal, 0x5 = alternating).
+   */
+  renewalScoreMask: number;
   /** Consecutive good rounds counted toward the next stage upgrade. */
   goodStreak: number;
 }

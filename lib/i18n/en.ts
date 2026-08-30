@@ -811,7 +811,7 @@ export const en = {
     runwayDays: "{days} days",
     weeklyPct: "Weekly cut",
     pointCeiling: "Point ceiling",
-    topupsPerFlash: "Renewals/flash",
+    renewalScore: "Renewals scored",
     goodStreak: "{streak}/{needed} good rounds toward the next upgrade",
     stage1: {
       label: "Healthy",

@@ -813,7 +813,7 @@ export const fa: Dictionary = {
     runwayDays: "{days} روز",
     weeklyPct: "سهم استخر هفتگی",
     pointCeiling: "سقف امتیاز",
-    topupsPerFlash: "شارژ/فلش",
+    renewalScore: "شارژهای امتیازدار",
     goodStreak: "{streak} از {needed} دور خوب برای ارتقای بعدی",
     stage1: {
       label: "سالم",
