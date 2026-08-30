@@ -48,13 +48,13 @@ html[dir="rtl"] body {
   }
 
   .dark {
-    --background: 220 30% 3%;
+    --background: 224 34% 4%;
     --foreground: 190 30% 96%;
 
-    --card: 220 26% 6%;
+    --card: 224 26% 7%;
     --card-foreground: 190 30% 96%;
 
-    --popover: 220 26% 6%;
+    --popover: 224 26% 7%;
     --popover-foreground: 190 30% 96%;
 
     --primary: 187 95% 55%;
@@ -107,6 +107,20 @@ html[dir="rtl"] body {
       ),
       radial-gradient(circle at 100% 30%, hsl(var(--accent-2) / 0.13), transparent 45%),
       radial-gradient(circle at 15% 90%, hsl(var(--primary) / 0.1), transparent 40%);
+  }
+  /* A whisper of film grain over the near-black field - flat black reads cheap at
+     this scale, a faint texture reads considered. Fixed and non-interactive, and
+     restrained enough that it never fights body copy for attention. */
+  .dark body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    background-size: 180px 180px;
   }
 }
 
@@ -163,6 +177,31 @@ html[dir="rtl"] body {
       0 1px 0 0 hsl(var(--foreground) / 0.05) inset,
       0 18px 48px -14px hsl(var(--primary) / 0.55),
       0 8px 28px -16px hsl(var(--accent-2) / 0.4);
+  }
+
+  /* A slow diagonal sheen sweeping across a primary button on hover - the kind of
+     restrained flourish a premium fintech product spends real time tuning rather
+     than a stock hover state. Dark mode only; the light theme's flatter surfaces
+     don't carry a "glass catching light" read the way near-black does. */
+  .dark .btn-sheen {
+    position: relative;
+    overflow: hidden;
+  }
+  .dark .btn-sheen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      115deg,
+      transparent 40%,
+      hsl(0 0% 100% / 0.22) 50%,
+      transparent 60%
+    );
+    transform: translateX(-120%);
+    transition: transform 0.6s ease;
+  }
+  .dark .btn-sheen:hover::after {
+    transform: translateX(120%);
   }
 
   /* Active nav-item pill glow, echoing .card-glow's neon rim at a smaller scale. */
