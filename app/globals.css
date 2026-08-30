@@ -293,6 +293,29 @@ html[dir="rtl"] body {
   }
 }
 
+/* Scoped palette for the landing page's futuristic hero/network sections only -
+   deliberately not touching --primary/--accent-2, which the rest of the app (and
+   the landing page's own feature/games/FAQ sections) already relies on. */
+.landing-fx {
+  --fx-bg: #05070d;
+  --fx-surface: #0b101a;
+  --fx-surface-2: #101722;
+  --fx-primary: #3effe9;
+  --fx-secondary: #4880ff;
+  --fx-accent: #9c48ff;
+  --fx-text: #f2f5f7;
+  --fx-text-muted: #7e8a9a;
+  --fx-success: #21d19f;
+  --fx-border: rgba(255, 255, 255, 0.08);
+}
+
+.landing-fx .text-gradient-fx {
+  background-image: linear-gradient(100deg, var(--fx-primary), var(--fx-secondary) 55%, var(--fx-accent));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
 @keyframes float-light {
   0%, 100% {
     transform: translate(0, 0) scale(1);

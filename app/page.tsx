@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -19,16 +18,35 @@ import {
   Dice5,
   Trophy,
   HelpCircle,
+  BadgeCheck,
+  Rocket,
+  Lock,
+  Cpu,
+  FileCode2,
+  Box,
+  Globe2,
+  ExternalLink,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { LanguageToggle } from "@/components/layout/language-toggle";
+import { NetworkCanvas } from "@/components/landing/network-canvas";
 import { useMainBulkInfo } from "@/hooks/useMainBulkInfo";
 import { useCountUp } from "@/hooks/useCountUp";
 import { useTranslation } from "@/contexts/language-context";
 import { getLocalizedHelpFaq } from "@/lib/help-content";
-import { cn } from "@/lib/utils";
+import { FACTORY_ADDRESS } from "@/contracts/addresses";
+
+const VERIFIED_SOURCE_URL = `https://bscscan.com/address/${FACTORY_ADDRESS}#code`;
+
+const NETWORK_FLOW = [
+  { key: "node", icon: Cpu },
+  { key: "validator", icon: ShieldCheck },
+  { key: "smartContract", icon: FileCode2 },
+  { key: "block", icon: Box },
+  { key: "network", icon: Globe2 },
+] as const;
 
 function toNumber(value?: string): number {
   if (!value) return 0;
@@ -36,14 +54,26 @@ function toNumber(value?: string): number {
   return Number.isNaN(n) ? 0 : n;
 }
 
-function AnimatedStat({ value, prefix = "", accent }: { value: number; prefix?: string; accent: "primary" | "accent-2" }) {
+const STAT_ACCENT_VAR: Record<"primary" | "secondary" | "accent", string> = {
+  primary: "var(--fx-primary)",
+  secondary: "var(--fx-secondary)",
+  accent: "var(--fx-accent)",
+};
+
+function AnimatedStat({
+  value,
+  prefix = "",
+  accent,
+}: {
+  value: number;
+  prefix?: string;
+  accent: "primary" | "secondary" | "accent";
+}) {
   const animated = useCountUp(value, 1200);
   return (
     <div
-      className={cn(
-        "font-mono text-2xl font-bold tabular-nums md:text-3xl",
-        accent === "primary" ? "text-primary" : "text-[hsl(var(--accent-2))]",
-      )}
+      className="font-mono text-lg font-bold tabular-nums md:text-2xl"
+      style={{ color: STAT_ACCENT_VAR[accent] }}
     >
       {prefix}
       {Math.round(animated).toLocaleString("en-US")}
@@ -111,7 +141,7 @@ export default function LandingPage() {
   const faqPreview = getLocalizedHelpFaq(locale).slice(0, 4);
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
+    <div className="landing-fx relative min-h-screen overflow-x-hidden bg-background text-foreground">
       {/* Ambient background - same neon duotone used across the app */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-primary/20 blur-[120px]" />
@@ -151,23 +181,22 @@ export default function LandingPage() {
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden bg-[color:var(--fx-bg)]">
         <div className="pointer-events-none absolute inset-0 -z-10">
-          <Image
-            src="/images/hero-lattice.png"
-            alt=""
-            fill
-            priority
-            className="object-cover opacity-70"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/70 to-background" />
+          <NetworkCanvas className="h-full w-full" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[color:var(--fx-bg)]/50 to-background" />
         </div>
         <div className="mx-auto max-w-5xl px-4 pb-16 pt-20 text-center md:px-8 md:pt-28">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary"
+          className="mb-5 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium"
+          style={{
+            borderColor: "color-mix(in srgb, var(--fx-primary) 30%, transparent)",
+            backgroundColor: "color-mix(in srgb, var(--fx-primary) 10%, transparent)",
+            color: "var(--fx-primary)",
+          }}
         >
           <Sparkles className="h-3.5 w-3.5" />
           {t("landing.badge")}
@@ -176,7 +205,7 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.05 }}
-          className="text-gradient text-4xl font-bold leading-tight tracking-tight md:text-6xl"
+          className="text-gradient-fx text-4xl font-bold uppercase leading-tight tracking-tight md:text-6xl"
         >
           {t("landing.heroTitle")}
         </motion.h1>
@@ -184,7 +213,8 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="mx-auto mt-5 max-w-2xl text-base text-muted-foreground md:text-lg"
+          className="mx-auto mt-5 max-w-2xl text-base md:text-lg"
+          style={{ color: "var(--fx-text-muted)" }}
         >
           {t("landing.heroSubtitle")}
         </motion.p>
@@ -195,36 +225,196 @@ export default function LandingPage() {
           className="mt-8 flex flex-wrap items-center justify-center gap-3"
         >
           <Button asChild size="lg" className="gap-2">
-            <Link href="/dashboard">
+            <Link href="/pulse">
               {t("landing.ctaPrimary")}
               <ArrowRight className="h-4 w-4 rtl:rotate-180" />
             </Link>
           </Button>
           <Button asChild size="lg" variant="outline">
-            <Link href="/pulse">{t("landing.ctaSecondary")}</Link>
+            <Link href="/register">{t("landing.ctaSecondary")}</Link>
           </Button>
         </motion.div>
         </div>
       </section>
 
+      {/* Smart contract execution */}
+      <section className="border-y" style={{ borderColor: "var(--fx-border)", backgroundColor: "var(--fx-surface)" }}>
+        <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-4 py-20 md:grid-cols-2 md:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.4 }}
+          >
+            <div
+              className="mb-3 text-xs font-semibold uppercase tracking-widest"
+              style={{ color: "var(--fx-secondary)" }}
+            >
+              {t("landing.smartContract.eyebrow")}
+            </div>
+            <h2 className="mb-4 text-2xl font-bold tracking-tight md:text-3xl" style={{ color: "var(--fx-text)" }}>
+              {t("landing.smartContract.title")}
+            </h2>
+            <p className="mb-6 text-sm md:text-base" style={{ color: "var(--fx-text-muted)" }}>
+              {t("landing.smartContract.description")}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <a
+                href={VERIFIED_SOURCE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide transition-opacity hover:opacity-80"
+                style={{ borderColor: "var(--fx-border)", color: "var(--fx-success)" }}
+              >
+                <BadgeCheck className="h-3.5 w-3.5" />
+                {t("landing.smartContract.verified")}
+                <ExternalLink className="h-3 w-3" />
+              </a>
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide"
+                style={{ borderColor: "var(--fx-border)", color: "var(--fx-secondary)" }}
+              >
+                <Rocket className="h-3.5 w-3.5" />
+                {t("landing.smartContract.deployed")}
+              </span>
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide"
+                style={{ borderColor: "var(--fx-border)", color: "var(--fx-accent)" }}
+              >
+                <Lock className="h-3.5 w-3.5" />
+                {t("landing.smartContract.secure")}
+              </span>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="overflow-hidden rounded-2xl border shadow-2xl"
+            style={{ borderColor: "var(--fx-border)", backgroundColor: "var(--fx-surface-2)" }}
+          >
+            <div
+              className="flex items-center gap-1.5 border-b px-4 py-3"
+              style={{ borderColor: "var(--fx-border)" }}
+            >
+              <span className="h-2.5 w-2.5 rounded-full bg-[#FF5570]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#FFC93E]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#21D19F]" />
+              <span className="ms-2 font-mono text-[11px]" style={{ color: "var(--fx-text-muted)" }}>
+                Window.sol
+              </span>
+            </div>
+            <pre className="overflow-x-auto p-5 font-mono text-[12px] leading-relaxed md:text-[13px]" dir="ltr">
+              <code style={{ color: "var(--fx-text-muted)" }}>
+                <span style={{ color: "var(--fx-accent)" }}>function</span>{" "}
+                <span style={{ color: "var(--fx-primary)" }}>begin</span>({"\n"}
+                {"    "}
+                <span style={{ color: "var(--fx-secondary)" }}>uint24</span> startBox,{"\n"}
+                {"    "}
+                <span style={{ color: "var(--fx-secondary)" }}>address</span> direct,{"\n"}
+                {"    "}
+                <span style={{ color: "var(--fx-secondary)" }}>address</span> referral{"\n"}
+                ) <span style={{ color: "var(--fx-accent)" }}>external payable</span>{"\n"}
+                {"    "}
+                nonReentrant onlyLatestWindow {"{"}
+                {"\n"}
+                {"    "}(uint256 enterUSD, ) = _calculateEntryRequirements({"\n"}
+                {"        "}startBox, msg.value, msg.sender{"\n"}
+                {"    "});{"\n"}
+                {"    "}factory.join(msg.sender, direct, referral, startBox, enterUSD);{"\n"}
+                {"}"}
+              </code>
+            </pre>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Network architecture flow */}
+      <section
+        className="border-b py-20"
+        style={{ borderColor: "var(--fx-border)", backgroundColor: "var(--fx-bg)" }}
+      >
+        <div className="mx-auto max-w-2xl px-4 md:px-8">
+          <div className="mb-12 text-center">
+            <div
+              className="mb-3 text-xs font-semibold uppercase tracking-widest"
+              style={{ color: "var(--fx-secondary)" }}
+            >
+              {t("landing.network.eyebrow")}
+            </div>
+            <h2 className="text-2xl font-bold tracking-tight md:text-3xl" style={{ color: "var(--fx-text)" }}>
+              {t("landing.network.title")}
+            </h2>
+          </div>
+
+          <div className="relative flex flex-col items-center gap-8">
+            <div
+              className="absolute inset-y-0 start-1/2 w-px -translate-x-1/2"
+              style={{ background: "linear-gradient(to bottom, var(--fx-primary), var(--fx-accent))", opacity: 0.25 }}
+            />
+            {NETWORK_FLOW.map(({ key, icon: Icon }, i) => (
+              <motion.div
+                key={key}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.35, delay: i * 0.08 }}
+                className="relative z-10 flex items-center gap-3 rounded-xl border px-6 py-3.5 backdrop-blur-sm"
+                style={{ borderColor: "var(--fx-border)", backgroundColor: "var(--fx-surface)" }}
+              >
+                <Icon className="h-4 w-4" style={{ color: "var(--fx-primary)" }} />
+                <span className="font-mono text-sm font-semibold tracking-wide" style={{ color: "var(--fx-text)" }}>
+                  {t(`landing.network.${key}`)}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Live stats strip - real numbers, same data source as /pulse */}
-      <section className="mx-auto max-w-5xl px-4 pb-20 md:px-8">
-        <div className="grid grid-cols-2 gap-4 rounded-2xl border border-border/60 bg-card/40 p-6 backdrop-blur-sm md:grid-cols-4">
-          <div className="text-center">
-            <AnimatedStat value={toNumber(info?.allEnteredUSD)} prefix="$" accent="primary" />
-            <div className="mt-1 text-xs text-muted-foreground">{t("landing.statVolume")}</div>
-          </div>
-          <div className="text-center">
-            <AnimatedStat value={Number(info?.userCount ?? 0n)} accent="accent-2" />
-            <div className="mt-1 text-xs text-muted-foreground">{t("landing.statUsers")}</div>
-          </div>
-          <div className="text-center">
-            <AnimatedStat value={toNumber(info?.pointValue)} prefix="$" accent="primary" />
-            <div className="mt-1 text-xs text-muted-foreground">{t("landing.statPointValue")}</div>
-          </div>
-          <div className="text-center">
-            <div className="font-mono text-2xl font-bold text-[hsl(var(--accent-2))] md:text-3xl">BNB Chain</div>
-            <div className="mt-1 text-xs text-muted-foreground">{t("landing.statNetwork")}</div>
+      <section className="py-16" style={{ backgroundColor: "var(--fx-surface)" }}>
+        <div className="mx-auto max-w-6xl px-4 md:px-8">
+          <div
+            className="grid grid-cols-2 gap-4 rounded-2xl border p-6 backdrop-blur-sm sm:grid-cols-3 lg:grid-cols-5"
+            style={{ borderColor: "var(--fx-border)", backgroundColor: "var(--fx-surface-2)" }}
+          >
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span
+                    className="absolute inline-flex h-full w-full animate-ping rounded-full"
+                    style={{ backgroundColor: info ? "var(--fx-success)" : "var(--fx-text-muted)", opacity: 0.6 }}
+                  />
+                  <span
+                    className="relative inline-flex h-2 w-2 rounded-full"
+                    style={{ backgroundColor: info ? "var(--fx-success)" : "var(--fx-text-muted)" }}
+                  />
+                </span>
+                <div className="font-mono text-lg font-bold tabular-nums md:text-2xl" style={{ color: "var(--fx-success)" }}>
+                  {info ? t("landing.stats.online") : t("landing.stats.syncing")}
+                </div>
+              </div>
+              <div className="mt-1 text-xs" style={{ color: "var(--fx-text-muted)" }}>{t("landing.stats.status")}</div>
+            </div>
+            <div className="text-center">
+              <AnimatedStat value={toNumber(info?.allEnteredUSD)} prefix="$" accent="primary" />
+              <div className="mt-1 text-xs" style={{ color: "var(--fx-text-muted)" }}>{t("landing.statVolume")}</div>
+            </div>
+            <div className="text-center">
+              <AnimatedStat value={Number(info?.userCount ?? 0n)} accent="secondary" />
+              <div className="mt-1 text-xs" style={{ color: "var(--fx-text-muted)" }}>{t("landing.stats.participants")}</div>
+            </div>
+            <div className="text-center">
+              <AnimatedStat value={toNumber(info?.pointValue)} prefix="$" accent="accent" />
+              <div className="mt-1 text-xs" style={{ color: "var(--fx-text-muted)" }}>{t("landing.statPointValue")}</div>
+            </div>
+            <div className="text-center">
+              <div className="font-mono text-xl font-bold md:text-2xl" style={{ color: "var(--fx-primary)" }}>12h</div>
+              <div className="mt-1 text-xs" style={{ color: "var(--fx-text-muted)" }}>{t("landing.stats.cadence")}</div>
+            </div>
           </div>
         </div>
       </section>
