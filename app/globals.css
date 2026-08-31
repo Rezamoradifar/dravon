@@ -20,10 +20,12 @@ html[dir="rtl"] body {
     --primary: 187 90% 38%;
     --primary-foreground: 0 0% 100%;
 
-    /* Complementary accent used only for gradients/highlights (text-gradient,
-       floating-lights' second tone) - never a Tailwind `accent` semantic color.
-       Neon magenta paired with the cyan primary for a cyberpunk-trader duotone. */
-    --accent-2: 328 85% 55%;
+    /* Complementary accents used only for gradients/highlights (text-gradient,
+       floating-lights' second tone, card-glow) - never Tailwind `accent` semantic
+       colors. A cyan/blue/purple triad reading as "smart contract infrastructure"
+       rather than the cyberpunk-trader magenta this replaced. */
+    --accent-2: 222 75% 45%;
+    --accent-3: 268 75% 48%;
 
     --secondary: 210 20% 94%;
     --secondary-foreground: 220 25% 8%;
@@ -60,7 +62,8 @@ html[dir="rtl"] body {
     --primary: 187 95% 55%;
     --primary-foreground: 220 30% 4%;
 
-    --accent-2: 328 90% 62%;
+    --accent-2: 222 100% 64%;
+    --accent-3: 268 100% 64%;
 
     --secondary: 220 22% 12%;
     --secondary-foreground: 190 30% 96%;
@@ -136,8 +139,10 @@ html[dir="rtl"] body {
   .card-glow {
     position: relative;
     background-color: hsl(var(--card) / 0.7);
-    backdrop-filter: blur(20px) saturate(140%);
-    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    /* A frosted, matte glass rather than a glossy one - saturate() is kept low
+       so surfaces stay calm and let content, not the chrome, carry the color. */
+    backdrop-filter: blur(20px) saturate(110%);
+    -webkit-backdrop-filter: blur(20px) saturate(110%);
     box-shadow:
       0 0 0 1px hsl(var(--border)),
       0 1px 0 0 hsl(var(--foreground) / 0.04) inset,
@@ -222,8 +227,9 @@ html[dir="rtl"] body {
     background-image: linear-gradient(
       100deg,
       hsl(var(--foreground)),
-      hsl(var(--primary)) 55%,
-      hsl(var(--accent-2))
+      hsl(var(--primary)) 45%,
+      hsl(var(--accent-2)) 75%,
+      hsl(var(--accent-3))
     );
     background-clip: text;
     -webkit-background-clip: text;
