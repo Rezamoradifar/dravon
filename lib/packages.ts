@@ -9,8 +9,16 @@ export interface PackageTier {
   name: string;
 }
 
+/**
+ * The $10 box (an $11 entry) is deliberately not offered here even though the
+ * contract still technically accepts it: a new entrant at that tier is booked
+ * as a $50 box carrying a $44 debt, and every payout is withheld against that
+ * debt first - so a new registrant sees $0 of real earnings until it clears.
+ * Removing it from the UI doesn't change the contract (someone could still
+ * call begin(10, ...) directly), but it stops the site from steering new
+ * users into it.
+ */
 export const PACKAGE_TIERS: PackageTier[] = [
-  { entrance: 10, name: "Starter" },
   { entrance: 50, name: "Professional" },
   { entrance: 100, name: "Enterprise" },
 ];

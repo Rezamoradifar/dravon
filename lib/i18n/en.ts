@@ -140,7 +140,7 @@ export const en = {
       },
       choose: {
         title: "Choose a Package",
-        description: "Three fixed tiers - $10, $50, or $100 - enforced by the contract itself.",
+        description: "Two fixed tiers - $50 or $100 - enforced by the contract itself.",
       },
       register: {
         title: "Register On-Chain",

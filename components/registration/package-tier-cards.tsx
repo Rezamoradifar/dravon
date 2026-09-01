@@ -111,7 +111,7 @@ export function PackageTierCards({
   getStatus?: (entrance: number) => TierStatus;
 }) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {PACKAGE_TIERS.map((tier, i) => (
         <TierCard
           key={tier.entrance}
