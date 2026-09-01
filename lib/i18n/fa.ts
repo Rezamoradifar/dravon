@@ -890,7 +890,7 @@ export const fa: Dictionary = {
     legsValue: "چپ: ${left} · راست: ${right}",
   },
   vpnPage: {
-    title: "دراوون وی‌پی‌ان",
+    title: "NodeShield",
     description: "یه VPN مبتنی بر WireGuard، با پرداخت مستقیم از کیف‌پول متصل‌شده‌ی شما.",
     notLive: "هنوز فعال نیست",
     notLiveBody: "مسیر پرداخت واقعیه، ولی راه‌اندازی سرور VPN هنوز کامل نشده. بعداً دوباره سر بزن.",

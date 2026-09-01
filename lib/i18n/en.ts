@@ -888,7 +888,7 @@ export const en = {
     legsValue: "Left ${left} · Right ${right}",
   },
   vpnPage: {
-    title: "Dravon VPN",
+    title: "NodeShield",
     description: "A WireGuard VPN, paid for directly with your connected wallet.",
     notLive: "Not live yet",
     notLiveBody: "The payment flow is real, but the operator hasn't finished setting up the VPN server yet. Check back soon.",

@@ -178,7 +178,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     slug: "vpn",
-    name: "Dravon VPN",
+    name: "NodeShield",
     status: "Coming Soon",
     tagline: "WireGuard VPN, paid for directly with your wallet",
     description:
@@ -316,7 +316,7 @@ export const PRODUCTS_FA: Record<string, LocalizedProductFields> = {
     features: ["چک‌لیست ایمنی کیف‌پول", "بهداشت مجوزها", "آگاهی از فیشینگ", "سوالات متداول"],
   },
   vpn: {
-    name: "دراوون وی‌پی‌ان",
+    name: "NodeShield",
     statusLabel: "به‌زودی",
     tagline: "VPN مبتنی بر WireGuard، پرداخت مستقیم با کیف‌پول",
     description:
