@@ -40,6 +40,23 @@ import { FACTORY_ADDRESS } from "@/contracts/addresses";
 
 const VERIFIED_SOURCE_URL = `https://bscscan.com/address/${FACTORY_ADDRESS}#code`;
 
+/** A small abstract circuit-board glyph for the (not-yet-live) arbitrage bot tiers -
+ * deliberately iconographic rather than a fabricated product screenshot. */
+function BotCircuitIcon({ variant }: { variant: "plus" | "pro" }) {
+  const accent = variant === "pro" ? "var(--fx-accent)" : "var(--fx-secondary)";
+  return (
+    <svg viewBox="0 0 48 48" className="h-10 w-10" fill="none" aria-hidden="true">
+      <rect x="15" y="15" width="18" height="18" rx="3" stroke="var(--fx-primary)" strokeWidth="1.5" />
+      <circle cx="24" cy="24" r="3.5" fill="var(--fx-primary)" />
+      <path d="M24 15V5M24 33v10M15 24H5M33 24h10" stroke={accent} strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="24" cy="5" r="2" fill={accent} />
+      <circle cx="24" cy="43" r="2" fill={accent} />
+      <circle cx="5" cy="24" r="2" fill={accent} />
+      <circle cx="43" cy="24" r="2" fill={accent} />
+    </svg>
+  );
+}
+
 const NETWORK_FLOW = [
   { key: "node", icon: Cpu },
   { key: "validator", icon: ShieldCheck },
@@ -415,6 +432,69 @@ export default function LandingPage() {
               <div className="font-mono text-xl font-bold md:text-2xl" style={{ color: "var(--fx-primary)" }}>12h</div>
               <div className="mt-1 text-xs" style={{ color: "var(--fx-text-muted)" }}>{t("landing.stats.cadence")}</div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* New products - DEX arbitrage bot (in development) */}
+      <section className="py-20" style={{ backgroundColor: "var(--fx-bg)" }}>
+        <div className="mx-auto max-w-5xl px-4 md:px-8">
+          <div className="mb-10 text-center">
+            <div
+              className="mb-3 text-xs font-semibold uppercase tracking-widest"
+              style={{ color: "var(--fx-secondary)" }}
+            >
+              {t("landing.arbitrageBot.eyebrow")}
+            </div>
+            <h2 className="text-2xl font-bold tracking-tight md:text-3xl" style={{ color: "var(--fx-text)" }}>
+              {t("landing.arbitrageBot.title")}
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-sm" style={{ color: "var(--fx-text-muted)" }}>
+              {t("landing.arbitrageBot.subtitle")}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            {(["plus", "pro"] as const).map((tier, i) => (
+              <motion.div
+                key={tier}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
+                className="rounded-2xl border p-6"
+                style={{ borderColor: "var(--fx-border)", backgroundColor: "var(--fx-surface)" }}
+              >
+                <div className="mb-4 flex items-start justify-between">
+                  <BotCircuitIcon variant={tier} />
+                  <span
+                    className="rounded-full border px-2.5 py-1 text-[10px] font-semibold tracking-wide"
+                    style={{ borderColor: "var(--fx-border)", color: "var(--fx-text-muted)" }}
+                  >
+                    {t("landing.arbitrageBot.badge")}
+                  </span>
+                </div>
+                <h3 className="mb-1.5 text-lg font-semibold" style={{ color: "var(--fx-text)" }}>
+                  {t(`landing.arbitrageBot.${tier}.name`)}
+                </h3>
+                <p className="text-sm" style={{ color: "var(--fx-text-muted)" }}>
+                  {t(`landing.arbitrageBot.${tier}.description`)}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="mt-6 flex flex-col items-center gap-3 text-center">
+            <p className="text-xs" style={{ color: "var(--fx-text-muted)" }}>
+              {t("landing.arbitrageBot.disclaimer")}
+            </p>
+            <Link
+              href="/learn/arbitrage"
+              className="text-sm font-medium underline-offset-4 hover:underline"
+              style={{ color: "var(--fx-primary)" }}
+            >
+              {t("landing.arbitrageBot.learnMore")}
+            </Link>
           </div>
         </div>
       </section>

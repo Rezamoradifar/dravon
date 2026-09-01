@@ -104,6 +104,22 @@ export const en = {
       participants: "Active Participants",
       cadence: "Round Cadence",
     },
+    arbitrageBot: {
+      eyebrow: "New - In Development",
+      title: "DEX Arbitrage Bot",
+      subtitle: "Two upcoming tiers of an automated cross-exchange arbitrage bot, currently in development.",
+      badge: "In Development",
+      plus: {
+        name: "Plus",
+        description: "A focused starting tier - monitors a smaller set of exchanges for automated arbitrage opportunities.",
+      },
+      pro: {
+        name: "Pro",
+        description: "The full tier - watches a wider network of exchanges for more opportunities and stronger potential returns.",
+      },
+      disclaimer: "Still being built - features, exchange coverage, and terms are not final.",
+      learnMore: "Learn About Arbitrage",
+    },
     nav: {
       howItWorks: "How It Works",
       features: "Features",
