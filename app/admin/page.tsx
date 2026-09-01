@@ -11,6 +11,7 @@ import { InitRoundForm } from "@/components/admin/init-round-form";
 import { NetworkGrowthChart } from "@/components/dashboard/network-growth-chart";
 import { ExportCsvButton } from "@/components/admin/export-csv-button";
 import { UserLookupPanel } from "@/components/admin/user-lookup-panel";
+import { VpnAdminPanel } from "@/components/admin/vpn-admin-panel";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useTranslation } from "@/contexts/language-context";
 
@@ -35,6 +36,7 @@ export default function AdminPage() {
             </div>
             <NetworkGrowthChart />
             <UserLookupPanel />
+            <VpnAdminPanel />
           </div>
         ) : (
           <Card>

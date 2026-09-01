@@ -1,7 +1,7 @@
 export interface Product {
   slug: string;
   name: string;
-  status: "Live" | "Educational Demo" | "Educational";
+  status: "Live" | "Educational Demo" | "Educational" | "Coming Soon";
   statusLabel?: string;
   tagline: string;
   description: string;
@@ -176,6 +176,16 @@ export const PRODUCTS: Product[] = [
     features: ["Wallet safety checklist", "Approval hygiene", "Phishing awareness", "FAQ"],
     href: "/learn/wallet-security",
   },
+  {
+    slug: "vpn",
+    name: "Dravon VPN",
+    status: "Coming Soon",
+    tagline: "WireGuard VPN, paid for directly with your wallet",
+    description:
+      "Two tiers (Plus/Pro) of a WireGuard-based VPN, subscribed to with a direct on-chain USDT payment - no card, no third-party checkout. Not live yet; the payment flow is real but requires an operator-provisioned server before it activates.",
+    features: ["Pay with your connected wallet", "No third-party payment processor", "Plus & Pro tiers", "On-chain payment verification"],
+    href: "/products/vpn",
+  },
 ];
 
 type LocalizedProductFields = Pick<Product, "name" | "tagline" | "description" | "features" | "statusLabel">;
@@ -304,6 +314,14 @@ export const PRODUCTS_FA: Record<string, LocalizedProductFields> = {
     tagline: "عادت‌های عملی امنیت کیف‌پول",
     description: "بهداشت عبارت بازیابی، تأیید تراکنش و مدیریت مجوز توکن را برای هرکسی که از کیف‌پول‌های خودگردان با اپلیکیشن‌های وب۳ استفاده می‌کند پوشش می‌دهد.",
     features: ["چک‌لیست ایمنی کیف‌پول", "بهداشت مجوزها", "آگاهی از فیشینگ", "سوالات متداول"],
+  },
+  vpn: {
+    name: "دراوون وی‌پی‌ان",
+    statusLabel: "به‌زودی",
+    tagline: "VPN مبتنی بر WireGuard، پرداخت مستقیم با کیف‌پول",
+    description:
+      "دو سطح (پلاس/پرو) از یه VPN مبتنی بر WireGuard، با پرداخت مستقیم USDT روی زنجیره - بدون کارت، بدون درگاه واسطه. هنوز فعال نیست؛ مسیر پرداخت واقعیه ولی قبل از فعال‌سازی به یه سرور آماده‌شده نیاز داره.",
+    features: ["پرداخت با کیف‌پول متصل", "بدون درگاه پرداخت واسطه", "سطح‌های پلاس و پرو", "تأیید پرداخت روی زنجیره"],
   },
 };
 

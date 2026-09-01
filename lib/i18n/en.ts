@@ -683,7 +683,7 @@ export const en = {
   },
   productsPage: {
     title: "Products",
-    description: "Every module that ships with this dashboard, and its real status - nothing here is for sale.",
+    description: "Every module that ships with this dashboard, and its real status - marked clearly if it's a paid product rather than a free dashboard feature.",
     open: "Open",
   },
   gamesPage: {
@@ -886,6 +886,40 @@ export const en = {
     credited: "{credited} credited points",
     yourLegs: "Your legs this week",
     legsValue: "Left ${left} · Right ${right}",
+  },
+  vpnPage: {
+    title: "Dravon VPN",
+    description: "A WireGuard VPN, paid for directly with your connected wallet.",
+    notLive: "Not live yet",
+    notLiveBody: "The payment flow is real, but the operator hasn't finished setting up the VPN server yet. Check back soon.",
+    payDisclaimer: "Payment is a direct USDT transfer from your wallet - no card, no third-party processor.",
+    perMonth: "month",
+    payWithWallet: "Pay with Wallet",
+    confirmInWallet: "Confirm in your wallet...",
+    waitingOnChain: "Waiting for confirmation...",
+    verifying: "Verifying payment...",
+    paidSuccess: "Payment confirmed! Your VPN access will be set up shortly and sent to you.",
+    tryAgain: "Try Again",
+    afterPayNotice: "After payment, your access is provisioned manually within a short time - this isn't fully automated yet.",
+    plus: {
+      name: "Plus",
+      description: "A single server location, one device - a solid starting tier.",
+    },
+    pro: {
+      name: "Pro",
+      description: "Multiple server locations and more devices - the full tier.",
+    },
+  },
+  vpnAdmin: {
+    title: "VPN Subscriptions",
+    description: "Payments verified on-chain, waiting to be provisioned.",
+    refresh: "Refresh",
+    empty: "No pending subscriptions.",
+    provision: "Provision",
+    provisioned: "Peer provisioned",
+    provisionFailed: "Provisioning failed",
+    loadFailed: "Failed to load",
+    configFor: "WireGuard config for tx {tx}...",
   },
 };
 

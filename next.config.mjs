@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // ssh2 (used by node-ssh in /api/admin/vpn/provision) ships a native .node
+  // crypto binding that webpack can't parse as a module - this tells Next.js
+  // to leave it as a real Node require() at runtime instead of bundling it.
+  serverExternalPackages: ["ssh2", "node-ssh"],
   eslint: {
     ignoreDuringBuilds: false,
   },
