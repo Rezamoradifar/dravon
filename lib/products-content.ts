@@ -180,10 +180,10 @@ export const PRODUCTS: Product[] = [
     slug: "vpn",
     name: "NodeShield",
     status: "Coming Soon",
-    tagline: "WireGuard VPN, paid for directly with your wallet",
+    tagline: "$1/device/month, unlimited, paid directly with your wallet",
     description:
-      "Two tiers (Plus/Pro) of a WireGuard-based VPN, subscribed to with a direct on-chain USDT payment - no card, no third-party checkout. Not live yet; the payment flow is real but requires an operator-provisioned server before it activates.",
-    features: ["Pay with your connected wallet", "No third-party payment processor", "Plus & Pro tiers", "On-chain payment verification"],
+      "A WireGuard VPN priced per device: $1/month per config, unlimited bandwidth, one device per config - pay with USDT or BNB directly from your connected wallet, no card, no third-party checkout. The payment and provisioning pipeline is real; this stays marked Coming Soon until the operator has verified a full real payment end to end.",
+    features: ["$1 per device per month", "Pay with USDT or BNB", "Unlimited bandwidth", "On-chain payment verification"],
     href: "/products/vpn",
   },
 ];
@@ -318,10 +318,10 @@ export const PRODUCTS_FA: Record<string, LocalizedProductFields> = {
   vpn: {
     name: "NodeShield",
     statusLabel: "به‌زودی",
-    tagline: "VPN مبتنی بر WireGuard، پرداخت مستقیم با کیف‌پول",
+    tagline: "هر دستگاه ماهی $۱، نامحدود، پرداخت مستقیم با کیف‌پول",
     description:
-      "دو سطح (پلاس/پرو) از یه VPN مبتنی بر WireGuard، با پرداخت مستقیم USDT روی زنجیره - بدون کارت، بدون درگاه واسطه. هنوز فعال نیست؛ مسیر پرداخت واقعیه ولی قبل از فعال‌سازی به یه سرور آماده‌شده نیاز داره.",
-    features: ["پرداخت با کیف‌پول متصل", "بدون درگاه پرداخت واسطه", "سطح‌های پلاس و پرو", "تأیید پرداخت روی زنجیره"],
+      "یه VPN مبتنی بر WireGuard با قیمت‌گذاری per-device: هر کانفیگ ماهی $۱، پهنای‌باند نامحدود، یک دستگاه به‌ازای هر کانفیگ - پرداخت با USDT یا BNB مستقیم از کیف‌پول متصل، بدون کارت، بدون درگاه واسطه. مسیر پرداخت و فعال‌سازی واقعیه؛ تا وقتی یه پرداخت واقعی کامل تست نشه، همچنان «به‌زودی» علامت‌گذاری می‌مونه.",
+    features: ["ماهی $۱ به‌ازای هر دستگاه", "پرداخت با USDT یا BNB", "پهنای‌باند نامحدود", "تأیید پرداخت روی زنجیره"],
   },
 };
 

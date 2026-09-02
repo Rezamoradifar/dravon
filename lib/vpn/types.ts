@@ -4,10 +4,11 @@
  * separate from store.ts specifically because store.ts imports Node's `fs`
  * - a client component importing anything from it would fail to bundle.
  */
-export type VpnTier = "plus" | "pro";
+export type PaymentMethod = "usdt" | "bnb";
 
-/** How many simultaneous devices each tier may provision. */
-export const DEVICE_LIMIT: Record<VpnTier, number> = { plus: 1, pro: 3 };
+/** Flat per-device monthly price - no more Plus/Pro tiers. Every device
+ * (config) is unlimited bandwidth, single-device, $1/month. */
+export const PRICE_PER_DEVICE_USD = 1;
 
 /** Subscription length granted per payment - "top-up" extends this from
  * whichever is later: now, or the account's current expiry. */
@@ -26,19 +27,19 @@ export interface VpnDevice {
 
 export interface VpnPayment {
   txHash: string;
-  amountUsdt: string;
-  tier: VpnTier;
+  amountUsd: number;
+  method: PaymentMethod;
+  deviceCount: number;
   paidAt: string;
 }
 
 export interface VpnAccount {
   walletAddress: string;
-  tier: VpnTier;
   expiresAt: string;
+  /** The most devices this account has ever paid to keep active - the
+   * target device count. Provisioning catches up to this; it never removes
+   * devices on its own. */
+  paidDeviceCount: number;
   devices: VpnDevice[];
   payments: VpnPayment[];
-  /** Set when a payment was verified but auto-provisioning the first device
-   * failed or the VPN server wasn't configured yet - the admin panel surfaces
-   * these so a human can retry once the server is ready. */
-  needsProvisioning: boolean;
 }

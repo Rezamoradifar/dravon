@@ -1,7 +1,7 @@
 import { isAddress, type Address } from "viem";
 
 /**
- * The VPN payment address and prices are not secrets - a payer needs to know
+ * The VPN payment address and price are not secrets - a payer needs to know
  * them - so, like contracts/addresses.ts, they're NEXT_PUBLIC_ and safe to
  * read from client components. Server-only pieces (the VPN server's SSH
  * details) live in lib/vpn/config.ts instead.
@@ -21,9 +21,7 @@ function readPrice(value: string | undefined, fallback: number): number {
 
 export const VPN_PAYMENT_ADDRESS = readOptionalAddress(process.env.NEXT_PUBLIC_VPN_PAYMENT_ADDRESS);
 
-export const VPN_PRICE_USD = {
-  plus: readPrice(process.env.NEXT_PUBLIC_VPN_PRICE_PLUS_USD, 9),
-  pro: readPrice(process.env.NEXT_PUBLIC_VPN_PRICE_PRO_USD, 19),
-} as const;
+/** Flat per-device monthly price - unlimited bandwidth, one device per config. */
+export const PRICE_PER_DEVICE_USD = readPrice(process.env.NEXT_PUBLIC_VPN_PRICE_PER_DEVICE_USD, 1);
 
 export const VPN_PAYMENTS_LIVE = Boolean(VPN_PAYMENT_ADDRESS);

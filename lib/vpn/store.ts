@@ -1,10 +1,10 @@
 import { promises as fs } from "fs";
 import path from "path";
 
-import { SUBSCRIPTION_DAYS, DEVICE_LIMIT, type VpnAccount, type VpnDevice, type VpnTier } from "@/lib/vpn/types";
+import { SUBSCRIPTION_DAYS, type PaymentMethod, type VpnAccount, type VpnDevice } from "@/lib/vpn/types";
 
-export { DEVICE_LIMIT, SUBSCRIPTION_DAYS } from "@/lib/vpn/types";
-export type { VpnAccount, VpnDevice, VpnPayment, VpnTier } from "@/lib/vpn/types";
+export { PRICE_PER_DEVICE_USD, SUBSCRIPTION_DAYS } from "@/lib/vpn/types";
+export type { VpnAccount, VpnDevice, VpnPayment, PaymentMethod } from "@/lib/vpn/types";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const ACCOUNTS_FILE = path.join(DATA_DIR, "vpn-accounts.jsonl");
@@ -41,13 +41,19 @@ export async function findByTxHash(txHash: string): Promise<VpnAccount | undefin
     .find((r) => r.payments.some((p) => p.txHash.toLowerCase() === txHash.toLowerCase()));
 }
 
-/** Records a verified payment: extends expiry, upgrades tier if the new
- * payment is for a higher tier, and creates the account on a first payment. */
+/**
+ * Records a verified payment: extends expiry by SUBSCRIPTION_DAYS from
+ * whichever is later (now or the current expiry), and raises
+ * paidDeviceCount to at least the number of devices this payment covers
+ * (a renewal for the same count just extends expiry; paying for more
+ * devices raises the target - it never lowers it on its own).
+ */
 export async function applyPayment(params: {
   walletAddress: string;
-  tier: VpnTier;
   txHash: string;
-  amountUsdt: string;
+  amountUsd: number;
+  method: PaymentMethod;
+  deviceCount: number;
 }): Promise<VpnAccount> {
   const existing = await getAccount(params.walletAddress);
   const now = Date.now();
@@ -55,21 +61,21 @@ export async function applyPayment(params: {
   const base = Math.max(now, currentExpiry);
   const expiresAt = new Date(base + SUBSCRIPTION_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
-  // A tier upgrade takes effect immediately; a same-or-lower-tier renewal
-  // keeps the account's existing (possibly higher) tier.
-  const tier: VpnTier =
-    !existing || DEVICE_LIMIT[params.tier] > DEVICE_LIMIT[existing.tier] ? params.tier : existing.tier;
-
   const record: VpnAccount = {
     walletAddress: params.walletAddress,
-    tier,
     expiresAt,
+    paidDeviceCount: Math.max(existing?.paidDeviceCount ?? 0, params.deviceCount),
     devices: existing?.devices ?? [],
     payments: [
       ...(existing?.payments ?? []),
-      { txHash: params.txHash, amountUsdt: params.amountUsdt, tier: params.tier, paidAt: new Date().toISOString() },
+      {
+        txHash: params.txHash,
+        amountUsd: params.amountUsd,
+        method: params.method,
+        deviceCount: params.deviceCount,
+        paidAt: new Date().toISOString(),
+      },
     ],
-    needsProvisioning: true,
   };
 
   await appendRecord(record);
@@ -80,24 +86,14 @@ export async function addDevice(walletAddress: string, device: VpnDevice): Promi
   const existing = await getAccount(walletAddress);
   if (!existing) throw new Error(`No account for ${walletAddress}`);
 
-  const record: VpnAccount = {
-    ...existing,
-    devices: [...existing.devices, device],
-    needsProvisioning: false,
-  };
+  const record: VpnAccount = { ...existing, devices: [...existing.devices, device] };
   await appendRecord(record);
   return record;
-}
-
-export async function markProvisioningHandled(walletAddress: string): Promise<void> {
-  const existing = await getAccount(walletAddress);
-  if (!existing) return;
-  await appendRecord({ ...existing, needsProvisioning: false });
 }
 
 export async function listNeedingProvisioning(): Promise<VpnAccount[]> {
   const all = await readAll();
   const latestByWallet = new Map<string, VpnAccount>();
   for (const record of all) latestByWallet.set(record.walletAddress.toLowerCase(), record);
-  return [...latestByWallet.values()].filter((r) => r.needsProvisioning);
+  return [...latestByWallet.values()].filter((r) => r.devices.length < r.paidDeviceCount);
 }

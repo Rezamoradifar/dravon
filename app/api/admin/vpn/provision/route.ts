@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { verifyAdminSignature } from "@/lib/vpn/adminAuth";
 import { provisionDevice } from "@/lib/vpn/provision";
-import { addDevice, getAccount, DEVICE_LIMIT } from "@/lib/vpn/store";
+import { addDevice, getAccount } from "@/lib/vpn/store";
 
 export const runtime = "nodejs";
 
@@ -33,15 +33,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid walletAddress" }, { status: 400 });
   }
 
-  const account = await getAccount(walletAddress);
+  let account = await getAccount(walletAddress);
   if (!account) return NextResponse.json({ error: "No account found for this wallet" }, { status: 404 });
-  if (account.devices.length >= DEVICE_LIMIT[account.tier]) {
-    return NextResponse.json({ error: `Already at this account's device limit (${DEVICE_LIMIT[account.tier]})` }, { status: 409 });
+  if (account.devices.length >= account.paidDeviceCount) {
+    return NextResponse.json({ error: "Nothing pending - this account already has every device it paid for." }, { status: 409 });
   }
 
-  const result = await provisionDevice(walletAddress, account.tier, `Device ${account.devices.length + 1}`);
+  const result = await provisionDevice(walletAddress, `Device ${account.devices.length + 1}`);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 502 });
 
-  const updated = await addDevice(walletAddress, result.device);
-  return NextResponse.json({ ok: true, wireguardConfig: result.device.config, account: updated });
+  account = await addDevice(walletAddress, result.device);
+  return NextResponse.json({ ok: true, wireguardConfig: result.device.config, account });
 }

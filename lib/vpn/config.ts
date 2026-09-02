@@ -1,6 +1,6 @@
 import type { Address } from "viem";
 
-import { VPN_PAYMENT_ADDRESS, VPN_PRICE_USD } from "@/lib/vpn/publicConfig";
+import { VPN_PAYMENT_ADDRESS, PRICE_PER_DEVICE_USD } from "@/lib/vpn/publicConfig";
 
 /**
  * Server-side-only VPN product configuration. Every value is optional until
@@ -11,7 +11,7 @@ import { VPN_PAYMENT_ADDRESS, VPN_PRICE_USD } from "@/lib/vpn/publicConfig";
  */
 export interface VpnConfig {
   paymentAddress: Address | null;
-  priceUsd: { plus: number; pro: number };
+  pricePerDeviceUsd: number;
   server: {
     host: string | null;
     port: number;
@@ -23,7 +23,7 @@ export interface VpnConfig {
 export function getVpnConfig(): VpnConfig {
   return {
     paymentAddress: VPN_PAYMENT_ADDRESS,
-    priceUsd: VPN_PRICE_USD,
+    pricePerDeviceUsd: PRICE_PER_DEVICE_USD,
     server: {
       host: process.env.VPN_SERVER_HOST || null,
       port: Number(process.env.VPN_SERVER_SSH_PORT ?? 22),

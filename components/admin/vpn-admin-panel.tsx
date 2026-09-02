@@ -82,11 +82,10 @@ export function VpnAdminPanel() {
           pending.map((account) => (
             <div key={account.walletAddress} className="rounded-lg border p-3 text-sm">
               <div className="mb-2 flex flex-wrap items-center gap-2">
-                <Badge variant="secondary">{account.tier}</Badge>
                 <span className="font-mono text-xs">{account.walletAddress}</span>
-                <span className="text-xs text-muted-foreground">
-                  {account.devices.length} {t("vpnAdmin.devices")}
-                </span>
+                <Badge variant="secondary">
+                  {account.devices.length}/{account.paidDeviceCount} {t("vpnAdmin.devices")}
+                </Badge>
               </div>
               <Button
                 size="sm"

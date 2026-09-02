@@ -1,23 +1,26 @@
 "use client";
 
 import * as React from "react";
-import { CheckCircle2, Loader2, Lock, ShieldOff } from "lucide-react";
+import { CheckCircle2, Loader2, Lock, Minus, Plus as PlusIcon, ShieldOff } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { NetworkBanner } from "@/components/shared/network-banner";
 import { ConnectWalletGuard } from "@/components/shared/connect-wallet-guard";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { MyVpnAccount } from "@/components/vpn/my-vpn-account";
-import { useVpnPayment, type VpnTier } from "@/hooks/useVpnPayment";
-import { VPN_PAYMENTS_LIVE, VPN_PRICE_USD } from "@/lib/vpn/publicConfig";
+import { useVpnPayment, type PaymentMethod } from "@/hooks/useVpnPayment";
+import { VPN_PAYMENTS_LIVE, PRICE_PER_DEVICE_USD } from "@/lib/vpn/publicConfig";
 import { useTranslation } from "@/contexts/language-context";
 
-const TIERS: VpnTier[] = ["plus", "pro"];
+const MAX_DEVICES = 10;
 
-function TierCard({ tier, onPaid }: { tier: VpnTier; onPaid: () => void }) {
-  const { pay, phase, error, reset } = useVpnPayment();
+function PurchaseCard({ onPaid }: { onPaid: () => void }) {
+  const { pay, phase, error, reset, requiredUsd, estimatedBnb } = useVpnPayment();
   const { t } = useTranslation();
+  const [deviceCount, setDeviceCount] = React.useState(1);
+  const [method, setMethod] = React.useState<PaymentMethod>("usdt");
   const isBusy = phase === "paying" || phase === "confirming" || phase === "verifying";
 
   React.useEffect(() => {
@@ -28,14 +31,65 @@ function TierCard({ tier, onPaid }: { tier: VpnTier; onPaid: () => void }) {
   return (
     <Card className="card-glow flex flex-col">
       <CardHeader>
-        <CardTitle>{t(`vpnPage.${tier}.name`)}</CardTitle>
-        <CardDescription>{t(`vpnPage.${tier}.description`)}</CardDescription>
+        <CardTitle>{t("vpnPage.productName")}</CardTitle>
+        <CardDescription>{t("vpnPage.productTagline")}</CardDescription>
       </CardHeader>
-      <CardContent className="mt-auto space-y-4">
-        <p className="text-3xl font-bold">
-          ${VPN_PRICE_USD[tier]}
-          <span className="text-sm font-normal text-muted-foreground"> / {t("vpnPage.perMonth")}</span>
-        </p>
+      <CardContent className="space-y-5">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">{t("vpnPage.deviceCount")}</span>
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              disabled={deviceCount <= 1 || phase === "done"}
+              onClick={() => setDeviceCount((c) => Math.max(1, c - 1))}
+            >
+              <Minus className="h-3.5 w-3.5" />
+            </Button>
+            <span className="w-6 text-center font-mono text-lg font-bold">{deviceCount}</span>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              disabled={deviceCount >= MAX_DEVICES || phase === "done"}
+              onClick={() => setDeviceCount((c) => Math.min(MAX_DEVICES, c + 1))}
+            >
+              <PlusIcon className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          {(["usdt", "bnb"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              disabled={phase === "done"}
+              onClick={() => setMethod(m)}
+              className={cn(
+                "flex-1 rounded-lg border px-3 py-2 text-sm font-medium uppercase transition-colors",
+                method === m ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground",
+              )}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
+
+        <div className="rounded-lg border bg-muted/30 p-3 text-center">
+          <p className="text-2xl font-bold">
+            ${requiredUsd(deviceCount)}
+            <span className="text-sm font-normal text-muted-foreground"> / {t("vpnPage.perMonth")}</span>
+          </p>
+          {method === "bnb" && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              ≈ {estimatedBnb(deviceCount)?.toFixed(4) ?? "..."} BNB
+            </p>
+          )}
+        </div>
 
         {phase === "done" ? (
           <div className="flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 p-3 text-sm text-success">
@@ -43,7 +97,7 @@ function TierCard({ tier, onPaid }: { tier: VpnTier; onPaid: () => void }) {
             {t("vpnPage.paidSuccess")}
           </div>
         ) : (
-          <Button className="w-full gap-1.5" disabled={isBusy} onClick={() => pay(tier)}>
+          <Button className="w-full gap-1.5" disabled={isBusy} onClick={() => pay(deviceCount, method)}>
             {isBusy && <Loader2 className="h-4 w-4 animate-spin" />}
             {phase === "paying" && t("vpnPage.confirmInWallet")}
             {phase === "confirming" && t("vpnPage.waitingOnChain")}
@@ -61,6 +115,10 @@ function TierCard({ tier, onPaid }: { tier: VpnTier; onPaid: () => void }) {
           </div>
         )}
 
+        <ul className="space-y-1 text-xs text-muted-foreground">
+          <li>{t("vpnPage.featureUnlimited")}</li>
+          <li>{t("vpnPage.featureSingleDevice", { price: PRICE_PER_DEVICE_USD })}</li>
+        </ul>
         <p className="text-xs text-muted-foreground">{t("vpnPage.afterPayNotice")}</p>
       </CardContent>
     </Card>
@@ -90,10 +148,8 @@ export default function VpnProductPage() {
             <Lock className="h-3.5 w-3.5" />
             {t("vpnPage.payDisclaimer")}
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {TIERS.map((tier) => (
-              <TierCard key={tier} tier={tier} onPaid={() => setRefreshToken((v) => v + 1)} />
-            ))}
+          <div className="mx-auto max-w-md">
+            <PurchaseCard onPaid={() => setRefreshToken((v) => v + 1)} />
           </div>
           <MyVpnAccount refreshToken={refreshToken} />
         </ConnectWalletGuard>

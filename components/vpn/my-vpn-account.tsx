@@ -3,14 +3,14 @@
 import * as React from "react";
 import { useAccount } from "wagmi";
 import { toast } from "sonner";
-import { Copy, Download, Loader2, PlusCircle, ShieldCheck } from "lucide-react";
+import { Copy, Download, Loader2, ShieldCheck } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useWalletSignature } from "@/hooks/useWalletSignature";
 import { useTranslation } from "@/contexts/language-context";
-import { DEVICE_LIMIT, type VpnAccount } from "@/lib/vpn/types";
+import type { VpnAccount } from "@/lib/vpn/types";
 
 function downloadConfig(device: { label: string; config: string }) {
   const blob = new Blob([device.config], { type: "text/plain" });
@@ -30,7 +30,6 @@ export function MyVpnAccount({ refreshToken }: { refreshToken: number }) {
   const { t } = useTranslation();
   const [account, setAccount] = React.useState<VpnAccount | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
-  const [isAddingDevice, setIsAddingDevice] = React.useState(false);
 
   const load = React.useCallback(async () => {
     if (!address) return;
@@ -57,31 +56,10 @@ export function MyVpnAccount({ refreshToken }: { refreshToken: number }) {
     if (isConnected) load();
   }, [isConnected, load]);
 
-  async function addDevice() {
-    if (!address) return;
-    setIsAddingDevice(true);
-    try {
-      const { timestamp, signature } = await signWalletAction();
-      const res = await fetch("/api/vpn/add-device", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address, timestamp, signature }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Failed to add device");
-      setAccount(json.account);
-      toast.success(t("myVpn.deviceAdded"));
-    } catch (error) {
-      toast.error(t("myVpn.addDeviceFailed"), { description: error instanceof Error ? error.message : undefined });
-    } finally {
-      setIsAddingDevice(false);
-    }
-  }
-
   if (!isConnected || (!account && !isLoading)) return null;
 
   const expired = account ? new Date(account.expiresAt).getTime() < Date.now() : false;
-  const deviceLimit = account ? DEVICE_LIMIT[account.tier] : 0;
+  const awaitingCount = account ? account.paidDeviceCount - account.devices.length : 0;
 
   return (
     <Card className="card-glow mt-6">
@@ -93,7 +71,6 @@ export function MyVpnAccount({ refreshToken }: { refreshToken: number }) {
           </CardTitle>
           {account && (
             <CardDescription>
-              {t(`vpnPage.${account.tier}.name`)} ·{" "}
               {expired
                 ? t("myVpn.expired")
                 : t("myVpn.expiresOn", { date: new Date(account.expiresAt).toLocaleDateString() })}
@@ -103,8 +80,8 @@ export function MyVpnAccount({ refreshToken }: { refreshToken: number }) {
         {isLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
       </CardHeader>
       <CardContent className="space-y-3">
-        {account?.devices.length === 0 && (
-          <p className="text-sm text-muted-foreground">{t("myVpn.noDeviceYet")}</p>
+        {account?.devices.length === 0 && awaitingCount === 0 && (
+          <p className="text-sm text-muted-foreground">{t("myVpn.noAccountYet")}</p>
         )}
         {account?.devices.map((device) => (
           <div key={device.id} className="flex items-center justify-between rounded-lg border p-3 text-sm">
@@ -133,15 +110,8 @@ export function MyVpnAccount({ refreshToken }: { refreshToken: number }) {
           </div>
         ))}
 
-        {account && !expired && account.devices.length < deviceLimit && (
-          <Button variant="outline" size="sm" className="gap-1.5" disabled={isAddingDevice} onClick={addDevice}>
-            {isAddingDevice ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <PlusCircle className="h-3.5 w-3.5" />}
-            {t("myVpn.addDevice", { current: account.devices.length, limit: deviceLimit })}
-          </Button>
-        )}
-
-        {account?.needsProvisioning && account.devices.length === 0 && (
-          <p className="text-xs text-muted-foreground">{t("myVpn.awaitingProvisioning")}</p>
+        {awaitingCount > 0 && (
+          <p className="text-xs text-muted-foreground">{t("myVpn.awaitingProvisioning", { count: awaitingCount })}</p>
         )}
       </CardContent>
     </Card>

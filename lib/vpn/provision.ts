@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import { NodeSSH } from "node-ssh";
 
 import { getVpnConfig, isServerConfigured, type VpnConfig } from "@/lib/vpn/config";
-import type { VpnDevice, VpnTier } from "@/lib/vpn/store";
+import type { VpnDevice } from "@/lib/vpn/store";
 
 const WALLET_RE = /^0x[0-9a-fA-F]{40}$/;
 
@@ -14,11 +14,7 @@ export type ProvisionResult = { ok: true; device: VpnDevice } | { ok: false; err
  * post-payment path (verify-payment) and the admin panel's manual retry,
  * so there is exactly one place that talks to the server.
  */
-export async function provisionDevice(
-  walletAddress: string,
-  tier: VpnTier,
-  label: string,
-): Promise<ProvisionResult> {
+export async function provisionDevice(walletAddress: string, label: string): Promise<ProvisionResult> {
   if (!WALLET_RE.test(walletAddress)) return { ok: false, error: "Invalid wallet address" };
 
   const config: VpnConfig = getVpnConfig();
@@ -33,7 +29,7 @@ export async function provisionDevice(
       privateKeyPath: config.server.privateKeyPath!,
     });
 
-    const result = await ssh.execCommand(`sudo /opt/dravon-vpn/add-peer.sh "${walletAddress}" "${tier}"`);
+    const result = await ssh.execCommand(`sudo /opt/dravon-vpn/add-peer.sh "${walletAddress}"`);
     if (result.code !== 0) {
       return { ok: false, error: `Provisioning script failed: ${result.stderr || result.stdout}` };
     }
