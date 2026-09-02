@@ -1,10 +1,10 @@
 import { promises as fs } from "fs";
 import path from "path";
 
-import { SUBSCRIPTION_DAYS, type PaymentMethod, type VpnAccount, type VpnDevice } from "@/lib/vpn/types";
+import { SUBSCRIPTION_DAYS, type PaymentMethod, type VpnAccount, type VpnBackend, type VpnDevice } from "@/lib/vpn/types";
 
 export { PRICE_PER_DEVICE_USD, SUBSCRIPTION_DAYS } from "@/lib/vpn/types";
-export type { VpnAccount, VpnDevice, VpnPayment, PaymentMethod } from "@/lib/vpn/types";
+export type { VpnAccount, VpnBackend, VpnDevice, VpnPayment, PaymentMethod } from "@/lib/vpn/types";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const ACCOUNTS_FILE = path.join(DATA_DIR, "vpn-accounts.jsonl");
@@ -54,6 +54,7 @@ export async function applyPayment(params: {
   amountUsd: number;
   method: PaymentMethod;
   deviceCount: number;
+  backend: VpnBackend;
 }): Promise<VpnAccount> {
   const existing = await getAccount(params.walletAddress);
   const now = Date.now();
@@ -65,6 +66,8 @@ export async function applyPayment(params: {
     walletAddress: params.walletAddress,
     expiresAt,
     paidDeviceCount: Math.max(existing?.paidDeviceCount ?? 0, params.deviceCount),
+    // Fixed on first payment - a renewal/top-up can't switch an account's backend.
+    backend: existing?.backend ?? params.backend,
     devices: existing?.devices ?? [],
     payments: [
       ...(existing?.payments ?? []),

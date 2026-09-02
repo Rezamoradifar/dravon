@@ -53,7 +53,7 @@ export function VpnAdminPanel() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Provisioning failed");
-      setLastConfig({ wallet: account.walletAddress, config: json.wireguardConfig });
+      setLastConfig({ wallet: account.walletAddress, config: json.config });
       toast.success(t("vpnAdmin.provisioned"));
       loadPending();
     } catch (error) {

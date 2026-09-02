@@ -891,7 +891,7 @@ export const fa: Dictionary = {
   },
   vpnPage: {
     title: "NodeShield",
-    description: "یه VPN مبتنی بر WireGuard، با پرداخت مستقیم از کیف‌پول متصل‌شده‌ی شما.",
+    description: "یه VPN با پرداخت مستقیم از کیف‌پول متصل‌شده‌ی شما - WireGuard یا V2Ray/Shadowsocks (Marzban).",
     notLive: "هنوز فعال نیست",
     notLiveBody: "مسیر پرداخت واقعیه، ولی راه‌اندازی سرور VPN هنوز کامل نشده. بعداً دوباره سر بزن.",
     payDisclaimer: "پرداخت یه انتقال مستقیم USDT یا BNB از کیف‌پول شماست - بدون کارت، بدون درگاه واسطه.",
@@ -899,6 +899,10 @@ export const fa: Dictionary = {
     productName: "NodeShield",
     productTagline: "ماهی $۱ به‌ازای هر دستگاه - پهنای‌باند نامحدود.",
     deviceCount: "تعداد دستگاه",
+    backend: "نوع VPN",
+    backendWireguard: "WireGuard",
+    backendMarzban: "V2Ray / Shadowsocks",
+    backendNotice: "نوع VPN شما با اولین پرداخت ثابت می‌شه و بعدش قابل تغییر نیست - تمدید و افزودن دستگاه هم همون نوع رو ادامه می‌ده.",
     featureUnlimited: "پهنای‌باند نامحدود، بدون سقف مصرف",
     featureSingleDevice: "یک دستگاه به‌ازای هر کانفیگ - ماهی ${price}",
     payWithWallet: "پرداخت با کیف‌پول",
@@ -919,7 +923,7 @@ export const fa: Dictionary = {
     provisioned: "دستگاه فعال شد",
     provisionFailed: "فعال‌سازی ناموفق بود",
     loadFailed: "بارگذاری ناموفق بود",
-    configFor: "کانفیگ WireGuard برای {wallet}...",
+    configFor: "کانفیگ برای {wallet}...",
   },
   myVpn: {
     title: "VPN من",

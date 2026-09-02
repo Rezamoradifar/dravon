@@ -8,6 +8,7 @@ import { erc20Abi } from "@/contracts/erc20Abi";
 import { useNativePrice } from "@/hooks/useNativePrice";
 import { VPN_PAYMENT_ADDRESS, PRICE_PER_DEVICE_USD } from "@/lib/vpn/publicConfig";
 import { parseContractError } from "@/lib/errors";
+import type { VpnBackend } from "@/lib/vpn/types";
 
 const USDT_ADDRESS = "0x55d398326f99059fF775485246999027B3197955" as const;
 // Absorbs ordinary BNB price drift between estimating and sending, same
@@ -37,7 +38,7 @@ export function useVpnPayment() {
   const estimatedBnb = (deviceCount: number) =>
     bnbPrice ? (requiredUsd(deviceCount) / bnbPrice) * BNB_BUFFER : undefined;
 
-  async function pay(deviceCount: number, method: PaymentMethod) {
+  async function pay(deviceCount: number, method: PaymentMethod, backend: VpnBackend) {
     if (!address) {
       setError("Connect your wallet first");
       setPhase("error");
@@ -74,7 +75,7 @@ export function useVpnPayment() {
       const res = await fetch("/api/vpn/verify-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ walletAddress: address, txHash: hash, method, deviceCount }),
+        body: JSON.stringify({ walletAddress: address, txHash: hash, method, deviceCount, backend }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Verification failed");

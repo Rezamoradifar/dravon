@@ -4,7 +4,7 @@ import { decodeEventLog, formatUnits, isAddress } from "viem";
 import { erc20Abi } from "@/contracts/erc20Abi";
 import { chainlinkAggregatorAbi } from "@/contracts/chainlinkAggregatorAbi";
 import { NATIVE_PRICE_FEEDS } from "@/lib/nativePriceFeeds";
-import { getVpnConfig, isPaymentConfigured, isServerConfigured } from "@/lib/vpn/config";
+import { getVpnConfig, isPaymentConfigured, isServerConfigured, isMarzbanConfigured } from "@/lib/vpn/config";
 import { provisionDevice } from "@/lib/vpn/provision";
 import { vpnServerPublicClient } from "@/lib/vpn/serverPublicClient";
 import { addDevice, applyPayment, findByTxHash } from "@/lib/vpn/store";
@@ -31,11 +31,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { walletAddress, txHash, method, deviceCount } = (body ?? {}) as {
+  const { walletAddress, txHash, method, deviceCount, backend } = (body ?? {}) as {
     walletAddress?: unknown;
     txHash?: unknown;
     method?: unknown;
     deviceCount?: unknown;
+    backend?: unknown;
   };
 
   if (typeof walletAddress !== "string" || !isAddress(walletAddress)) {
@@ -46,6 +47,9 @@ export async function POST(request: Request) {
   }
   if (method !== "usdt" && method !== "bnb") {
     return NextResponse.json({ error: "method must be 'usdt' or 'bnb'" }, { status: 400 });
+  }
+  if (backend !== "wireguard" && backend !== "marzban") {
+    return NextResponse.json({ error: "backend must be 'wireguard' or 'marzban'" }, { status: 400 });
   }
   if (typeof deviceCount !== "number" || !Number.isInteger(deviceCount) || deviceCount < 1 || deviceCount > MAX_DEVICES_PER_CALL) {
     return NextResponse.json({ error: `deviceCount must be an integer between 1 and ${MAX_DEVICES_PER_CALL}` }, { status: 400 });
@@ -143,15 +147,16 @@ export async function POST(request: Request) {
     }
   }
 
-  let account = await applyPayment({ walletAddress, txHash, amountUsd: paidUsd, method, deviceCount });
+  let account = await applyPayment({ walletAddress, txHash, amountUsd: paidUsd, method, deviceCount, backend });
 
   // Provision whatever devices this payment brought the account up to,
-  // capped per-call - if the server isn't configured, or an SSH call fails
-  // partway through, the account simply stays under its paidDeviceCount and
-  // the admin panel's fallback list picks up the remainder.
-  if (isServerConfigured(config)) {
+  // capped per-call - if the backend isn't configured, or a provisioning
+  // call fails partway through, the account simply stays under its
+  // paidDeviceCount and the admin panel's fallback list picks up the rest.
+  const backendReady = account.backend === "wireguard" ? isServerConfigured(config) : isMarzbanConfigured(config);
+  if (backendReady) {
     while (account.devices.length < account.paidDeviceCount && account.devices.length < MAX_DEVICES_PER_CALL) {
-      const result = await provisionDevice(walletAddress, `Device ${account.devices.length + 1}`);
+      const result = await provisionDevice(walletAddress, account.devices.length + 1, account.backend);
       if (!result.ok) break;
       account = await addDevice(walletAddress, result.device);
     }

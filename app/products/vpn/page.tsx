@@ -13,6 +13,7 @@ import { MyVpnAccount } from "@/components/vpn/my-vpn-account";
 import { useVpnPayment, type PaymentMethod } from "@/hooks/useVpnPayment";
 import { VPN_PAYMENTS_LIVE, PRICE_PER_DEVICE_USD } from "@/lib/vpn/publicConfig";
 import { useTranslation } from "@/contexts/language-context";
+import type { VpnBackend } from "@/lib/vpn/types";
 
 const MAX_DEVICES = 10;
 
@@ -21,6 +22,7 @@ function PurchaseCard({ onPaid }: { onPaid: () => void }) {
   const { t } = useTranslation();
   const [deviceCount, setDeviceCount] = React.useState(1);
   const [method, setMethod] = React.useState<PaymentMethod>("usdt");
+  const [backend, setBackend] = React.useState<VpnBackend>("wireguard");
   const isBusy = phase === "paying" || phase === "confirming" || phase === "verifying";
 
   React.useEffect(() => {
@@ -79,6 +81,27 @@ function PurchaseCard({ onPaid }: { onPaid: () => void }) {
           ))}
         </div>
 
+        <div className="space-y-1.5">
+          <span className="text-sm text-muted-foreground">{t("vpnPage.backend")}</span>
+          <div className="flex gap-2">
+            {(["wireguard", "marzban"] as const).map((b) => (
+              <button
+                key={b}
+                type="button"
+                disabled={phase === "done"}
+                onClick={() => setBackend(b)}
+                className={cn(
+                  "flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
+                  backend === b ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground",
+                )}
+              >
+                {b === "wireguard" ? t("vpnPage.backendWireguard") : t("vpnPage.backendMarzban")}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">{t("vpnPage.backendNotice")}</p>
+        </div>
+
         <div className="rounded-lg border bg-muted/30 p-3 text-center">
           <p className="text-2xl font-bold">
             ${requiredUsd(deviceCount)}
@@ -97,7 +120,7 @@ function PurchaseCard({ onPaid }: { onPaid: () => void }) {
             {t("vpnPage.paidSuccess")}
           </div>
         ) : (
-          <Button className="w-full gap-1.5" disabled={isBusy} onClick={() => pay(deviceCount, method)}>
+          <Button className="w-full gap-1.5" disabled={isBusy} onClick={() => pay(deviceCount, method, backend)}>
             {isBusy && <Loader2 className="h-4 w-4 animate-spin" />}
             {phase === "paying" && t("vpnPage.confirmInWallet")}
             {phase === "confirming" && t("vpnPage.waitingOnChain")}

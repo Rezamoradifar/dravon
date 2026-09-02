@@ -10,14 +10,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useWalletSignature } from "@/hooks/useWalletSignature";
 import { useTranslation } from "@/contexts/language-context";
-import type { VpnAccount } from "@/lib/vpn/types";
+import type { VpnAccount, VpnDevice } from "@/lib/vpn/types";
 
-function downloadConfig(device: { label: string; config: string }) {
+function downloadConfig(device: VpnDevice) {
+  const slug = device.label.replace(/\s+/g, "-").toLowerCase();
+  // WireGuard devices carry a real .conf file; Marzban devices carry a
+  // subscription URL (importable by any V2Ray/Shadowsocks/Xray client) -
+  // saved as plain text rather than mislabeled as a .conf file.
+  const filename = device.backend === "wireguard" ? `${slug}.conf` : `${slug}-subscription.txt`;
   const blob = new Blob([device.config], { type: "text/plain" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${device.label.replace(/\s+/g, "-").toLowerCase()}.conf`;
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -70,10 +75,15 @@ export function MyVpnAccount({ refreshToken }: { refreshToken: number }) {
             {t("myVpn.title")}
           </CardTitle>
           {account && (
-            <CardDescription>
-              {expired
-                ? t("myVpn.expired")
-                : t("myVpn.expiresOn", { date: new Date(account.expiresAt).toLocaleDateString() })}
+            <CardDescription className="flex flex-wrap items-center gap-1.5">
+              <span>
+                {expired
+                  ? t("myVpn.expired")
+                  : t("myVpn.expiresOn", { date: new Date(account.expiresAt).toLocaleDateString() })}
+              </span>
+              <Badge variant="outline" className="uppercase">
+                {account.backend}
+              </Badge>
             </CardDescription>
           )}
         </div>

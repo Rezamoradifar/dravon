@@ -889,7 +889,7 @@ export const en = {
   },
   vpnPage: {
     title: "NodeShield",
-    description: "A WireGuard VPN, paid for directly with your connected wallet.",
+    description: "A VPN, paid for directly with your connected wallet - WireGuard or V2Ray/Shadowsocks (Marzban).",
     notLive: "Not live yet",
     notLiveBody: "The payment flow is real, but the operator hasn't finished setting up the VPN server yet. Check back soon.",
     payDisclaimer: "Payment is a direct USDT or BNB transfer from your wallet - no card, no third-party processor.",
@@ -897,6 +897,10 @@ export const en = {
     productName: "NodeShield",
     productTagline: "$1 per device, per month - unlimited bandwidth.",
     deviceCount: "Devices",
+    backend: "VPN type",
+    backendWireguard: "WireGuard",
+    backendMarzban: "V2Ray / Shadowsocks",
+    backendNotice: "Your VPN type is set on your first payment and can't be changed afterward - top-ups and extra devices keep using it.",
     featureUnlimited: "Unlimited bandwidth, no data cap",
     featureSingleDevice: "One device per config - ${price}/month each",
     payWithWallet: "Pay with Wallet",
@@ -917,7 +921,7 @@ export const en = {
     provisioned: "Device provisioned",
     provisionFailed: "Provisioning failed",
     loadFailed: "Failed to load",
-    configFor: "WireGuard config for {wallet}...",
+    configFor: "Config for {wallet}...",
   },
   myVpn: {
     title: "My VPN",

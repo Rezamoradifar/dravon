@@ -18,6 +18,11 @@ export interface VpnConfig {
     username: string | null;
     privateKeyPath: string | null;
   };
+  marzban: {
+    apiUrl: string | null;
+    username: string | null;
+    password: string | null;
+  };
 }
 
 export function getVpnConfig(): VpnConfig {
@@ -30,11 +35,20 @@ export function getVpnConfig(): VpnConfig {
       username: process.env.VPN_SERVER_SSH_USER || null,
       privateKeyPath: process.env.VPN_SERVER_SSH_KEY_PATH || null,
     },
+    marzban: {
+      apiUrl: process.env.MARZBAN_API_URL || null,
+      username: process.env.MARZBAN_ADMIN_USERNAME || null,
+      password: process.env.MARZBAN_ADMIN_PASSWORD || null,
+    },
   };
 }
 
 export function isServerConfigured(config: VpnConfig): boolean {
   return Boolean(config.server.host && config.server.username && config.server.privateKeyPath);
+}
+
+export function isMarzbanConfigured(config: VpnConfig): boolean {
+  return Boolean(config.marzban.apiUrl && config.marzban.username && config.marzban.password);
 }
 
 export function isPaymentConfigured(config: VpnConfig): boolean {
