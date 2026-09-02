@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CheckCircle2, Loader2, Lock, Minus, Plus as PlusIcon, ShieldOff } from "lucide-react";
+import { CheckCircle2, Loader2, Lock, Minus, Plus as PlusIcon, Send, ShieldOff } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { NetworkBanner } from "@/components/shared/network-banner";
@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { MyVpnAccount } from "@/components/vpn/my-vpn-account";
 import { useVpnPayment, type PaymentIntent, type PaymentMethod } from "@/hooks/useVpnPayment";
 import { useVpnAccount } from "@/hooks/useVpnAccount";
-import { VPN_PAYMENTS_LIVE, PRICE_PER_DEVICE_USD } from "@/lib/vpn/publicConfig";
+import { VPN_PAYMENTS_LIVE, PRICE_PER_DEVICE_USD, TELEGRAM_BOT_URL } from "@/lib/vpn/publicConfig";
 import { useTranslation } from "@/contexts/language-context";
 import { backendDisplayLabel, type VpnAccount, type VpnBackend } from "@/lib/vpn/types";
 
@@ -263,6 +263,20 @@ export default function VpnProductPage() {
     <div>
       <PageHeader title={t("vpnPage.title")} description={t("vpnPage.description")} />
       <NetworkBanner />
+
+      <Card className="card-glow mb-6">
+        <CardContent className="flex flex-col items-center justify-between gap-3 py-4 text-center sm:flex-row sm:text-start">
+          <div className="flex items-center gap-2">
+            <Send className="h-4 w-4 shrink-0 text-primary" />
+            <p className="text-sm">{t("vpnPage.telegramBotNotice")}</p>
+          </div>
+          <Button asChild variant="outline" size="sm" className="gap-1.5">
+            <a href={TELEGRAM_BOT_URL} target="_blank" rel="noopener noreferrer">
+              {t("vpnPage.telegramBotCta")}
+            </a>
+          </Button>
+        </CardContent>
+      </Card>
 
       {!VPN_PAYMENTS_LIVE ? (
         <Card className="card-glow border-dashed">

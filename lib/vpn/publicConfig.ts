@@ -25,3 +25,9 @@ export const VPN_PAYMENT_ADDRESS = readOptionalAddress(process.env.NEXT_PUBLIC_V
 export const PRICE_PER_DEVICE_USD = readPrice(process.env.NEXT_PUBLIC_VPN_PRICE_PER_DEVICE_USD, 1);
 
 export const VPN_PAYMENTS_LIVE = Boolean(VPN_PAYMENT_ADDRESS);
+
+/** The NodeShield Telegram bot - a second, independent storefront (see
+ * scripts/telegram-bot/bot.js) that doesn't need a connected wallet to
+ * browse. Configurable so renaming the bot doesn't need a code change. */
+export const TELEGRAM_BOT_USERNAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || "NodeShieldVPN_bot";
+export const TELEGRAM_BOT_URL = `https://t.me/${TELEGRAM_BOT_USERNAME}`;

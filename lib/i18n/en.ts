@@ -920,6 +920,8 @@ export const en = {
     paidSuccess: "Payment confirmed! Your VPN config is being generated now - scroll down to the panel below in a moment to scan its QR code or copy it.",
     tryAgain: "Try Again",
     afterPayNotice: "Devices are usually provisioned automatically within moments of payment - check the panel below.",
+    telegramBotNotice: "Prefer Telegram? Buy and manage NodeShield right from our bot - no wallet connect needed on this page.",
+    telegramBotCta: "Open Telegram bot",
   },
   vpnAdmin: {
     title: "VPN Accounts",
