@@ -9,7 +9,9 @@
  * back here, and this bot calls the site's own /api/vpn/verify-payment over
  * localhost - the same endpoint the website's payment flow calls - so both
  * storefronts share one source of truth for pricing, verification, and
- * provisioning. No VPN/account logic is duplicated here.
+ * provisioning. No VPN/account logic is duplicated here. GB data plans and
+ * their prices are fetched from /api/vpn/plans (also site-owned) rather
+ * than hardcoded here, so the bot can never quote a stale price.
  *
  * Run as its own process (not part of the Next.js app):
  *   pm2 start scripts/telegram-bot/bot.js --name dravon-bot \
@@ -38,6 +40,12 @@
  *   telegram-bot-referrals.jsonl  - referredChatId -> referrerChatId,
  *                                   appended when a new user opens the bot
  *                                   via a referral deep link.
+ *
+ * Only one VPN server exists today (185.172.64.24, geolocated to the
+ * United States) - the country picker below shows nine more as an honest
+ * roadmap ("launching soon"), never as a working choice, so nobody thinks
+ * picking one changes anything yet. This mirrors the website's own
+ * app/products/vpn/page.tsx country picker exactly.
  */
 
 const fs = require("fs");
@@ -54,9 +62,24 @@ const SITE_BASE_URL = process.env.SITE_BASE_URL || "http://localhost:3000";
 const PAYMENT_ADDRESS = process.env.NEXT_PUBLIC_VPN_PAYMENT_ADDRESS;
 const PRICE_PER_DEVICE_USD = Number(process.env.NEXT_PUBLIC_VPN_PRICE_PER_DEVICE_USD || "1");
 const MAX_DEVICES = 10;
-const REFERRAL_BONUS_DAYS = 30;
+const REFERRAL_BONUS_DAYS = 30; // direct referrer, once their invitee completes a purchase
+const REFERRAL_L2_BONUS_DAYS = 15; // the referrer's own referrer (one level up)
+const REFERRED_USER_BONUS_DAYS = 7; // the new buyer themselves, for using a referral link
 const WALLET_RE = /^0x[0-9a-fA-F]{40}$/;
 const TXHASH_RE = /^0x[0-9a-fA-F]{64}$/;
+
+const COUNTRIES = [
+  { code: "US", flag: "🇺🇸", name: "United States", available: true },
+  { code: "DE", flag: "🇩🇪", name: "Germany", available: false },
+  { code: "NL", flag: "🇳🇱", name: "Netherlands", available: false },
+  { code: "GB", flag: "🇬🇧", name: "United Kingdom", available: false },
+  { code: "SG", flag: "🇸🇬", name: "Singapore", available: false },
+  { code: "JP", flag: "🇯🇵", name: "Japan", available: false },
+  { code: "CA", flag: "🇨🇦", name: "Canada", available: false },
+  { code: "FR", flag: "🇫🇷", name: "France", available: false },
+  { code: "AE", flag: "🇦🇪", name: "UAE", available: false },
+  { code: "TR", flag: "🇹🇷", name: "Turkey", available: false },
+];
 
 if (!TOKEN) {
   console.error("TELEGRAM_BOT_TOKEN is not set - refusing to start.");
@@ -160,7 +183,11 @@ function resetSession(chatId) {
 const CANCEL_ROW = [{ text: "❌ لغو", callback_data: "cancel" }];
 
 const MAIN_KEYBOARD = {
-  keyboard: [["🛒 خرید VPN", "📊 وضعیت من"], ["🔗 دعوت از دوستان", "ℹ️ راهنما"]],
+  keyboard: [
+    ["🛒 خرید VPN", "🎁 تست رایگان"],
+    ["📊 وضعیت من", "🔗 دعوت از دوستان"],
+    ["ℹ️ راهنما"],
+  ],
   resize_keyboard: true,
 };
 
@@ -191,12 +218,26 @@ async function fetchPublicStats() {
   return ok && json?.ok ? json : null;
 }
 
+async function fetchDataPlans() {
+  const { ok, json } = await callSiteApi("/api/vpn/plans", {});
+  return ok && json?.ok ? json.plans : [];
+}
+
+async function grantBonus(walletAddress, days) {
+  return callSiteApi("/api/admin/vpn/grant-bonus", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-bot-secret": BOT_SECRET },
+    body: JSON.stringify({ walletAddress, days }),
+  });
+}
+
 async function sendDeviceConfigs(chatId, devices) {
   for (const device of devices) {
     const backendLabel = device.backend === "wireguard" ? "WireGuard" : "VPN";
+    const planLine = device.dataPlanId && device.dataPlanId !== "unlimited" ? `\n📶 حجم: ${device.dataPlanId}` : "";
     await bot.sendMessage(
       chatId,
-      `✅ *${device.label}* (${backendLabel})\n\n\`${device.config}\`\n\n👤 تک‌کاربر و تک‌دستگاه - این کانفیگ رو با کسی به اشتراک نذار.`,
+      `✅ *${device.label}* (${backendLabel})${planLine}\n\n\`${device.config}\`\n\n👤 تک‌کاربر و تک‌دستگاه - این کانفیگ رو با کسی به اشتراک نذار.`,
       { parse_mode: "Markdown" },
     );
     try {
@@ -206,6 +247,20 @@ async function sendDeviceConfigs(chatId, devices) {
       console.error("QR generation failed:", err);
     }
   }
+}
+
+function countryKeyboard() {
+  const rows = [];
+  for (let i = 0; i < COUNTRIES.length; i += 2) {
+    rows.push(
+      COUNTRIES.slice(i, i + 2).map((c) => ({
+        text: `${c.flag} ${c.name}${c.available ? "" : " (به‌زودی)"}`,
+        callback_data: c.available ? `country_${c.code}` : `countrysoon_${c.code}`,
+      })),
+    );
+  }
+  rows.push(CANCEL_ROW);
+  return { inline_keyboard: rows };
 }
 
 function deviceCountKeyboard() {
@@ -227,6 +282,12 @@ function backendKeyboard() {
   };
 }
 
+function dataPlanKeyboard(plans) {
+  return {
+    inline_keyboard: [...plans.map((p) => [{ text: `${p.label} - $${p.priceUsd}`, callback_data: `dp_${p.id}` }]), CANCEL_ROW],
+  };
+}
+
 function methodKeyboard() {
   return {
     inline_keyboard: [
@@ -244,8 +305,17 @@ function startBuyFlow(chatId) {
     bot.sendMessage(chatId, "فروش هنوز فعال نشده - بعداً دوباره امتحان کن.");
     return;
   }
-  sessions.set(chatId, { step: "deviceCount" });
-  bot.sendMessage(chatId, "🖥️ چند تا کانفیگ می‌خوای؟", { reply_markup: deviceCountKeyboard() });
+  sessions.set(chatId, { step: "country" });
+  bot.sendMessage(chatId, "🌍 کدوم کشور؟", { reply_markup: countryKeyboard() });
+}
+
+function startTrialFlow(chatId) {
+  sessions.set(chatId, { step: "trialWallet" });
+  bot.sendMessage(
+    chatId,
+    "🎁 *تست رایگان*\n\n۱۰۰ مگابایت، ۳ روز، کاملاً رایگان - یک بار برای هر کیف‌پول (فقط نوع VPN/V2Ray).\n\nآدرس کیف‌پولت رو بفرست (فقط برای شناسایی اکانتت - نیازی به پرداخت نیست).",
+    { parse_mode: "Markdown" },
+  );
 }
 
 async function sendStatus(chatId) {
@@ -258,26 +328,50 @@ async function sendStatus(chatId) {
   const expired = new Date(account.expiresAt).getTime() < Date.now();
   const backendLabel = account.backend === "wireguard" ? "WireGuard" : "VPN";
   const masked = `${record.walletAddress.slice(0, 6)}...${record.walletAddress.slice(-4)}`;
+  const upgradeButton =
+    account.backend === "marzban" && account.dataPlanId && account.dataPlanId !== "unlimited"
+      ? [[{ text: "🔺 ارتقا به نامحدود", callback_data: "upgrade_unlimited" }]]
+      : [];
   bot.sendMessage(
     chatId,
     `📊 *وضعیت من* (آخرین وضعیت شناخته‌شده - اگه رو سایت هم تمدید کرده باشی ممکنه به‌روز نباشه)\n\nکیف‌پول: \`${masked}\`\nنوع: ${backendLabel}\nدستگاه: ${account.devices.length}/${account.paidDeviceCount}\nانقضا: ${expired ? "منقضی‌شده" : new Date(account.expiresAt).toLocaleDateString()}`,
     {
       parse_mode: "Markdown",
-      reply_markup: { inline_keyboard: [[{ text: "📥 نمایش کانفیگ‌ها دوباره", callback_data: "resend_configs" }]] },
+      reply_markup: {
+        inline_keyboard: [[{ text: "📥 نمایش کانفیگ‌ها دوباره", callback_data: "resend_configs" }], ...upgradeButton],
+      },
     },
   );
 }
 
+function referralLinkFor(chatId) {
+  return `https://t.me/${botUsername}?start=ref_${chatId}`;
+}
+
 async function sendReferralLink(chatId) {
-  const link = `https://t.me/${botUsername}?start=ref_${chatId}`;
   bot.sendMessage(
     chatId,
-    `🔗 *دعوت از دوستان*\n\nاین لینک رو برای دوستات بفرست:\n${link}\n\nهر دوستی که با این لینک بیاد و اولین خریدش رو کامل کنه، ${REFERRAL_BONUS_DAYS} روز رایگان به اکانت فعال تو اضافه می‌شه (اگه از قبل کانفیگ فعال داشته باشی).`,
+    `🔗 *دعوت از دوستان*\n\nاین لینک رو برای دوستات بفرست:\n${referralLinkFor(chatId)}\n\nهر دوستی که با این لینک بیاد و اولین خریدش رو کامل کنه:\n🎉 تو ${REFERRAL_BONUS_DAYS} روز رایگان می‌گیری\n🎁 خودش هم ${REFERRED_USER_BONUS_DAYS} روز رایگان می‌گیره\n\nهر چقدر بیشتر دعوت کنی، بیشتر می‌گیری - محدودیتی نداره.`,
     { parse_mode: "Markdown" },
   );
 }
 
-async function maybeRewardReferrer(referredChatId) {
+function inviteReminderKeyboard() {
+  return { inline_keyboard: [[{ text: "🔗 دریافت لینک دعوت", callback_data: "get_referral_link" }]] };
+}
+
+/**
+ * Runs after a buyer's purchase is confirmed. If they arrived via a
+ * referral link and this is the first purchase that completes it:
+ *   - the direct referrer (L1) gets REFERRAL_BONUS_DAYS, if they already
+ *     have a qualifying account (grant-bonus requires paidDeviceCount >= 1)
+ *   - the referrer's own referrer (L2), if any, gets a smaller bonus
+ *   - the new buyer themselves gets a small bonus too (double-sided)
+ * Any leg that can't be applied automatically (no known wallet, no
+ * qualifying account yet) notifies the admin instead of silently dropping
+ * the reward.
+ */
+async function handleReferralRewards(referredChatId, referredWalletAddress) {
   const referral = getReferralFor(referredChatId);
   if (!referral || referral.rewarded) return;
 
@@ -289,26 +383,47 @@ async function maybeRewardReferrer(referredChatId) {
         `ℹ️ یه رفرال کامل شد ولی رفرر (chat ${referral.referrerChatId}) هنوز از طریق ربات خریدی نکرده - نمی‌دونیم کیف‌پولش چیه، جایزه اعمال نشد.`,
       );
     }
-    return;
+  } else {
+    const { ok, json } = await grantBonus(referrerRecord.walletAddress, REFERRAL_BONUS_DAYS);
+    if (ok && json?.ok) {
+      markReferralRewarded(referredChatId, referral.referrerChatId);
+      bot
+        .sendMessage(
+          referral.referrerChatId,
+          `🎉 یکی از دوستایی که با لینک تو دعوت کردی خریدش رو کامل کرد! ${REFERRAL_BONUS_DAYS} روز رایگان به اکانتت اضافه شد.`,
+        )
+        .catch(() => {});
+
+      // Level 2 - the referrer's own referrer, if any.
+      const l2 = getReferralFor(referral.referrerChatId);
+      if (l2) {
+        const l2Record = getBotUser(l2.referrerChatId);
+        if (l2Record) {
+          const l2Result = await grantBonus(l2Record.walletAddress, REFERRAL_L2_BONUS_DAYS);
+          if (l2Result.ok && l2Result.json?.ok) {
+            bot
+              .sendMessage(
+                l2.referrerChatId,
+                `🎉 زنجیره‌ی دعوت‌هات فعال شد! ${REFERRAL_L2_BONUS_DAYS} روز رایگان به اکانتت اضافه شد.`,
+              )
+              .catch(() => {});
+          }
+        }
+      }
+    } else if (ADMIN_CHAT_ID) {
+      bot.sendMessage(
+        ADMIN_CHAT_ID,
+        `ℹ️ یه رفرال کامل شد ولی جایزه‌ی رفرر اعمال نشد (${json?.error || "unknown"}) - رفرر (${referral.referrerChatId}, ${referrerRecord.walletAddress}) شاید هنوز کانفیگ فعالی نداره.`,
+      );
+    }
   }
 
-  const { ok, json } = await callSiteApi("/api/admin/vpn/grant-bonus", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-bot-secret": BOT_SECRET },
-    body: JSON.stringify({ walletAddress: referrerRecord.walletAddress, days: REFERRAL_BONUS_DAYS }),
-  });
-
-  if (ok && json?.ok) {
-    markReferralRewarded(referredChatId, referral.referrerChatId);
-    bot.sendMessage(
-      referral.referrerChatId,
-      `🎉 یکی از دوستایی که با لینک تو دعوت کردی خریدش رو کامل کرد! ${REFERRAL_BONUS_DAYS} روز رایگان به اکانتت اضافه شد.`,
-    ).catch(() => {});
-  } else if (ADMIN_CHAT_ID) {
-    bot.sendMessage(
-      ADMIN_CHAT_ID,
-      `ℹ️ یه رفرال کامل شد ولی جایزه اعمال نشد (${json?.error || "unknown"}) - رفرر (${referral.referrerChatId}, ${referrerRecord.walletAddress}) شاید هنوز کانفیگ فعالی نداره.`,
-    );
+  // The new buyer themselves, for having used a referral link.
+  const selfResult = await grantBonus(referredWalletAddress, REFERRED_USER_BONUS_DAYS);
+  if (selfResult.ok && selfResult.json?.ok) {
+    bot
+      .sendMessage(referredChatId, `🎁 چون با لینک دعوت اومدی، ${REFERRED_USER_BONUS_DAYS} روز رایگان هم به خودت اضافه شد!`)
+      .catch(() => {});
   }
 }
 
@@ -414,6 +529,12 @@ bot.onText(/^\/provision (.+)/, async (msg, match) => {
 bot.on("callback_query", async (query) => {
   const chatId = query.message.chat.id;
   const data = query.data;
+
+  if (data.startsWith("countrysoon_")) {
+    bot.answerCallbackQuery(query.id, { text: "🚧 این کشور در حال لانچه - به‌زودی اضافه می‌شه!", show_alert: true }).catch(() => {});
+    return;
+  }
+
   await bot.answerCallbackQuery(query.id).catch(() => {});
 
   if (data === "cancel") {
@@ -437,8 +558,34 @@ bot.on("callback_query", async (query) => {
     return;
   }
 
+  if (data === "get_referral_link") {
+    await sendReferralLink(chatId);
+    return;
+  }
+
+  if (data === "upgrade_unlimited") {
+    sessions.set(chatId, { step: "method", backend: "marzban", deviceCount: 1, dataPlanId: "unlimited", upgrade: true });
+    bot.sendMessage(chatId, "🔺 *ارتقا به نامحدود*\n\nاین یه کانفیگ نامحدود جدید بهت می‌ده (کانفیگ‌های قبلیت هم فعال می‌مونن).\n\n💳 با چی پرداخت می‌کنی؟", {
+      parse_mode: "Markdown",
+      reply_markup: methodKeyboard(),
+    });
+    return;
+  }
+
   const session = sessions.get(chatId);
   if (!session) return;
+
+  if (data.startsWith("country_") && session.step === "country") {
+    session.country = data.slice(8);
+    session.step = "deviceCount";
+    bot.editMessageText("🌍 کشور: *🇺🇸 United States*\n\n🖥️ چند تا کانفیگ می‌خوای؟", {
+      chat_id: chatId,
+      message_id: query.message.message_id,
+      parse_mode: "Markdown",
+      reply_markup: deviceCountKeyboard(),
+    }).catch(() => {});
+    return;
+  }
 
   if (data.startsWith("dc_") && session.step === "deviceCount") {
     session.deviceCount = Number(data.slice(3));
@@ -454,9 +601,33 @@ bot.on("callback_query", async (query) => {
 
   if (data.startsWith("be_") && session.step === "backend") {
     session.backend = data.slice(3);
+    if (session.backend === "marzban") {
+      session.step = "dataPlan";
+      const plans = await fetchDataPlans();
+      session._plans = plans;
+      bot.editMessageText("🔐 نوع: *VPN (V2Ray/Shadowsocks)*\n\n📶 چقدر حجم می‌خوای؟", {
+        chat_id: chatId,
+        message_id: query.message.message_id,
+        parse_mode: "Markdown",
+        reply_markup: dataPlanKeyboard(plans),
+      }).catch(() => {});
+    } else {
+      session.step = "method";
+      bot.editMessageText("🔐 نوع: *WireGuard*\n\n💳 با چی پرداخت می‌کنی؟", {
+        chat_id: chatId,
+        message_id: query.message.message_id,
+        parse_mode: "Markdown",
+        reply_markup: methodKeyboard(),
+      }).catch(() => {});
+    }
+    return;
+  }
+
+  if (data.startsWith("dp_") && session.step === "dataPlan") {
+    session.dataPlanId = data.slice(3);
     session.step = "method";
-    const backendLabel = session.backend === "wireguard" ? "WireGuard" : "VPN (V2Ray/Shadowsocks)";
-    bot.editMessageText(`🔐 نوع: *${backendLabel}*\n\n💳 با چی پرداخت می‌کنی؟`, {
+    const plan = (session._plans || []).find((p) => p.id === session.dataPlanId);
+    bot.editMessageText(`📶 حجم: *${plan ? plan.label : session.dataPlanId}*\n\n💳 با چی پرداخت می‌کنی؟`, {
       chat_id: chatId,
       message_id: query.message.message_id,
       parse_mode: "Markdown",
@@ -487,6 +658,10 @@ bot.on("message", async (msg) => {
     startBuyFlow(chatId);
     return;
   }
+  if (text === "🎁 تست رایگان") {
+    startTrialFlow(chatId);
+    return;
+  }
   if (text === "📊 وضعیت من") {
     await sendStatus(chatId);
     return;
@@ -498,7 +673,7 @@ bot.on("message", async (msg) => {
   if (text === "ℹ️ راهنما") {
     bot.sendMessage(
       chatId,
-      "🛡️ *NodeShield VPN*\n\n«🛒 خرید VPN» - خرید کانفیگ جدید\n«📊 وضعیت من» - آخرین وضعیت شناخته‌شده‌ی اکانتت\n«🔗 دعوت از دوستان» - لینک رفرال، ۳۰ روز رایگان برای هر خرید موفق دوستات\n\nپرداخت با USDT یا BNB روی BNB Smart Chain، مستقیم از کیف‌پول خودت.",
+      "🛡️ *NodeShield VPN*\n\n«🛒 خرید VPN» - خرید کانفیگ جدید\n«🎁 تست رایگان» - ۱۰۰ مگابایت/۳ روز رایگان (یک بار، فقط VPN)\n«📊 وضعیت من» - آخرین وضعیت شناخته‌شده‌ی اکانتت\n«🔗 دعوت از دوستان» - لینک رفرال، پاداش دوطرفه برای هر خرید موفق\n\nپرداخت با USDT یا BNB روی BNB Smart Chain، مستقیم از کیف‌پول خودت.",
       { parse_mode: "Markdown" },
     );
     return;
@@ -506,6 +681,32 @@ bot.on("message", async (msg) => {
 
   const session = sessions.get(chatId);
   if (!session) return;
+
+  if (session.step === "trialWallet") {
+    if (!WALLET_RE.test(text)) {
+      bot.sendMessage(chatId, "آدرس کیف‌پول نامعتبره - باید 0x و بعدش 40 کاراکتر باشه.");
+      return;
+    }
+    bot.sendMessage(chatId, "⏳ در حال ساخت کانفیگ تست...");
+    const { ok, json } = await callSiteApi("/api/vpn/free-trial", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ walletAddress: text }),
+    });
+    if (!ok || !json?.ok) {
+      bot.sendMessage(chatId, `❌ ${json?.error || "خطای ناشناخته"}`);
+      resetSession(chatId);
+      return;
+    }
+    await sendDeviceConfigs(chatId, [{ label: "Trial", backend: "marzban", config: json.subscriptionUrl }]);
+    bot.sendMessage(
+      chatId,
+      `این کانفیگ تا *${new Date(json.expiresAt).toLocaleDateString()}* یا تا ${json.dataLimitMb}MB مصرف (هرکدوم زودتر) فعاله. اگه خوشت اومد، «🛒 خرید VPN» رو بزن.`,
+      { parse_mode: "Markdown" },
+    );
+    resetSession(chatId);
+    return;
+  }
 
   if (session.step === "wallet") {
     if (!WALLET_RE.test(text)) {
@@ -515,7 +716,10 @@ bot.on("message", async (msg) => {
     session.walletAddress = text;
     session.step = "txHash";
 
-    const requiredUsd = session.deviceCount * PRICE_PER_DEVICE_USD;
+    const plan = session.backend === "marzban" ? (session._plans || []).find((p) => p.id === session.dataPlanId) : null;
+    const unitPrice = plan ? plan.priceUsd : PRICE_PER_DEVICE_USD;
+    const requiredUsd = session.deviceCount * unitPrice;
+
     if (session.method === "usdt") {
       bot.sendMessage(
         chatId,
@@ -540,17 +744,21 @@ bot.on("message", async (msg) => {
       return;
     }
     bot.sendMessage(chatId, "⏳ در حال بررسی پرداخت رو زنجیره...");
+
+    const body = {
+      walletAddress: session.walletAddress,
+      txHash: text,
+      method: session.method,
+      deviceCount: session.deviceCount,
+      backend: session.backend,
+      intent: "add",
+    };
+    if (session.backend === "marzban" && session.dataPlanId) body.dataPlanId = session.dataPlanId;
+
     const { ok, json } = await callSiteApi("/api/vpn/verify-payment", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        walletAddress: session.walletAddress,
-        txHash: text,
-        method: session.method,
-        deviceCount: session.deviceCount,
-        backend: session.backend,
-        intent: "add",
-      }),
+      body: JSON.stringify(body),
     });
 
     if (!ok || !json?.ok) {
@@ -565,6 +773,7 @@ bot.on("message", async (msg) => {
     if (newDevices.length > 0 && newDevices.every((d) => d.provisionedAt)) {
       bot.sendMessage(chatId, "✅ پرداخت تأیید شد! این‌م کانفیگ‌هات:");
       await sendDeviceConfigs(chatId, newDevices);
+      bot.sendMessage(chatId, "دوستات رو دعوت کن و روز رایگان بگیر 👇", { reply_markup: inviteReminderKeyboard() });
     } else {
       bot.sendMessage(
         chatId,
@@ -578,7 +787,7 @@ bot.on("message", async (msg) => {
       }
     }
 
-    await maybeRewardReferrer(chatId);
+    await handleReferralRewards(chatId, session.walletAddress);
     resetSession(chatId);
     return;
   }

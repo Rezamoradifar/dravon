@@ -8,6 +8,7 @@ import { getVpnConfig, isPaymentConfigured, isServerConfigured, isMarzbanConfigu
 import { provisionDevice } from "@/lib/vpn/provision";
 import { vpnServerPublicClient } from "@/lib/vpn/serverPublicClient";
 import { addDevice, applyPayment, findByTxHash, getAccount } from "@/lib/vpn/store";
+import { getDataPlan, MARZBAN_DATA_PLANS } from "@/lib/vpn/types";
 import { bsc } from "viem/chains";
 
 export const runtime = "nodejs";
@@ -31,13 +32,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { walletAddress, txHash, method, deviceCount, backend, intent } = (body ?? {}) as {
+  const { walletAddress, txHash, method, deviceCount, backend, intent, dataPlanId } = (body ?? {}) as {
     walletAddress?: unknown;
     txHash?: unknown;
     method?: unknown;
     deviceCount?: unknown;
     backend?: unknown;
     intent?: unknown;
+    dataPlanId?: unknown;
   };
 
   if (typeof walletAddress !== "string" || !isAddress(walletAddress)) {
@@ -57,6 +59,16 @@ export async function POST(request: Request) {
   }
   if (typeof deviceCount !== "number" || !Number.isInteger(deviceCount) || deviceCount < 1 || deviceCount > MAX_DEVICES_PER_CALL) {
     return NextResponse.json({ error: `deviceCount must be an integer between 1 and ${MAX_DEVICES_PER_CALL}` }, { status: 400 });
+  }
+  // Data plans (GB caps) only exist for Marzban - WireGuard has no metering
+  // in this app, so it stays flat-rate unlimited regardless of this field.
+  if (dataPlanId !== undefined) {
+    if (backend !== "marzban") {
+      return NextResponse.json({ error: "dataPlanId is only valid for the 'marzban' backend" }, { status: 400 });
+    }
+    if (typeof dataPlanId !== "string" || !MARZBAN_DATA_PLANS.some((p) => p.id === dataPlanId)) {
+      return NextResponse.json({ error: "Invalid dataPlanId" }, { status: 400 });
+    }
   }
 
   const config = getVpnConfig();
@@ -100,7 +112,11 @@ export async function POST(request: Request) {
   }
 
   const paymentAddress = config.paymentAddress!.toLowerCase();
-  const requiredUsd = chargeDeviceCount * config.pricePerDeviceUsd;
+  // GB data plans only change the price for Marzban; WireGuard always uses
+  // the flat per-device rate, and Marzban with no plan given (or plan
+  // "unlimited") also resolves to that same flat rate.
+  const perDevicePrice = backend === "marzban" ? getDataPlan(dataPlanId as string | undefined).priceUsd : config.pricePerDeviceUsd;
+  const requiredUsd = chargeDeviceCount * perDevicePrice;
   let paidUsd: number;
 
   if (method === "usdt") {
@@ -186,6 +202,7 @@ export async function POST(request: Request) {
     deviceCount: targetDeviceCount,
     chargeDeviceCount,
     backend,
+    dataPlanId: backend === "marzban" ? (dataPlanId as string | undefined) : undefined,
   });
 
   // Provision whatever devices this payment brought the account up to,
@@ -195,7 +212,7 @@ export async function POST(request: Request) {
   const backendReady = account.backend === "wireguard" ? isServerConfigured(config) : isMarzbanConfigured(config);
   if (backendReady) {
     while (account.devices.length < account.paidDeviceCount && account.devices.length < MAX_DEVICES_PER_CALL) {
-      const result = await provisionDevice(walletAddress, account.devices.length + 1, account.backend);
+      const result = await provisionDevice(walletAddress, account.devices.length + 1, account.backend, account.dataPlanId);
       if (!result.ok) break;
       account = await addDevice(walletAddress, result.device);
     }

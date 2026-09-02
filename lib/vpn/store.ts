@@ -62,6 +62,9 @@ export async function applyPayment(params: {
   deviceCount: number;
   chargeDeviceCount: number;
   backend: VpnBackend;
+  /** Marzban-only - see VpnAccount.dataPlanId. Undefined leaves the
+   * account's existing plan default (or unset, for WireGuard) untouched. */
+  dataPlanId?: string;
 }): Promise<VpnAccount> {
   const existing = await getAccount(params.walletAddress);
   const now = Date.now();
@@ -75,6 +78,10 @@ export async function applyPayment(params: {
     paidDeviceCount: Math.max(existing?.paidDeviceCount ?? 0, params.deviceCount),
     // Fixed on first payment - a renewal/top-up can't switch an account's backend.
     backend: existing?.backend ?? params.backend,
+    // Not fixed - a later payment can request a different plan (an
+    // "upgrade") for whatever device(s) it's paying for; already-
+    // provisioned devices keep their own recorded dataPlanId regardless.
+    dataPlanId: params.dataPlanId ?? existing?.dataPlanId,
     devices: existing?.devices ?? [],
     payments: [
       ...(existing?.payments ?? []),

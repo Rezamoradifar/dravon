@@ -3,6 +3,7 @@ import { NodeSSH } from "node-ssh";
 
 import { getVpnConfig, isServerConfigured, isMarzbanConfigured, type VpnConfig } from "@/lib/vpn/config";
 import { provisionMarzbanDevice } from "@/lib/vpn/marzban";
+import { dataPlanLimitBytes, getDataPlan, TRIAL_DATA_LIMIT_MB, TRIAL_DAYS } from "@/lib/vpn/types";
 import type { VpnBackend, VpnDevice } from "@/lib/vpn/store";
 
 const WALLET_RE = /^0x[0-9a-fA-F]{40}$/;
@@ -56,6 +57,7 @@ export async function provisionDevice(
   walletAddress: string,
   deviceIndex: number,
   backend: VpnBackend,
+  dataPlanId?: string,
 ): Promise<ProvisionResult> {
   if (!WALLET_RE.test(walletAddress)) return { ok: false, error: "Invalid wallet address" };
   const label = `Device ${deviceIndex}`;
@@ -65,11 +67,13 @@ export async function provisionDevice(
   const config = getVpnConfig();
   if (!isMarzbanConfigured(config)) return { ok: false, error: "Marzban is not configured yet" };
 
+  const plan = getDataPlan(dataPlanId);
+
   // 30 days from now, matching SUBSCRIPTION_DAYS - Marzban tracks its own
   // per-user expiry independent of our account-level one, so a device stays
   // usable even if re-provisioned slightly before our own expiry check runs.
   const expireUnix = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
-  const result = await provisionMarzbanDevice(walletAddress, deviceIndex, expireUnix);
+  const result = await provisionMarzbanDevice(walletAddress, deviceIndex, expireUnix, dataPlanLimitBytes(plan));
   if (!result.ok) return { ok: false, error: result.error };
 
   return {
@@ -80,6 +84,37 @@ export async function provisionDevice(
       provisionedAt: new Date().toISOString(),
       backend: "marzban",
       config: result.subscriptionUrl,
+      dataPlanId: plan.id,
+    },
+  };
+}
+
+/**
+ * Free, one-time-per-wallet trial device - Marzban only, capped at
+ * TRIAL_DATA_LIMIT_MB for TRIAL_DAYS. Not part of the normal paid
+ * device/plan flow above: no charge, no paidDeviceCount change, tracked
+ * separately (see lib/vpn/trialStore.ts) so it can never be mistaken for or
+ * substitute a real purchase.
+ */
+export async function provisionMarzbanTrial(walletAddress: string): Promise<ProvisionResult> {
+  if (!WALLET_RE.test(walletAddress)) return { ok: false, error: "Invalid wallet address" };
+
+  const config = getVpnConfig();
+  if (!isMarzbanConfigured(config)) return { ok: false, error: "Marzban is not configured yet" };
+
+  const expireUnix = Math.floor(Date.now() / 1000) + TRIAL_DAYS * 24 * 60 * 60;
+  const result = await provisionMarzbanDevice(walletAddress, "trial", expireUnix, TRIAL_DATA_LIMIT_MB * 1024 * 1024);
+  if (!result.ok) return { ok: false, error: result.error };
+
+  return {
+    ok: true,
+    device: {
+      id: randomUUID(),
+      label: "Trial",
+      provisionedAt: new Date().toISOString(),
+      backend: "marzban",
+      config: result.subscriptionUrl,
+      dataPlanId: "trial",
     },
   };
 }

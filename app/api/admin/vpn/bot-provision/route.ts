@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Nothing pending - this account already has every device it paid for." }, { status: 409 });
   }
 
-  const result = await provisionDevice(walletAddress, account.devices.length + 1, account.backend);
+  const result = await provisionDevice(walletAddress, account.devices.length + 1, account.backend, account.dataPlanId);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 502 });
 
   account = await addDevice(walletAddress, result.device);

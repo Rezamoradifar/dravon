@@ -29,8 +29,10 @@ async function getMarzbanInbounds(token: string): Promise<MarzbanInboundsByProto
 }
 
 /** Marzban usernames are restricted to a small charset - this derives one
- * deterministically from a wallet address and device index. */
-function marzbanUsername(walletAddress: string, deviceIndex: number): string {
+ * deterministically from a wallet address and device index (a plain
+ * purchased device is numbered 1, 2, 3...; the free-trial device uses the
+ * literal suffix "trial" instead, one per wallet). */
+function marzbanUsername(walletAddress: string, deviceIndex: number | string): string {
   return `w${walletAddress.slice(2, 12).toLowerCase()}d${deviceIndex}`;
 }
 
@@ -44,11 +46,16 @@ export type MarzbanResult =
  * VMess/Trojan whenever added - this never hardcodes a protocol list) and
  * returns its subscription URL, importable by any V2Ray/Xray/Shadowsocks
  * client app.
+ *
+ * `dataLimitBytes` caps total transfer for this Marzban user - 0 means
+ * unlimited (Marzban's own convention). Used for both the paid GB-based
+ * data plans and the free 100MB trial.
  */
 export async function provisionMarzbanDevice(
   walletAddress: string,
-  deviceIndex: number,
+  deviceIndex: number | string,
   expireUnixSeconds: number,
+  dataLimitBytes: number = 0,
 ): Promise<MarzbanResult> {
   const config = getVpnConfig();
   if (!isMarzbanConfigured(config)) return { ok: false, error: "Marzban is not configured yet" };
@@ -77,7 +84,7 @@ export async function provisionMarzbanDevice(
         proxies,
         inbounds,
         expire: expireUnixSeconds,
-        data_limit: 0,
+        data_limit: dataLimitBytes,
         status: "active",
       }),
     });
