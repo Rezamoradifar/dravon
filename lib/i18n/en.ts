@@ -16,6 +16,7 @@ export const en = {
     swap: "Swap",
     learn: "Learning Center",
     products: "Products",
+    vpn: "NodeShield VPN",
     news: "News",
     games: "Game Center",
     contractActions: "Contract Actions",

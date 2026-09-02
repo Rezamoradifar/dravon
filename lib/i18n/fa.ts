@@ -18,6 +18,7 @@ export const fa: Dictionary = {
     swap: "تبدیل ارز",
     learn: "مرکز آموزش",
     products: "محصولات",
+    vpn: "NodeShield VPN",
     news: "اخبار",
     games: "مرکز بازی",
     contractActions: "عملیات قرارداد",
