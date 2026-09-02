@@ -101,9 +101,21 @@ export async function addDevice(walletAddress: string, device: VpnDevice): Promi
   return record;
 }
 
-export async function listNeedingProvisioning(): Promise<VpnAccount[]> {
-  const all = await readAll();
+function latestPerWallet(all: VpnAccount[]): VpnAccount[] {
   const latestByWallet = new Map<string, VpnAccount>();
   for (const record of all) latestByWallet.set(record.walletAddress.toLowerCase(), record);
-  return [...latestByWallet.values()].filter((r) => r.devices.length < r.paidDeviceCount);
+  return [...latestByWallet.values()];
+}
+
+export async function listNeedingProvisioning(): Promise<VpnAccount[]> {
+  const all = await readAll();
+  return latestPerWallet(all).filter((r) => r.devices.length < r.paidDeviceCount);
+}
+
+/** Every account's current state - used by the bot-secret-gated admin API
+ * (lib/vpn/botAuth.ts) so the Telegram admin bot can read the same data the
+ * human /admin panel sees. */
+export async function listAllAccounts(): Promise<VpnAccount[]> {
+  const all = await readAll();
+  return latestPerWallet(all);
 }
