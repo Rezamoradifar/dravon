@@ -3,7 +3,8 @@
 import * as React from "react";
 import { useAccount } from "wagmi";
 import { toast } from "sonner";
-import { Copy, Download, Loader2, ShieldCheck } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
+import { Copy, Download, Loader2, QrCode, ShieldCheck, User } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,75 @@ function downloadConfig(device: VpnDevice) {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function DeviceRow({ device }: { device: VpnDevice }) {
+  const { t } = useTranslation();
+  const [showQr, setShowQr] = React.useState(false);
+
+  return (
+    <div className="rounded-lg border p-3 text-sm">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="secondary">{device.label}</Badge>
+          <Badge variant="outline" className="uppercase">
+            {device.backend}
+          </Badge>
+          <span className="text-xs text-muted-foreground">
+            {new Date(device.provisionedAt).toLocaleDateString()}
+          </span>
+        </div>
+        <div className="flex gap-1.5">
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8"
+            onClick={() => {
+              navigator.clipboard.writeText(device.config);
+              toast.success(t("myVpn.copied"));
+            }}
+            title={t("myVpn.copy")}
+          >
+            <Copy className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8"
+            onClick={() => downloadConfig(device)}
+            title={t("myVpn.download")}
+          >
+            <Download className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            size="icon"
+            variant={showQr ? "default" : "ghost"}
+            className="h-8 w-8"
+            onClick={() => setShowQr((v) => !v)}
+            title={showQr ? t("myVpn.hideQr") : t("myVpn.showQr")}
+          >
+            <QrCode className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+
+      <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+        <User className="h-3 w-3 shrink-0" />
+        {t("myVpn.singleUserNotice")}
+      </p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        {device.backend === "wireguard" ? t("myVpn.howToWireguard") : t("myVpn.howToMarzban")}
+      </p>
+
+      {showQr && (
+        <div className="mt-3 flex justify-center">
+          <div className="rounded-lg border bg-white p-3">
+            <QRCodeSVG value={device.config} size={180} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 /** Account state is loaded once by the parent page (useVpnAccount) and
@@ -78,30 +148,7 @@ export function MyVpnAccount({
           <p className="text-sm text-muted-foreground">{t("myVpn.noAccountYet")}</p>
         )}
         {account?.devices.map((device) => (
-          <div key={device.id} className="flex items-center justify-between rounded-lg border p-3 text-sm">
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary">{device.label}</Badge>
-              <span className="text-xs text-muted-foreground">
-                {new Date(device.provisionedAt).toLocaleDateString()}
-              </span>
-            </div>
-            <div className="flex gap-1.5">
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-8 w-8"
-                onClick={() => {
-                  navigator.clipboard.writeText(device.config);
-                  toast.success(t("myVpn.copied"));
-                }}
-              >
-                <Copy className="h-3.5 w-3.5" />
-              </Button>
-              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => downloadConfig(device)}>
-                <Download className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          </div>
+          <DeviceRow key={device.id} device={device} />
         ))}
 
         {awaitingCount > 0 && (

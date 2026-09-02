@@ -11,6 +11,12 @@ set -euo pipefail
 # connects here passwordless sudo for this exact script - see the note at
 # the end of setup-server.sh.
 #
+# By default the client config's Endpoint is this server's own public IP
+# (auto-detected via ifconfig.me). To hand out a domain name instead - so
+# clients never see the raw VPN server IP - point a DNS A record at this
+# server and write it once to /opt/dravon-vpn/endpoint-host, e.g.:
+#   echo "vpn.yourdomain.com" > /opt/dravon-vpn/endpoint-host
+#
 # Usage: add-peer.sh <wallet-address> <tier>
 
 WALLET="${1:?wallet address required}"
@@ -27,7 +33,12 @@ if [[ ! "$WALLET" =~ ^0x[0-9a-fA-F]{40}$ ]]; then
 fi
 
 SERVER_PUBLIC_KEY=$(cat "$WG_DIR/server_public.key")
-SERVER_ENDPOINT="$(curl -s https://ifconfig.me):$WG_PORT"
+if [ -f "$STATE_DIR/endpoint-host" ]; then
+  ENDPOINT_HOST=$(cat "$STATE_DIR/endpoint-host")
+else
+  ENDPOINT_HOST=$(curl -s https://ifconfig.me)
+fi
+SERVER_ENDPOINT="$ENDPOINT_HOST:$WG_PORT"
 
 NEXT_ID=$(cat "$STATE_DIR/next-peer-id")
 if [ "$NEXT_ID" -gt 254 ]; then

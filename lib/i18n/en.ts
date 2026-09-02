@@ -914,7 +914,7 @@ export const en = {
     confirmInWallet: "Confirm in your wallet...",
     waitingOnChain: "Waiting for confirmation...",
     verifying: "Verifying payment...",
-    paidSuccess: "Payment confirmed! Your device configs will be set up shortly.",
+    paidSuccess: "Payment confirmed! Your VPN config is being generated now - scroll down to the panel below in a moment to scan its QR code or copy it.",
     tryAgain: "Try Again",
     afterPayNotice: "Devices are usually provisioned automatically within moments of payment - check the panel below.",
   },
@@ -938,6 +938,13 @@ export const en = {
     awaitingProvisioning: "{count} device(s) still being set up - this usually only takes a moment, but check back if it's been a while.",
     loadFailed: "Couldn't load your account",
     copied: "Config copied",
+    copy: "Copy config",
+    download: "Download config",
+    showQr: "Show QR code",
+    hideQr: "Hide QR code",
+    singleUserNotice: "Single user, single device - don't share this config, it'll conflict if used in two places at once.",
+    howToWireguard: "Import into the WireGuard app: scan the QR code, or open the downloaded file.",
+    howToMarzban: "Import into any V2Ray/Shadowsocks/Xray client (e.g. v2rayNG, Streisand, NekoBox): scan the QR code, or paste the subscription link.",
   },
 };
 
