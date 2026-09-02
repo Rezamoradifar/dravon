@@ -363,10 +363,13 @@ async function referralLinkFor(chatId) {
 
 async function sendReferralLink(chatId) {
   const link = await referralLinkFor(chatId);
+  // No parse_mode here on purpose: the link contains underscores (the bot
+  // username and the "ref_<id>" payload), and Telegram's legacy Markdown
+  // mode treats "_..._" as italics - it silently eats those underscores,
+  // corrupting the link into something that doesn't resolve.
   bot.sendMessage(
     chatId,
-    `🔗 *دعوت از دوستان*\n\nاین لینک رو برای دوستات بفرست:\n${link}\n\nهر دوستی که با این لینک بیاد و اولین خریدش رو کامل کنه:\n🎉 تو ${REFERRAL_BONUS_DAYS} روز رایگان می‌گیری\n🎁 خودش هم ${REFERRED_USER_BONUS_DAYS} روز رایگان می‌گیره\n\nهر چقدر بیشتر دعوت کنی، بیشتر می‌گیری - محدودیتی نداره.`,
-    { parse_mode: "Markdown" },
+    `🔗 دعوت از دوستان\n\nاین لینک رو برای دوستات بفرست:\n${link}\n\nهر دوستی که با این لینک بیاد و اولین خریدش رو کامل کنه:\n🎉 تو ${REFERRAL_BONUS_DAYS} روز رایگان می‌گیری\n🎁 خودش هم ${REFERRED_USER_BONUS_DAYS} روز رایگان می‌گیره\n\nهر چقدر بیشتر دعوت کنی، بیشتر می‌گیری - محدودیتی نداره.`,
   );
 }
 
