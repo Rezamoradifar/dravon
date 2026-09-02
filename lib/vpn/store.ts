@@ -119,3 +119,26 @@ export async function listAllAccounts(): Promise<VpnAccount[]> {
   const all = await readAll();
   return latestPerWallet(all);
 }
+
+/**
+ * Extends an existing account's expiry by `days` with no charge - e.g. the
+ * Telegram bot's referral reward. Only meaningful for an account that
+ * already has at least one paid device; returns undefined (no-op) for a
+ * wallet with no account yet or zero paidDeviceCount, since there is
+ * nothing to extend.
+ */
+export async function grantBonusDays(walletAddress: string, days: number): Promise<VpnAccount | undefined> {
+  const existing = await getAccount(walletAddress);
+  if (!existing || existing.paidDeviceCount < 1) return undefined;
+
+  const now = Date.now();
+  const currentExpiry = new Date(existing.expiresAt).getTime();
+  const base = Math.max(now, currentExpiry);
+  const record: VpnAccount = {
+    ...existing,
+    expiresAt: new Date(base + days * 24 * 60 * 60 * 1000).toISOString(),
+  };
+
+  await appendRecord(record);
+  return record;
+}

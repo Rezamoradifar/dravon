@@ -25,8 +25,23 @@
  *   NEXT_PUBLIC_VPN_PAYMENT_ADDRESS, NEXT_PUBLIC_VPN_PRICE_PER_DEVICE_USD
  *                              - same values the website uses
  *   SITE_BASE_URL              - defaults to http://localhost:3000
+ *
+ * Local state (gitignored, under data/ next to vpn-accounts.jsonl):
+ *   telegram-bot-users.jsonl      - chatId -> last known wallet + account
+ *                                   snapshot, appended after every purchase
+ *                                   made through this bot. Powers "My
+ *                                   status" and the referral reward lookup.
+ *                                   This is a cache of what the bot itself
+ *                                   already verified on-chain - never a
+ *                                   substitute for the site's own signature-
+ *                                   gated /api/vpn/my-account.
+ *   telegram-bot-referrals.jsonl  - referredChatId -> referrerChatId,
+ *                                   appended when a new user opens the bot
+ *                                   via a referral deep link.
  */
 
+const fs = require("fs");
+const path = require("path");
 const TelegramBot = require("node-telegram-bot-api");
 const QRCode = require("qrcode");
 
@@ -39,6 +54,7 @@ const SITE_BASE_URL = process.env.SITE_BASE_URL || "http://localhost:3000";
 const PAYMENT_ADDRESS = process.env.NEXT_PUBLIC_VPN_PAYMENT_ADDRESS;
 const PRICE_PER_DEVICE_USD = Number(process.env.NEXT_PUBLIC_VPN_PRICE_PER_DEVICE_USD || "1");
 const MAX_DEVICES = 10;
+const REFERRAL_BONUS_DAYS = 30;
 const WALLET_RE = /^0x[0-9a-fA-F]{40}$/;
 const TXHASH_RE = /^0x[0-9a-fA-F]{64}$/;
 
@@ -59,10 +75,78 @@ if (!PAYMENT_ADDRESS) {
 }
 
 const bot = new TelegramBot(TOKEN, { polling: true });
+let botUsername = null;
+
+// --- Local JSONL state (same append-only, latest-record-wins pattern as
+// lib/vpn/store.ts) --------------------------------------------------------
+
+const DATA_DIR = path.join(process.cwd(), "data");
+const USERS_FILE = path.join(DATA_DIR, "telegram-bot-users.jsonl");
+const REFERRALS_FILE = path.join(DATA_DIR, "telegram-bot-referrals.jsonl");
+
+function readJsonl(file) {
+  try {
+    return fs
+      .readFileSync(file, "utf8")
+      .split("\n")
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+  } catch (err) {
+    if (err.code === "ENOENT") return [];
+    throw err;
+  }
+}
+
+function appendJsonl(file, record) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.appendFileSync(file, `${JSON.stringify(record)}\n`, "utf8");
+}
+
+function saveBotUser(chatId, walletAddress, account) {
+  appendJsonl(USERS_FILE, { chatId: String(chatId), walletAddress, account, updatedAt: new Date().toISOString() });
+}
+
+function getBotUser(chatId) {
+  const all = readJsonl(USERS_FILE).filter((r) => r.chatId === String(chatId));
+  return all.length > 0 ? all[all.length - 1] : null;
+}
+
+/** Records a new referral the first time a chat is ever seen via a referral
+ * deep link - a chat that already has a referral record (or is referring
+ * itself) is ignored, so re-opening the same link twice doesn't create
+ * duplicate rewards. */
+function recordReferralIfNew(referredChatId, referrerChatId) {
+  if (String(referredChatId) === String(referrerChatId)) return;
+  const existing = readJsonl(REFERRALS_FILE).find((r) => r.referredChatId === String(referredChatId));
+  if (existing) return;
+  appendJsonl(REFERRALS_FILE, {
+    referredChatId: String(referredChatId),
+    referrerChatId: String(referrerChatId),
+    rewarded: false,
+    createdAt: new Date().toISOString(),
+  });
+}
+
+function getReferralFor(referredChatId) {
+  const all = readJsonl(REFERRALS_FILE).filter((r) => r.referredChatId === String(referredChatId));
+  return all.length > 0 ? all[all.length - 1] : null;
+}
+
+function markReferralRewarded(referredChatId, referrerChatId) {
+  appendJsonl(REFERRALS_FILE, {
+    referredChatId: String(referredChatId),
+    referrerChatId: String(referrerChatId),
+    rewarded: true,
+    createdAt: new Date().toISOString(),
+  });
+}
+
+// --- Small helpers ---------------------------------------------------------
 
 /** In-memory per-chat purchase wizard state. Lost on a bot restart - a user
  * mid-flow just runs /buy again. Nothing sensitive is kept here longer than
- * one conversation (no configs, no keys). */
+ * one conversation (no configs, no keys - those go to disk only in
+ * telegram-bot-users.jsonl, after a verified purchase). */
 const sessions = new Map();
 
 function isAdmin(chatId) {
@@ -74,6 +158,11 @@ function resetSession(chatId) {
 }
 
 const CANCEL_ROW = [{ text: "❌ لغو", callback_data: "cancel" }];
+
+const MAIN_KEYBOARD = {
+  keyboard: [["🛒 خرید VPN", "📊 وضعیت من"], ["🔗 دعوت از دوستان", "ℹ️ راهنما"]],
+  resize_keyboard: true,
+};
 
 async function callSiteApi(path, options) {
   const res = await fetch(`${SITE_BASE_URL}${path}`, options);
@@ -95,6 +184,11 @@ async function fetchBnbUsdPrice() {
   } catch {
     return null;
   }
+}
+
+async function fetchPublicStats() {
+  const { ok, json } = await callSiteApi("/api/vpn/stats", {});
+  return ok && json?.ok ? json : null;
 }
 
 async function sendDeviceConfigs(chatId, devices) {
@@ -154,21 +248,92 @@ function startBuyFlow(chatId) {
   bot.sendMessage(chatId, "🖥️ چند تا کانفیگ می‌خوای؟", { reply_markup: deviceCountKeyboard() });
 }
 
-bot.onText(/^\/start/, (msg) => {
-  resetSession(msg.chat.id);
+async function sendStatus(chatId) {
+  const record = getBotUser(chatId);
+  if (!record) {
+    bot.sendMessage(chatId, "هنوز از طریق این ربات خریدی نداشتی. برای شروع، «🛒 خرید VPN» رو بزن.");
+    return;
+  }
+  const account = record.account;
+  const expired = new Date(account.expiresAt).getTime() < Date.now();
+  const backendLabel = account.backend === "wireguard" ? "WireGuard" : "VPN";
+  const masked = `${record.walletAddress.slice(0, 6)}...${record.walletAddress.slice(-4)}`;
   bot.sendMessage(
-    msg.chat.id,
-    "🛡️ *NodeShield VPN*\n\nهر کانفیگ، ماهی $1، پهنای‌باند نامحدود، تک‌کاربر.\n\nپرداخت مستقیم از کیف‌پول خودت (USDT یا BNB روی BNB Smart Chain) - همون روش سایت.",
+    chatId,
+    `📊 *وضعیت من* (آخرین وضعیت شناخته‌شده - اگه رو سایت هم تمدید کرده باشی ممکنه به‌روز نباشه)\n\nکیف‌پول: \`${masked}\`\nنوع: ${backendLabel}\nدستگاه: ${account.devices.length}/${account.paidDeviceCount}\nانقضا: ${expired ? "منقضی‌شده" : new Date(account.expiresAt).toLocaleDateString()}`,
     {
       parse_mode: "Markdown",
-      reply_markup: { inline_keyboard: [[{ text: "🛒 خرید VPN", callback_data: "buy_start" }]] },
+      reply_markup: { inline_keyboard: [[{ text: "📥 نمایش کانفیگ‌ها دوباره", callback_data: "resend_configs" }]] },
     },
+  );
+}
+
+async function sendReferralLink(chatId) {
+  const link = `https://t.me/${botUsername}?start=ref_${chatId}`;
+  bot.sendMessage(
+    chatId,
+    `🔗 *دعوت از دوستان*\n\nاین لینک رو برای دوستات بفرست:\n${link}\n\nهر دوستی که با این لینک بیاد و اولین خریدش رو کامل کنه، ${REFERRAL_BONUS_DAYS} روز رایگان به اکانت فعال تو اضافه می‌شه (اگه از قبل کانفیگ فعال داشته باشی).`,
+    { parse_mode: "Markdown" },
+  );
+}
+
+async function maybeRewardReferrer(referredChatId) {
+  const referral = getReferralFor(referredChatId);
+  if (!referral || referral.rewarded) return;
+
+  const referrerRecord = getBotUser(referral.referrerChatId);
+  if (!referrerRecord) {
+    if (ADMIN_CHAT_ID) {
+      bot.sendMessage(
+        ADMIN_CHAT_ID,
+        `ℹ️ یه رفرال کامل شد ولی رفرر (chat ${referral.referrerChatId}) هنوز از طریق ربات خریدی نکرده - نمی‌دونیم کیف‌پولش چیه، جایزه اعمال نشد.`,
+      );
+    }
+    return;
+  }
+
+  const { ok, json } = await callSiteApi("/api/admin/vpn/grant-bonus", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-bot-secret": BOT_SECRET },
+    body: JSON.stringify({ walletAddress: referrerRecord.walletAddress, days: REFERRAL_BONUS_DAYS }),
+  });
+
+  if (ok && json?.ok) {
+    markReferralRewarded(referredChatId, referral.referrerChatId);
+    bot.sendMessage(
+      referral.referrerChatId,
+      `🎉 یکی از دوستایی که با لینک تو دعوت کردی خریدش رو کامل کرد! ${REFERRAL_BONUS_DAYS} روز رایگان به اکانتت اضافه شد.`,
+    ).catch(() => {});
+  } else if (ADMIN_CHAT_ID) {
+    bot.sendMessage(
+      ADMIN_CHAT_ID,
+      `ℹ️ یه رفرال کامل شد ولی جایزه اعمال نشد (${json?.error || "unknown"}) - رفرر (${referral.referrerChatId}, ${referrerRecord.walletAddress}) شاید هنوز کانفیگ فعالی نداره.`,
+    );
+  }
+}
+
+bot.onText(/^\/start(?:\s+(.+))?/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  resetSession(chatId);
+
+  const payload = match && match[1];
+  if (payload && payload.startsWith("ref_")) {
+    recordReferralIfNew(chatId, payload.slice(4));
+  }
+
+  const stats = await fetchPublicStats();
+  const statsLine = stats ? `\n\n✅ ${stats.totalDevices} کانفیگ فعال تا الان` : "";
+
+  bot.sendMessage(
+    chatId,
+    `🛡️ *NodeShield VPN*\n\nهر کانفیگ، ماهی $1، پهنای‌باند نامحدود، تک‌کاربر.\n\nپرداخت مستقیم از کیف‌پول خودت (USDT یا BNB روی BNB Smart Chain) - همون روش سایت.${statsLine}`,
+    { parse_mode: "Markdown", reply_markup: MAIN_KEYBOARD },
   );
 });
 
 bot.onText(/^\/cancel/, (msg) => {
   resetSession(msg.chat.id);
-  bot.sendMessage(msg.chat.id, "لغو شد. هر وقت خواستی /buy رو بزن.");
+  bot.sendMessage(msg.chat.id, "لغو شد. هر وقت خواستی «🛒 خرید VPN» رو بزن.");
 });
 
 bot.onText(/^\/buy/, (msg) => startBuyFlow(msg.chat.id));
@@ -253,7 +418,7 @@ bot.on("callback_query", async (query) => {
 
   if (data === "cancel") {
     resetSession(chatId);
-    bot.editMessageText("لغو شد. هر وقت خواستی /buy رو بزن.", {
+    bot.editMessageText("لغو شد. هر وقت خواستی «🛒 خرید VPN» رو بزن.", {
       chat_id: chatId,
       message_id: query.message.message_id,
     }).catch(() => {});
@@ -262,6 +427,13 @@ bot.on("callback_query", async (query) => {
 
   if (data === "buy_start") {
     startBuyFlow(chatId);
+    return;
+  }
+
+  if (data === "resend_configs") {
+    const record = getBotUser(chatId);
+    if (!record) return;
+    await sendDeviceConfigs(chatId, record.account.devices);
     return;
   }
 
@@ -304,12 +476,33 @@ bot.on("callback_query", async (query) => {
   }
 });
 
-// --- Purchase wizard: free-text steps (wallet address, txHash) ----------
+// --- Persistent-keyboard buttons + free-text wizard steps ----------------
 
 bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
   const text = (msg.text || "").trim();
   if (text.startsWith("/")) return; // commands handled above
+
+  if (text === "🛒 خرید VPN") {
+    startBuyFlow(chatId);
+    return;
+  }
+  if (text === "📊 وضعیت من") {
+    await sendStatus(chatId);
+    return;
+  }
+  if (text === "🔗 دعوت از دوستان") {
+    await sendReferralLink(chatId);
+    return;
+  }
+  if (text === "ℹ️ راهنما") {
+    bot.sendMessage(
+      chatId,
+      "🛡️ *NodeShield VPN*\n\n«🛒 خرید VPN» - خرید کانفیگ جدید\n«📊 وضعیت من» - آخرین وضعیت شناخته‌شده‌ی اکانتت\n«🔗 دعوت از دوستان» - لینک رفرال، ۳۰ روز رایگان برای هر خرید موفق دوستات\n\nپرداخت با USDT یا BNB روی BNB Smart Chain، مستقیم از کیف‌پول خودت.",
+      { parse_mode: "Markdown" },
+    );
+    return;
+  }
 
   const session = sessions.get(chatId);
   if (!session) return;
@@ -366,6 +559,8 @@ bot.on("message", async (msg) => {
     }
 
     const account = json.account;
+    saveBotUser(chatId, session.walletAddress, account);
+
     const newDevices = account.devices.slice(-session.deviceCount);
     if (newDevices.length > 0 && newDevices.every((d) => d.provisionedAt)) {
       bot.sendMessage(chatId, "✅ پرداخت تأیید شد! این‌م کانفیگ‌هات:");
@@ -382,6 +577,8 @@ bot.on("message", async (msg) => {
         );
       }
     }
+
+    await maybeRewardReferrer(chatId);
     resetSession(chatId);
     return;
   }
@@ -391,4 +588,12 @@ bot.on("polling_error", (err) => {
   console.error("Telegram polling error:", err.message);
 });
 
-console.log("dravon-bot: NodeShield Telegram bot started (polling).");
+bot
+  .getMe()
+  .then((me) => {
+    botUsername = me.username;
+    console.log(`dravon-bot: NodeShield Telegram bot started as @${botUsername} (polling).`);
+  })
+  .catch((err) => {
+    console.error("Failed to fetch bot identity:", err.message);
+  });
