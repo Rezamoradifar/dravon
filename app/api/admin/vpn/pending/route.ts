@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { verifyAdminSignature } from "@/lib/vpn/adminAuth";
-import { listPending } from "@/lib/vpn/store";
+import { listNeedingProvisioning } from "@/lib/vpn/store";
 
 export const runtime = "nodejs";
 
@@ -25,5 +25,5 @@ export async function POST(request: Request) {
   const auth = await verifyAdminSignature({ address, timestamp, signature: signature as `0x${string}` });
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: 401 });
 
-  return NextResponse.json({ ok: true, pending: await listPending() });
+  return NextResponse.json({ ok: true, accounts: await listNeedingProvisioning() });
 }

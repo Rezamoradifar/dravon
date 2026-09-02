@@ -8,24 +8,24 @@ import { Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useAdminSignature } from "@/hooks/useAdminSignature";
+import { useWalletSignature } from "@/hooks/useWalletSignature";
 import { useTranslation } from "@/contexts/language-context";
-import type { VpnSubscription } from "@/lib/vpn/store";
+import type { VpnAccount } from "@/lib/vpn/types";
 
 export function VpnAdminPanel() {
-  const [pending, setPending] = React.useState<VpnSubscription[]>([]);
+  const [pending, setPending] = React.useState<VpnAccount[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
-  const [provisioningTx, setProvisioningTx] = React.useState<string | null>(null);
-  const [lastConfig, setLastConfig] = React.useState<{ txHash: string; config: string } | null>(null);
+  const [provisioningWallet, setProvisioningWallet] = React.useState<string | null>(null);
+  const [lastConfig, setLastConfig] = React.useState<{ wallet: string; config: string } | null>(null);
   const { address } = useAccount();
-  const { signAdminAction } = useAdminSignature();
+  const { signWalletAction } = useWalletSignature();
   const { t } = useTranslation();
 
   async function loadPending() {
     if (!address) return;
     setIsLoading(true);
     try {
-      const { timestamp, signature } = await signAdminAction();
+      const { timestamp, signature } = await signWalletAction();
       const res = await fetch("/api/admin/vpn/pending", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -33,7 +33,7 @@ export function VpnAdminPanel() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Failed to load");
-      setPending(json.pending);
+      setPending(json.accounts);
     } catch (error) {
       toast.error(t("vpnAdmin.loadFailed"), { description: error instanceof Error ? error.message : undefined });
     } finally {
@@ -41,25 +41,25 @@ export function VpnAdminPanel() {
     }
   }
 
-  async function provision(sub: VpnSubscription) {
+  async function provision(account: VpnAccount) {
     if (!address) return;
-    setProvisioningTx(sub.txHash);
+    setProvisioningWallet(account.walletAddress);
     try {
-      const { timestamp, signature } = await signAdminAction();
+      const { timestamp, signature } = await signWalletAction();
       const res = await fetch("/api/admin/vpn/provision", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address, timestamp, signature, txHash: sub.txHash }),
+        body: JSON.stringify({ address, timestamp, signature, walletAddress: account.walletAddress }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Provisioning failed");
-      setLastConfig({ txHash: sub.txHash, config: json.wireguardConfig });
+      setLastConfig({ wallet: account.walletAddress, config: json.wireguardConfig });
       toast.success(t("vpnAdmin.provisioned"));
       loadPending();
     } catch (error) {
       toast.error(t("vpnAdmin.provisionFailed"), { description: error instanceof Error ? error.message : undefined });
     } finally {
-      setProvisioningTx(null);
+      setProvisioningWallet(null);
     }
   }
 
@@ -79,28 +79,22 @@ export function VpnAdminPanel() {
         {pending.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t("vpnAdmin.empty")}</p>
         ) : (
-          pending.map((sub) => (
-            <div key={sub.txHash} className="rounded-lg border p-3 text-sm">
+          pending.map((account) => (
+            <div key={account.walletAddress} className="rounded-lg border p-3 text-sm">
               <div className="mb-2 flex flex-wrap items-center gap-2">
-                <Badge variant="secondary">{sub.tier}</Badge>
-                <span className="font-mono text-xs">{sub.walletAddress}</span>
-                <span className="text-xs text-muted-foreground">${sub.amountUsdt}</span>
+                <Badge variant="secondary">{account.tier}</Badge>
+                <span className="font-mono text-xs">{account.walletAddress}</span>
+                <span className="text-xs text-muted-foreground">
+                  {account.devices.length} {t("vpnAdmin.devices")}
+                </span>
               </div>
-              <a
-                href={`https://bscscan.com/tx/${sub.txHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mb-2 block truncate text-xs text-primary hover:underline"
-              >
-                {sub.txHash}
-              </a>
               <Button
                 size="sm"
                 className="gap-1.5"
-                disabled={provisioningTx === sub.txHash}
-                onClick={() => provision(sub)}
+                disabled={provisioningWallet === account.walletAddress}
+                onClick={() => provision(account)}
               >
-                {provisioningTx === sub.txHash ? (
+                {provisioningWallet === account.walletAddress ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
                   <ShieldCheck className="h-3.5 w-3.5" />
@@ -113,7 +107,9 @@ export function VpnAdminPanel() {
 
         {lastConfig && (
           <div className="rounded-lg border bg-muted/30 p-3">
-            <p className="mb-2 text-xs font-medium">{t("vpnAdmin.configFor", { tx: lastConfig.txHash.slice(0, 10) })}</p>
+            <p className="mb-2 text-xs font-medium">
+              {t("vpnAdmin.configFor", { wallet: lastConfig.wallet.slice(0, 10) })}
+            </p>
             <textarea
               readOnly
               dir="ltr"

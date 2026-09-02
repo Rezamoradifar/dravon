@@ -1,18 +1,11 @@
-import { verifyMessage } from "viem";
-
 import { ADMIN_ADDRESS } from "@/contracts/addresses";
-
-const MAX_SIGNATURE_AGE_MS = 5 * 60_000;
-
-export function adminAuthMessage(timestamp: number): string {
-  return `dravon-vpn-admin-action:${timestamp}`;
-}
+import { verifyWalletSignature } from "@/lib/vpn/walletAuth";
 
 /**
- * Verifies that a request genuinely comes from the wallet holding
- * ADMIN_ADDRESS, using a signed, timestamped message instead of a session -
- * there's no traditional login system in this app, and admin identity is
- * already wallet-based everywhere else (useIsAdmin).
+ * Same signed-message proof as walletAuth.ts, plus a check that the signer
+ * is the configured admin wallet - admin identity is wallet-based everywhere
+ * else in this app (useIsAdmin), so this matches rather than introducing a
+ * separate login.
  */
 export async function verifyAdminSignature(params: {
   address: string;
@@ -23,15 +16,5 @@ export async function verifyAdminSignature(params: {
   if (params.address.toLowerCase() !== ADMIN_ADDRESS.toLowerCase()) {
     return { ok: false, error: "Not the admin address" };
   }
-  if (Math.abs(Date.now() - params.timestamp) > MAX_SIGNATURE_AGE_MS) {
-    return { ok: false, error: "Signature expired" };
-  }
-
-  const valid = await verifyMessage({
-    address: params.address as `0x${string}`,
-    message: adminAuthMessage(params.timestamp),
-    signature: params.signature,
-  });
-
-  return valid ? { ok: true } : { ok: false, error: "Invalid signature" };
+  return verifyWalletSignature(params);
 }

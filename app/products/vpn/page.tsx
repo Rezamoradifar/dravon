@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { CheckCircle2, Loader2, Lock, ShieldOff } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
@@ -7,16 +8,22 @@ import { NetworkBanner } from "@/components/shared/network-banner";
 import { ConnectWalletGuard } from "@/components/shared/connect-wallet-guard";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { MyVpnAccount } from "@/components/vpn/my-vpn-account";
 import { useVpnPayment, type VpnTier } from "@/hooks/useVpnPayment";
 import { VPN_PAYMENTS_LIVE, VPN_PRICE_USD } from "@/lib/vpn/publicConfig";
 import { useTranslation } from "@/contexts/language-context";
 
 const TIERS: VpnTier[] = ["plus", "pro"];
 
-function TierCard({ tier }: { tier: VpnTier }) {
+function TierCard({ tier, onPaid }: { tier: VpnTier; onPaid: () => void }) {
   const { pay, phase, error, reset } = useVpnPayment();
   const { t } = useTranslation();
   const isBusy = phase === "paying" || phase === "confirming" || phase === "verifying";
+
+  React.useEffect(() => {
+    if (phase === "done") onPaid();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
 
   return (
     <Card className="card-glow flex flex-col">
@@ -62,6 +69,7 @@ function TierCard({ tier }: { tier: VpnTier }) {
 
 export default function VpnProductPage() {
   const { t } = useTranslation();
+  const [refreshToken, setRefreshToken] = React.useState(0);
 
   return (
     <div>
@@ -84,9 +92,10 @@ export default function VpnProductPage() {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {TIERS.map((tier) => (
-              <TierCard key={tier} tier={tier} />
+              <TierCard key={tier} tier={tier} onPaid={() => setRefreshToken((v) => v + 1)} />
             ))}
           </div>
+          <MyVpnAccount refreshToken={refreshToken} />
         </ConnectWalletGuard>
       )}
     </div>

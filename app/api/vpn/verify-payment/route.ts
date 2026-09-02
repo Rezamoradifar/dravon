@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { decodeEventLog, formatUnits, isAddress, parseUnits } from "viem";
 
 import { erc20Abi } from "@/contracts/erc20Abi";
-import { getVpnConfig, isPaymentConfigured } from "@/lib/vpn/config";
+import { getVpnConfig, isPaymentConfigured, isServerConfigured } from "@/lib/vpn/config";
+import { provisionDevice } from "@/lib/vpn/provision";
 import { vpnServerPublicClient } from "@/lib/vpn/serverPublicClient";
-import { findByTxHash, recordPayment } from "@/lib/vpn/store";
+import { addDevice, applyPayment, findByTxHash, DEVICE_LIMIT } from "@/lib/vpn/store";
 
 export const runtime = "nodejs";
 
@@ -38,14 +39,14 @@ export async function POST(request: Request) {
   const config = getVpnConfig();
   if (!isPaymentConfigured(config)) {
     return NextResponse.json(
-      { error: "VPN payments are not configured yet - set VPN_PAYMENT_ADDRESS." },
+      { error: "VPN payments are not configured yet - set NEXT_PUBLIC_VPN_PAYMENT_ADDRESS." },
       { status: 503 },
     );
   }
 
   const existing = await findByTxHash(txHash);
   if (existing) {
-    return NextResponse.json({ ok: true, status: existing.status, alreadyRecorded: true });
+    return NextResponse.json({ ok: true, account: existing, alreadyRecorded: true });
   }
 
   let receipt;
@@ -92,13 +93,26 @@ export async function POST(request: Request) {
         .value
     : requiredAmount;
 
-  await recordPayment({
+  let account = await applyPayment({
     walletAddress,
     tier,
     txHash,
     amountUsdt: formatUnits(amount, 18),
-    paidAt: new Date().toISOString(),
   });
 
-  return NextResponse.json({ ok: true, status: "pending_provisioning" });
+  // First device is provisioned automatically right after payment, if the
+  // VPN server is ready. A renewal payment on an account that already has a
+  // device doesn't provision anything here - use /api/vpn/add-device for
+  // that, which enforces DEVICE_LIMIT properly.
+  if (isServerConfigured(config) && account.devices.length === 0 && DEVICE_LIMIT[account.tier] > 0) {
+    const result = await provisionDevice(walletAddress, account.tier, "Device 1");
+    if (result.ok) {
+      account = await addDevice(walletAddress, result.device);
+    }
+    // A failure here leaves needsProvisioning: true, so the admin panel's
+    // fallback list still picks it up - no error is surfaced to the payer,
+    // since their payment itself was genuinely valid.
+  }
+
+  return NextResponse.json({ ok: true, account });
 }
