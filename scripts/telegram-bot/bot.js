@@ -344,14 +344,28 @@ async function sendStatus(chatId) {
   );
 }
 
-function referralLinkFor(chatId) {
-  return `https://t.me/${botUsername}?start=ref_${chatId}`;
+/** Fetches the bot's own username on first use if the startup getMe() call
+ * (bottom of this file) hasn't resolved yet - without this, a referral
+ * link generated in that window would read "https://t.me/null?start=..."
+ * (an invalid link Telegram reports as "no such user"), instead of failing
+ * loudly or just working. */
+async function ensureBotUsername() {
+  if (botUsername) return botUsername;
+  const me = await bot.getMe();
+  botUsername = me.username;
+  return botUsername;
+}
+
+async function referralLinkFor(chatId) {
+  const username = await ensureBotUsername();
+  return `https://t.me/${username}?start=ref_${chatId}`;
 }
 
 async function sendReferralLink(chatId) {
+  const link = await referralLinkFor(chatId);
   bot.sendMessage(
     chatId,
-    `🔗 *دعوت از دوستان*\n\nاین لینک رو برای دوستات بفرست:\n${referralLinkFor(chatId)}\n\nهر دوستی که با این لینک بیاد و اولین خریدش رو کامل کنه:\n🎉 تو ${REFERRAL_BONUS_DAYS} روز رایگان می‌گیری\n🎁 خودش هم ${REFERRED_USER_BONUS_DAYS} روز رایگان می‌گیره\n\nهر چقدر بیشتر دعوت کنی، بیشتر می‌گیری - محدودیتی نداره.`,
+    `🔗 *دعوت از دوستان*\n\nاین لینک رو برای دوستات بفرست:\n${link}\n\nهر دوستی که با این لینک بیاد و اولین خریدش رو کامل کنه:\n🎉 تو ${REFERRAL_BONUS_DAYS} روز رایگان می‌گیری\n🎁 خودش هم ${REFERRED_USER_BONUS_DAYS} روز رایگان می‌گیره\n\nهر چقدر بیشتر دعوت کنی، بیشتر می‌گیری - محدودیتی نداره.`,
     { parse_mode: "Markdown" },
   );
 }
