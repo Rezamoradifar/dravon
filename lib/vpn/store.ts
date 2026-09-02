@@ -44,9 +44,15 @@ export async function findByTxHash(txHash: string): Promise<VpnAccount | undefin
 /**
  * Records a verified payment: extends expiry by SUBSCRIPTION_DAYS from
  * whichever is later (now or the current expiry), and raises
- * paidDeviceCount to at least the number of devices this payment covers
- * (a renewal for the same count just extends expiry; paying for more
- * devices raises the target - it never lowers it on its own).
+ * paidDeviceCount to at least `deviceCount` (never lowers it on its own).
+ *
+ * `deviceCount` is the account's new *target* total - existingCount for a
+ * renewal, or existingCount + addCount for adding extra devices. The caller
+ * (the verify-payment route) works this out from the requested intent.
+ * `chargeDeviceCount` is what this specific payment actually charged for
+ * (existingCount for a renewal, just addCount for an add) and is what gets
+ * recorded in the payment history log, so it reads as "paid for N
+ * device(s)" rather than as the resulting total.
  */
 export async function applyPayment(params: {
   walletAddress: string;
@@ -54,6 +60,7 @@ export async function applyPayment(params: {
   amountUsd: number;
   method: PaymentMethod;
   deviceCount: number;
+  chargeDeviceCount: number;
   backend: VpnBackend;
 }): Promise<VpnAccount> {
   const existing = await getAccount(params.walletAddress);
@@ -75,7 +82,7 @@ export async function applyPayment(params: {
         txHash: params.txHash,
         amountUsd: params.amountUsd,
         method: params.method,
-        deviceCount: params.deviceCount,
+        deviceCount: params.chargeDeviceCount,
         paidAt: new Date().toISOString(),
       },
     ],

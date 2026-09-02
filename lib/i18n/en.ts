@@ -140,7 +140,7 @@ export const en = {
       },
       choose: {
         title: "Choose a Package",
-        description: "Two fixed tiers - $50 or $100 - enforced by the contract itself.",
+        description: "Three fixed tiers - $11, $50, or $100 - enforced by the contract itself.",
       },
       register: {
         title: "Register On-Chain",
@@ -326,6 +326,8 @@ export const en = {
     selected: "Selected",
     notAvailable: "Not available",
     selectThisPackage: "Select this package",
+    debtWarningTitle: "Starts with $44 of debt",
+    debtWarningBody: "This tier is booked on-chain as a $50 box carrying a $44 installment debt. Every payout you'd otherwise earn is withheld against that debt first, so you'll see little or no real income until it's paid off. This is a limitation of the smart contract itself, not a site setting.",
   },
   paymentMethod: {
     payWithUsdt: "Pay with USDT",
@@ -897,10 +899,15 @@ export const en = {
     productName: "NodeShield",
     productTagline: "$1 per device, per month - unlimited bandwidth.",
     deviceCount: "Devices",
+    addCount: "Additional devices",
+    modeRenew: "Renew {count} device(s)",
+    modeAdd: "Add extra device(s)",
+    renewNotice: "Extends all {count} of your active device(s) by another 30 days - no new devices added.",
     backend: "VPN type",
     backendWireguard: "WireGuard",
     backendMarzban: "V2Ray / Shadowsocks",
     backendNotice: "Your VPN type is set on your first payment and can't be changed afterward - top-ups and extra devices keep using it.",
+    backendFixed: "Using {backend} (set on your first payment).",
     featureUnlimited: "Unlimited bandwidth, no data cap",
     featureSingleDevice: "One device per config - ${price}/month each",
     payWithWallet: "Pay with Wallet",

@@ -7,7 +7,7 @@ import { NATIVE_PRICE_FEEDS } from "@/lib/nativePriceFeeds";
 import { getVpnConfig, isPaymentConfigured, isServerConfigured, isMarzbanConfigured } from "@/lib/vpn/config";
 import { provisionDevice } from "@/lib/vpn/provision";
 import { vpnServerPublicClient } from "@/lib/vpn/serverPublicClient";
-import { addDevice, applyPayment, findByTxHash } from "@/lib/vpn/store";
+import { addDevice, applyPayment, findByTxHash, getAccount } from "@/lib/vpn/store";
 import { bsc } from "viem/chains";
 
 export const runtime = "nodejs";
@@ -31,12 +31,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { walletAddress, txHash, method, deviceCount, backend } = (body ?? {}) as {
+  const { walletAddress, txHash, method, deviceCount, backend, intent } = (body ?? {}) as {
     walletAddress?: unknown;
     txHash?: unknown;
     method?: unknown;
     deviceCount?: unknown;
     backend?: unknown;
+    intent?: unknown;
   };
 
   if (typeof walletAddress !== "string" || !isAddress(walletAddress)) {
@@ -50,6 +51,9 @@ export async function POST(request: Request) {
   }
   if (backend !== "wireguard" && backend !== "marzban") {
     return NextResponse.json({ error: "backend must be 'wireguard' or 'marzban'" }, { status: 400 });
+  }
+  if (intent !== "renew" && intent !== "add") {
+    return NextResponse.json({ error: "intent must be 'renew' or 'add'" }, { status: 400 });
   }
   if (typeof deviceCount !== "number" || !Number.isInteger(deviceCount) || deviceCount < 1 || deviceCount > MAX_DEVICES_PER_CALL) {
     return NextResponse.json({ error: `deviceCount must be an integer between 1 and ${MAX_DEVICES_PER_CALL}` }, { status: 400 });
@@ -68,8 +72,35 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, account: existing, alreadyRecorded: true });
   }
 
+  const existingAccount = await getAccount(walletAddress);
+  const existingCount = existingAccount?.paidDeviceCount ?? 0;
+
+  // "renew" pays to extend every currently active device by another 30 days
+  // (the target device count doesn't change) - `deviceCount` must exactly
+  // match the account's current count, so a client can't under-price a
+  // renewal. "add" pays for `deviceCount` brand new devices on top of
+  // whatever the account already has.
+  let chargeDeviceCount: number;
+  let targetDeviceCount: number;
+  if (intent === "renew") {
+    if (existingCount < 1) {
+      return NextResponse.json({ error: "Nothing to renew yet - buy a device first." }, { status: 400 });
+    }
+    if (deviceCount !== existingCount) {
+      return NextResponse.json(
+        { error: `A renewal must cover all ${existingCount} active device(s) - send deviceCount: ${existingCount}.` },
+        { status: 400 },
+      );
+    }
+    chargeDeviceCount = existingCount;
+    targetDeviceCount = existingCount;
+  } else {
+    chargeDeviceCount = deviceCount;
+    targetDeviceCount = existingCount + deviceCount;
+  }
+
   const paymentAddress = config.paymentAddress!.toLowerCase();
-  const requiredUsd = deviceCount * config.pricePerDeviceUsd;
+  const requiredUsd = chargeDeviceCount * config.pricePerDeviceUsd;
   let paidUsd: number;
 
   if (method === "usdt") {
@@ -106,7 +137,7 @@ export async function POST(request: Request) {
 
     if (paidUsd < requiredUsd) {
       return NextResponse.json(
-        { error: `Payment ($${paidUsd.toFixed(2)}) is less than required ($${requiredUsd} for ${deviceCount} device(s)).` },
+        { error: `Payment ($${paidUsd.toFixed(2)}) is less than required ($${requiredUsd} for ${chargeDeviceCount} device(s)).` },
         { status: 400 },
       );
     }
@@ -140,14 +171,22 @@ export async function POST(request: Request) {
     if (paidUsd < requiredUsd * BNB_PRICE_TOLERANCE) {
       return NextResponse.json(
         {
-          error: `Payment (~$${paidUsd.toFixed(2)} at $${bnbUsdPrice.toFixed(0)}/BNB) is less than required ($${requiredUsd} for ${deviceCount} device(s)).`,
+          error: `Payment (~$${paidUsd.toFixed(2)} at $${bnbUsdPrice.toFixed(0)}/BNB) is less than required ($${requiredUsd} for ${chargeDeviceCount} device(s)).`,
         },
         { status: 400 },
       );
     }
   }
 
-  let account = await applyPayment({ walletAddress, txHash, amountUsd: paidUsd, method, deviceCount, backend });
+  let account = await applyPayment({
+    walletAddress,
+    txHash,
+    amountUsd: paidUsd,
+    method,
+    deviceCount: targetDeviceCount,
+    chargeDeviceCount,
+    backend,
+  });
 
   // Provision whatever devices this payment brought the account up to,
   // capped per-call - if the backend isn't configured, or a provisioning

@@ -10,15 +10,18 @@ export interface PackageTier {
 }
 
 /**
- * The $10 box (an $11 entry) is deliberately not offered here even though the
- * contract still technically accepts it: a new entrant at that tier is booked
- * as a $50 box carrying a $44 debt, and every payout is withheld against that
- * debt first - so a new registrant sees $0 of real earnings until it clears.
- * Removing it from the UI doesn't change the contract (someone could still
- * call begin(10, ...) directly), but it stops the site from steering new
- * users into it.
+ * The $10 box (an $11 entry) is a real trap: the contract books it as a $50
+ * box carrying a $44 installment debt, and every payout is withheld against
+ * that debt first - so a new registrant sees little or no real earnings
+ * until it clears. This is a limitation of the deployed contract itself, not
+ * something the frontend can fix. It's offered here at the site owner's
+ * explicit request, on the condition that PackageTierCards shows a clear,
+ * un-missable warning on this tier - see the `debtWarningTitle`/Body i18n
+ * keys and the `entrance === 10` branch in package-tier-cards.tsx. Do not
+ * remove the warning while this tier stays listed.
  */
 export const PACKAGE_TIERS: PackageTier[] = [
+  { entrance: 10, name: "Starter" },
   { entrance: 50, name: "Professional" },
   { entrance: 100, name: "Enterprise" },
 ];

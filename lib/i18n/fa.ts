@@ -142,7 +142,7 @@ export const fa: Dictionary = {
       },
       choose: {
         title: "یه بسته انتخاب کن",
-        description: "دو سطح ثابت - $۵۰ یا $۱۰۰ - که خود قرارداد اجراش می‌کنه.",
+        description: "سه سطح ثابت - $۱۱، $۵۰ یا $۱۰۰ - که خود قرارداد اجراش می‌کنه.",
       },
       register: {
         title: "رو زنجیره ثبت‌نام کن",
@@ -328,6 +328,8 @@ export const fa: Dictionary = {
     selected: "انتخاب شد",
     notAvailable: "در دسترس نیست",
     selectThisPackage: "انتخاب این پکیج",
+    debtWarningTitle: "با ۴۴ دلار بدهی شروع می‌شه",
+    debtWarningBody: "این پکیج رو زنجیره به‌عنوان یه باکس $۵۰ با ۴۴ دلار بدهی قسطی ثبت می‌شه. هر سودی که قرار بود بگیری اول بابت این بدهی کسر می‌شه، پس تا مدتی عملاً سود واقعی نمی‌بینی. این محدودیت خود قرارداد هوشمنده، نه تنظیمات سایت.",
   },
   paymentMethod: {
     payWithUsdt: "پرداخت با USDT",
@@ -899,10 +901,15 @@ export const fa: Dictionary = {
     productName: "NodeShield",
     productTagline: "ماهی $۱ به‌ازای هر دستگاه - پهنای‌باند نامحدود.",
     deviceCount: "تعداد دستگاه",
+    addCount: "دستگاه اضافه",
+    modeRenew: "تمدید {count} دستگاه",
+    modeAdd: "افزودن دستگاه اضافه",
+    renewNotice: "انقضای هر {count} دستگاه فعالت رو ۳۰ روز دیگه تمدید می‌کنه - دستگاه جدیدی اضافه نمی‌شه.",
     backend: "نوع VPN",
     backendWireguard: "WireGuard",
     backendMarzban: "V2Ray / Shadowsocks",
     backendNotice: "نوع VPN شما با اولین پرداخت ثابت می‌شه و بعدش قابل تغییر نیست - تمدید و افزودن دستگاه هم همون نوع رو ادامه می‌ده.",
+    backendFixed: "در حال استفاده از {backend} (تعیین‌شده با اولین پرداختت).",
     featureUnlimited: "پهنای‌باند نامحدود، بدون سقف مصرف",
     featureSingleDevice: "یک دستگاه به‌ازای هر کانفیگ - ماهی ${price}",
     payWithWallet: "پرداخت با کیف‌پول",

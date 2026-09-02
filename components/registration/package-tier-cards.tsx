@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { formatUnits } from "viem";
-import { CheckCircle2, Sparkles, Lock } from "lucide-react";
+import { CheckCircle2, Sparkles, Lock, AlertTriangle } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +68,15 @@ function TierCard({
             <span className="text-sm font-normal text-muted-foreground"> USDT</span>
           </p>
           <p className="text-xs text-muted-foreground">{t("packageTierCards.startBox", { n: entrance })}</p>
+          {entrance === 10 && (
+            <div className="flex gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-2.5 text-xs text-destructive">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              <div>
+                <p className="font-semibold">{t("packageTierCards.debtWarningTitle")}</p>
+                <p className="mt-0.5 text-destructive/90">{t("packageTierCards.debtWarningBody")}</p>
+              </div>
+            </div>
+          )}
           <div className="rounded-lg border bg-muted/30 p-2 text-xs">
             <span className="text-muted-foreground">{t("packageTierCards.earnableCap")}</span>
             {isLoading ? (
@@ -111,7 +120,7 @@ export function PackageTierCards({
   getStatus?: (entrance: number) => TierStatus;
 }) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
       {PACKAGE_TIERS.map((tier, i) => (
         <TierCard
           key={tier.entrance}

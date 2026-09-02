@@ -8,7 +8,6 @@ import { Copy, Download, Loader2, ShieldCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useWalletSignature } from "@/hooks/useWalletSignature";
 import { useTranslation } from "@/contexts/language-context";
 import type { VpnAccount, VpnDevice } from "@/lib/vpn/types";
 
@@ -27,39 +26,24 @@ function downloadConfig(device: VpnDevice) {
   URL.revokeObjectURL(url);
 }
 
-/** Re-fetches whenever refreshToken changes - the parent bumps it after a
- * successful payment so a newly-provisioned device shows up immediately. */
-export function MyVpnAccount({ refreshToken }: { refreshToken: number }) {
-  const { address, isConnected } = useAccount();
-  const { signWalletAction } = useWalletSignature();
+/** Account state is loaded once by the parent page (useVpnAccount) and
+ * shared with the purchase card, so both use a single signature prompt
+ * instead of two. `error` surfaces a load failure via toast. */
+export function MyVpnAccount({
+  account,
+  isLoading,
+  error,
+}: {
+  account: VpnAccount | null;
+  isLoading: boolean;
+  error: string | null;
+}) {
+  const { isConnected } = useAccount();
   const { t } = useTranslation();
-  const [account, setAccount] = React.useState<VpnAccount | null>(null);
-  const [isLoading, setIsLoading] = React.useState(false);
-
-  const load = React.useCallback(async () => {
-    if (!address) return;
-    setIsLoading(true);
-    try {
-      const { timestamp, signature } = await signWalletAction();
-      const res = await fetch("/api/vpn/my-account", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address, timestamp, signature }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Failed to load account");
-      setAccount(json.account);
-    } catch (error) {
-      toast.error(t("myVpn.loadFailed"), { description: error instanceof Error ? error.message : undefined });
-    } finally {
-      setIsLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [address, refreshToken]);
 
   React.useEffect(() => {
-    if (isConnected) load();
-  }, [isConnected, load]);
+    if (error) toast.error(t("myVpn.loadFailed"), { description: error });
+  }, [error, t]);
 
   if (!isConnected || (!account && !isLoading)) return null;
 

@@ -16,6 +16,10 @@ const USDT_ADDRESS = "0x55d398326f99059fF775485246999027B3197955" as const;
 const BNB_BUFFER = 1.08;
 
 export type PaymentMethod = "usdt" | "bnb";
+/** "renew" extends every currently active device by 30 days (deviceCount
+ * must equal the account's current count); "add" buys `deviceCount` brand
+ * new devices on top of whatever the account already has. */
+export type PaymentIntent = "renew" | "add";
 type Phase = "idle" | "paying" | "confirming" | "verifying" | "done" | "error";
 
 /**
@@ -38,7 +42,7 @@ export function useVpnPayment() {
   const estimatedBnb = (deviceCount: number) =>
     bnbPrice ? (requiredUsd(deviceCount) / bnbPrice) * BNB_BUFFER : undefined;
 
-  async function pay(deviceCount: number, method: PaymentMethod, backend: VpnBackend) {
+  async function pay(deviceCount: number, method: PaymentMethod, backend: VpnBackend, intent: PaymentIntent) {
     if (!address) {
       setError("Connect your wallet first");
       setPhase("error");
@@ -75,7 +79,7 @@ export function useVpnPayment() {
       const res = await fetch("/api/vpn/verify-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ walletAddress: address, txHash: hash, method, deviceCount, backend }),
+        body: JSON.stringify({ walletAddress: address, txHash: hash, method, deviceCount, backend, intent }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Verification failed");
