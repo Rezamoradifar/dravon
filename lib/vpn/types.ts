@@ -44,13 +44,24 @@ export interface DataPlan {
   label: string;
   gb: number | null;
   priceUsd: number;
+  /** Optional marketing copy shown when a buyer picks this plan (e.g. in
+   * the bot). Plain marketing language ("Fair Use", "Full Speed") - not a
+   * technical claim about enforcement this app performs. */
+  description?: string;
 }
 
 export const MARZBAN_DATA_PLANS: DataPlan[] = [
   { id: "10gb", label: "10GB", gb: 10, priceUsd: 0.5 },
   { id: "50gb", label: "50GB", gb: 50, priceUsd: 1.5 },
   { id: "100gb", label: "100GB", gb: 100, priceUsd: 2.5 },
-  { id: "unlimited", label: "Unlimited", gb: null, priceUsd: PRICE_PER_DEVICE_USD },
+  {
+    id: "unlimited",
+    label: "VPN Unlimited",
+    gb: null,
+    priceUsd: PRICE_PER_DEVICE_USD,
+    description:
+      "🔥 VPN Unlimited — فقط $1 در ماه\n📶 ترافیک نامحدود\n🚀 سرعت بالا (Full Speed تا سقف ظرفیت سرور)\n📱 مناسب 1 دستگاه همزمان\n⚡ فعال‌سازی فوری پس از پرداخت\n🛡️ سرویس Premium با Fair Use\n🔁 تمدید ماهانه",
+  },
 ];
 
 export const DEFAULT_DATA_PLAN_ID = "unlimited";

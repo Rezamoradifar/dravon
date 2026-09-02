@@ -589,6 +589,9 @@ bot.on("callback_query", async (query) => {
     session.dataPlanId = data.slice(3);
     session.step = "method";
     const plan = (session._plans || []).find((p) => p.id === session.dataPlanId);
+    if (plan?.description) {
+      bot.sendMessage(chatId, plan.description).catch(() => {});
+    }
     bot.editMessageText(`📶 حجم: *${plan ? plan.label : session.dataPlanId}*\n\n💳 با چی پرداخت می‌کنی؟`, {
       chat_id: chatId,
       message_id: query.message.message_id,
