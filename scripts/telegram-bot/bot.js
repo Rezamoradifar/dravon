@@ -73,6 +73,8 @@ function resetSession(chatId) {
   sessions.delete(chatId);
 }
 
+const CANCEL_ROW = [{ text: "❌ لغو", callback_data: "cancel" }];
+
 async function callSiteApi(path, options) {
   const res = await fetch(`${SITE_BASE_URL}${path}`, options);
   let json;
@@ -100,23 +102,67 @@ async function sendDeviceConfigs(chatId, devices) {
     const backendLabel = device.backend === "wireguard" ? "WireGuard" : "VPN";
     await bot.sendMessage(
       chatId,
-      `✅ ${device.label} (${backendLabel})\n\n\`${device.config}\`\n\nتک‌کاربر و تک‌دستگاه - این کانفیگ رو با کسی به اشتراک نذار.`,
+      `✅ *${device.label}* (${backendLabel})\n\n\`${device.config}\`\n\n👤 تک‌کاربر و تک‌دستگاه - این کانفیگ رو با کسی به اشتراک نذار.`,
       { parse_mode: "Markdown" },
     );
     try {
       const qrBuffer = await QRCode.toBuffer(device.config, { width: 400 });
-      await bot.sendPhoto(chatId, qrBuffer, { caption: `کد QR برای ${device.label}` });
+      await bot.sendPhoto(chatId, qrBuffer, { caption: `📷 کد QR برای ${device.label}` });
     } catch (err) {
       console.error("QR generation failed:", err);
     }
   }
 }
 
+function deviceCountKeyboard() {
+  const numberRow = (start) =>
+    Array.from({ length: 5 }, (_, i) => ({
+      text: String(start + i),
+      callback_data: `dc_${start + i}`,
+    }));
+  return { inline_keyboard: [numberRow(1), numberRow(6), CANCEL_ROW] };
+}
+
+function backendKeyboard() {
+  return {
+    inline_keyboard: [
+      [{ text: "🔒 WireGuard", callback_data: "be_wireguard" }],
+      [{ text: "🌐 VPN (V2Ray/Shadowsocks)", callback_data: "be_marzban" }],
+      CANCEL_ROW,
+    ],
+  };
+}
+
+function methodKeyboard() {
+  return {
+    inline_keyboard: [
+      [
+        { text: "💵 USDT", callback_data: "pm_usdt" },
+        { text: "🟡 BNB", callback_data: "pm_bnb" },
+      ],
+      CANCEL_ROW,
+    ],
+  };
+}
+
+function startBuyFlow(chatId) {
+  if (!PAYMENT_ADDRESS) {
+    bot.sendMessage(chatId, "فروش هنوز فعال نشده - بعداً دوباره امتحان کن.");
+    return;
+  }
+  sessions.set(chatId, { step: "deviceCount" });
+  bot.sendMessage(chatId, "🖥️ چند تا کانفیگ می‌خوای؟", { reply_markup: deviceCountKeyboard() });
+}
+
 bot.onText(/^\/start/, (msg) => {
   resetSession(msg.chat.id);
   bot.sendMessage(
     msg.chat.id,
-    "به NodeShield خوش اومدی 🛡️\n\nهر کانفیگ VPN، ماهی $1، پهنای‌باند نامحدود، تک‌کاربر.\n\nپرداخت مستقیم از کیف‌پول خودت (USDT یا BNB روی BNB Smart Chain) - همون روش سایت.\n\nبرای خرید: /buy\nبرای لغو یه فرآیند نیمه‌کاره: /cancel",
+    "🛡️ *NodeShield VPN*\n\nهر کانفیگ، ماهی $1، پهنای‌باند نامحدود، تک‌کاربر.\n\nپرداخت مستقیم از کیف‌پول خودت (USDT یا BNB روی BNB Smart Chain) - همون روش سایت.",
+    {
+      parse_mode: "Markdown",
+      reply_markup: { inline_keyboard: [[{ text: "🛒 خرید VPN", callback_data: "buy_start" }]] },
+    },
   );
 });
 
@@ -125,15 +171,7 @@ bot.onText(/^\/cancel/, (msg) => {
   bot.sendMessage(msg.chat.id, "لغو شد. هر وقت خواستی /buy رو بزن.");
 });
 
-bot.onText(/^\/buy/, (msg) => {
-  const chatId = msg.chat.id;
-  if (!PAYMENT_ADDRESS) {
-    bot.sendMessage(chatId, "فروش هنوز فعال نشده - بعداً دوباره امتحان کن.");
-    return;
-  }
-  sessions.set(chatId, { step: "deviceCount" });
-  bot.sendMessage(chatId, `چند تا کانفیگ می‌خوای؟ یه عدد بین 1 تا ${MAX_DEVICES} بفرست.`);
-});
+bot.onText(/^\/buy/, (msg) => startBuyFlow(msg.chat.id));
 
 // --- Admin-only commands -----------------------------------------------
 
@@ -153,7 +191,8 @@ bot.onText(/^\/stats/, async (msg) => {
   const expired = accounts.filter((a) => new Date(a.expiresAt).getTime() < Date.now()).length;
   bot.sendMessage(
     chatId,
-    `📊 آمار NodeShield\n\nتعداد اکانت: ${accounts.length}\nتعداد کل دستگاه فعال: ${totalDevices}\nدر انتظار فعال‌سازی: ${pending}\nمنقضی‌شده: ${expired}`,
+    `📊 *آمار NodeShield*\n\nتعداد اکانت: ${accounts.length}\nتعداد کل دستگاه فعال: ${totalDevices}\nدر انتظار فعال‌سازی: ${pending}\nمنقضی‌شده: ${expired}`,
+    { parse_mode: "Markdown" },
   );
 });
 
@@ -205,7 +244,67 @@ bot.onText(/^\/provision (.+)/, async (msg, match) => {
   await sendDeviceConfigs(chatId, [json.account.devices[json.account.devices.length - 1]]);
 });
 
-// --- Purchase wizard (free-text replies) --------------------------------
+// --- Purchase wizard: button steps --------------------------------------
+
+bot.on("callback_query", async (query) => {
+  const chatId = query.message.chat.id;
+  const data = query.data;
+  await bot.answerCallbackQuery(query.id).catch(() => {});
+
+  if (data === "cancel") {
+    resetSession(chatId);
+    bot.editMessageText("لغو شد. هر وقت خواستی /buy رو بزن.", {
+      chat_id: chatId,
+      message_id: query.message.message_id,
+    }).catch(() => {});
+    return;
+  }
+
+  if (data === "buy_start") {
+    startBuyFlow(chatId);
+    return;
+  }
+
+  const session = sessions.get(chatId);
+  if (!session) return;
+
+  if (data.startsWith("dc_") && session.step === "deviceCount") {
+    session.deviceCount = Number(data.slice(3));
+    session.step = "backend";
+    bot.editMessageText(`🖥️ تعداد: *${session.deviceCount}*\n\n🔐 کدوم نوع؟`, {
+      chat_id: chatId,
+      message_id: query.message.message_id,
+      parse_mode: "Markdown",
+      reply_markup: backendKeyboard(),
+    }).catch(() => {});
+    return;
+  }
+
+  if (data.startsWith("be_") && session.step === "backend") {
+    session.backend = data.slice(3);
+    session.step = "method";
+    const backendLabel = session.backend === "wireguard" ? "WireGuard" : "VPN (V2Ray/Shadowsocks)";
+    bot.editMessageText(`🔐 نوع: *${backendLabel}*\n\n💳 با چی پرداخت می‌کنی؟`, {
+      chat_id: chatId,
+      message_id: query.message.message_id,
+      parse_mode: "Markdown",
+      reply_markup: methodKeyboard(),
+    }).catch(() => {});
+    return;
+  }
+
+  if (data.startsWith("pm_") && session.step === "method") {
+    session.method = data.slice(3);
+    session.step = "wallet";
+    bot.editMessageText(
+      `💳 روش: *${session.method.toUpperCase()}*\n\n👛 آدرس کیف‌پولی که ازش پرداخت می‌کنی رو بفرست (همون آدرسی که تراکنش رو باهاش می‌زنی، با 0x شروع می‌شه).`,
+      { chat_id: chatId, message_id: query.message.message_id, parse_mode: "Markdown" },
+    ).catch(() => {});
+    return;
+  }
+});
+
+// --- Purchase wizard: free-text steps (wallet address, txHash) ----------
 
 bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
@@ -214,40 +313,6 @@ bot.on("message", async (msg) => {
 
   const session = sessions.get(chatId);
   if (!session) return;
-
-  if (session.step === "deviceCount") {
-    const n = Number(text);
-    if (!Number.isInteger(n) || n < 1 || n > MAX_DEVICES) {
-      bot.sendMessage(chatId, `یه عدد صحیح بین 1 تا ${MAX_DEVICES} بفرست.`);
-      return;
-    }
-    session.deviceCount = n;
-    session.step = "backend";
-    bot.sendMessage(chatId, "کدوم نوع؟\n1 - WireGuard\n2 - VPN (V2Ray/Shadowsocks)\n\nعدد 1 یا 2 رو بفرست.");
-    return;
-  }
-
-  if (session.step === "backend") {
-    if (text !== "1" && text !== "2") {
-      bot.sendMessage(chatId, "فقط 1 یا 2 رو بفرست.");
-      return;
-    }
-    session.backend = text === "1" ? "wireguard" : "marzban";
-    session.step = "method";
-    bot.sendMessage(chatId, "با چی پرداخت می‌کنی؟\n1 - USDT\n2 - BNB\n\nعدد 1 یا 2 رو بفرست.");
-    return;
-  }
-
-  if (session.step === "method") {
-    if (text !== "1" && text !== "2") {
-      bot.sendMessage(chatId, "فقط 1 یا 2 رو بفرست.");
-      return;
-    }
-    session.method = text === "1" ? "usdt" : "bnb";
-    session.step = "wallet";
-    bot.sendMessage(chatId, "آدرس کیف‌پولی که ازش پرداخت می‌کنی رو بفرست (همون آدرسی که تراکنش رو باهاش می‌زنی، با 0x شروع می‌شه).");
-    return;
-  }
 
   if (session.step === "wallet") {
     if (!WALLET_RE.test(text)) {
@@ -261,7 +326,7 @@ bot.on("message", async (msg) => {
     if (session.method === "usdt") {
       bot.sendMessage(
         chatId,
-        `دقیقاً $${requiredUsd} USDT (BEP-20، شبکه‌ی BNB Smart Chain) رو به این آدرس بفرست:\n\n\`${PAYMENT_ADDRESS}\`\n\nبعد از تأیید تراکنش، هش تراکنش (txHash) رو همینجا بفرست.`,
+        `💵 دقیقاً *$${requiredUsd}* USDT (BEP-20، شبکه‌ی BNB Smart Chain) رو به این آدرس بفرست:\n\n\`${PAYMENT_ADDRESS}\`\n\nبعد از تأیید تراکنش، هش تراکنش (txHash) رو همینجا بفرست.`,
         { parse_mode: "Markdown" },
       );
     } else {
@@ -269,7 +334,7 @@ bot.on("message", async (msg) => {
       const estimate = bnbPrice ? ((requiredUsd / bnbPrice) * 1.08).toFixed(6) : null;
       bot.sendMessage(
         chatId,
-        `مبلغ لازم: $${requiredUsd}\n${estimate ? `تقریباً ${estimate} BNB (بر اساس قیمت لحظه‌ای)` : "قیمت لحظه‌ای BNB در دسترس نیست - از کیف‌پولت معادل دلاریش رو حساب کن."}\n\nاین مبلغ رو به این آدرس بفرست:\n\n\`${PAYMENT_ADDRESS}\`\n\nمقدار واقعی موقع تأیید دوباره از قیمت لحظه‌ای زنجیره چک می‌شه، یه‌کم بیشتر بفرست تا مطمئن باشی رد نشه.\n\nبعد از تأیید تراکنش، هش تراکنش (txHash) رو همینجا بفرست.`,
+        `💰 مبلغ لازم: *$${requiredUsd}*\n${estimate ? `تقریباً *${estimate} BNB* (بر اساس قیمت لحظه‌ای)` : "قیمت لحظه‌ای BNB در دسترس نیست - از کیف‌پولت معادل دلاریش رو حساب کن."}\n\nاین مبلغ رو به این آدرس بفرست:\n\n\`${PAYMENT_ADDRESS}\`\n\nمقدار واقعی موقع تأیید دوباره از قیمت لحظه‌ای زنجیره چک می‌شه، یه‌کم بیشتر بفرست تا مطمئن باشی رد نشه.\n\nبعد از تأیید تراکنش، هش تراکنش (txHash) رو همینجا بفرست.`,
         { parse_mode: "Markdown" },
       );
     }
@@ -281,7 +346,7 @@ bot.on("message", async (msg) => {
       bot.sendMessage(chatId, "هش تراکنش نامعتبره - باید 0x و بعدش 64 کاراکتر باشه.");
       return;
     }
-    bot.sendMessage(chatId, "در حال بررسی پرداخت رو زنجیره...");
+    bot.sendMessage(chatId, "⏳ در حال بررسی پرداخت رو زنجیره...");
     const { ok, json } = await callSiteApi("/api/vpn/verify-payment", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -296,7 +361,7 @@ bot.on("message", async (msg) => {
     });
 
     if (!ok || !json?.ok) {
-      bot.sendMessage(chatId, `تأیید پرداخت ناموفق بود: ${json?.error || "unknown error"}\n\nمی‌تونی دوباره همین هش رو بفرستی، یا /cancel بزنی و از اول شروع کنی.`);
+      bot.sendMessage(chatId, `❌ تأیید پرداخت ناموفق بود: ${json?.error || "unknown error"}\n\nمی‌تونی دوباره همین هش رو بفرستی، یا /cancel بزنی و از اول شروع کنی.`);
       return;
     }
 
