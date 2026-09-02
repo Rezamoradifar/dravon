@@ -35,6 +35,20 @@ export async function hasUsedTrial(walletAddress: string): Promise<boolean> {
   return all.some((r) => r.walletAddress.toLowerCase() === walletAddress.toLowerCase());
 }
 
+/**
+ * How many trials were granted in the last 24 hours (rolling window, not
+ * calendar-day, so it doesn't reset all at once at midnight). A wallet
+ * address costs nothing to generate, so "one per wallet" alone doesn't stop
+ * someone from farming many trials - this caps the total blast radius of
+ * that (see TRIAL_DAILY_LIMIT in lib/vpn/types.ts) regardless of how many
+ * different wallets are used.
+ */
+export async function countTrialsInLast24h(): Promise<number> {
+  const all = await readAll();
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+  return all.filter((r) => new Date(r.grantedAt).getTime() >= cutoff).length;
+}
+
 export async function recordTrial(record: TrialRecord): Promise<void> {
   await fs.mkdir(DATA_DIR, { recursive: true });
   await fs.appendFile(TRIALS_FILE, `${JSON.stringify(record)}\n`, "utf8");

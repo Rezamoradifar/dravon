@@ -694,7 +694,11 @@ bot.on("message", async (msg) => {
       body: JSON.stringify({ walletAddress: text }),
     });
     if (!ok || !json?.ok) {
-      bot.sendMessage(chatId, `❌ ${json?.error || "خطای ناشناخته"}`);
+      const raw = json?.error || "";
+      let message = `❌ ${raw || "خطای ناشناخته"}`;
+      if (raw.includes("already used")) message = "❌ این کیف‌پول قبلاً از تست رایگانش استفاده کرده - یک بار برای هر کیف‌پوله.";
+      else if (raw.includes("daily")) message = "❌ سقف روزانه‌ی تست رایگان پر شده - بعداً دوباره امتحان کن.";
+      bot.sendMessage(chatId, message);
       resetSession(chatId);
       return;
     }

@@ -3,18 +3,20 @@ import { isAddress } from "viem";
 
 import { getVpnConfig, isMarzbanConfigured } from "@/lib/vpn/config";
 import { provisionMarzbanTrial } from "@/lib/vpn/provision";
-import { hasUsedTrial, recordTrial } from "@/lib/vpn/trialStore";
-import { TRIAL_DATA_LIMIT_MB, TRIAL_DAYS } from "@/lib/vpn/types";
+import { countTrialsInLast24h, hasUsedTrial, recordTrial } from "@/lib/vpn/trialStore";
+import { TRIAL_DAILY_LIMIT, TRIAL_DATA_LIMIT_MB, TRIAL_DAYS } from "@/lib/vpn/types";
 
 export const runtime = "nodejs";
 
 /**
  * Free, no-payment, one-time-per-wallet Marzban trial (100MB / 3 days by
- * default - see lib/vpn/types.ts). No txHash, no on-chain check - the only
- * abuse guard is "one per wallet address" (see lib/vpn/trialStore.ts). A
- * wallet address costs nothing to generate, so this is a real, accepted
- * trade-off, not a security boundary - it exists to let someone try the
- * service before paying, not to gate a scarce resource.
+ * default - see lib/vpn/types.ts). No txHash, no on-chain check - the main
+ * abuse guard is "one per wallet address" (see lib/vpn/trialStore.ts), plus
+ * a global TRIAL_DAILY_LIMIT across all wallets, since a wallet address
+ * costs nothing to generate and the per-wallet limit alone can't stop
+ * someone from farming many. Neither is a real security boundary - this
+ * exists to let someone try the service before paying, not to gate a
+ * scarce resource.
  */
 export async function POST(request: Request) {
   let body: unknown;
@@ -36,6 +38,13 @@ export async function POST(request: Request) {
 
   if (await hasUsedTrial(walletAddress)) {
     return NextResponse.json({ error: "This wallet has already used its free trial" }, { status: 409 });
+  }
+
+  if ((await countTrialsInLast24h()) >= TRIAL_DAILY_LIMIT) {
+    return NextResponse.json(
+      { error: "The daily free trial limit has been reached - please try again later." },
+      { status: 429 },
+    );
   }
 
   const result = await provisionMarzbanTrial(walletAddress);

@@ -67,6 +67,11 @@ export function dataPlanLimitBytes(plan: DataPlan): number {
  * service, small enough that it can't substitute for a real plan. */
 export const TRIAL_DATA_LIMIT_MB = 100;
 export const TRIAL_DAYS = 3;
+/** Global cap on trials granted per rolling 24h, across all wallets - "one
+ * per wallet" alone doesn't stop someone generating many wallets, so this
+ * bounds the total cost of that regardless. Tune freely; the trial route
+ * (app/api/vpn/free-trial/route.ts) just checks against this number. */
+export const TRIAL_DAILY_LIMIT = 20;
 
 export interface VpnPayment {
   txHash: string;
