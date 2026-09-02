@@ -32,14 +32,15 @@
  *   telegram-bot-users.jsonl      - chatId -> last known wallet + account
  *                                   snapshot, appended after every purchase
  *                                   made through this bot. Powers "My
- *                                   status" and the referral reward lookup.
- *                                   This is a cache of what the bot itself
- *                                   already verified on-chain - never a
- *                                   substitute for the site's own signature-
- *                                   gated /api/vpn/my-account.
+ *                                   status". This is a cache of what the bot
+ *                                   itself already verified on-chain - never
+ *                                   a substitute for the site's own
+ *                                   signature-gated /api/vpn/my-account.
  *   telegram-bot-referrals.jsonl  - referredChatId -> referrerChatId,
  *                                   appended when a new user opens the bot
- *                                   via a referral deep link.
+ *                                   via a referral deep link. Tracking only
+ *                                   - no automatic reward (see /grant for
+ *                                   manually rewarding someone).
  *
  * Only one VPN server exists today (185.172.64.24, geolocated to the
  * United States) - the country picker below shows nine more as an honest
@@ -62,9 +63,6 @@ const SITE_BASE_URL = process.env.SITE_BASE_URL || "http://localhost:3000";
 const PAYMENT_ADDRESS = process.env.NEXT_PUBLIC_VPN_PAYMENT_ADDRESS;
 const PRICE_PER_DEVICE_USD = Number(process.env.NEXT_PUBLIC_VPN_PRICE_PER_DEVICE_USD || "1");
 const MAX_DEVICES = 10;
-const REFERRAL_BONUS_DAYS = 30; // direct referrer, once their invitee completes a purchase
-const REFERRAL_L2_BONUS_DAYS = 15; // the referrer's own referrer (one level up)
-const REFERRED_USER_BONUS_DAYS = 7; // the new buyer themselves, for using a referral link
 const WALLET_RE = /^0x[0-9a-fA-F]{40}$/;
 const TXHASH_RE = /^0x[0-9a-fA-F]{64}$/;
 
@@ -136,8 +134,11 @@ function getBotUser(chatId) {
 
 /** Records a new referral the first time a chat is ever seen via a referral
  * deep link - a chat that already has a referral record (or is referring
- * itself) is ignored, so re-opening the same link twice doesn't create
- * duplicate rewards. */
+ * itself) is ignored, so re-opening the same link twice doesn't duplicate
+ * the record. There is no automatic reward for this (removed - see git
+ * history if reviving it) - it's tracked purely so the owner can see who
+ * invited whom (e.g. via /users) and decide manually whether to reward
+ * someone with the /grant admin command. */
 function recordReferralIfNew(referredChatId, referrerChatId) {
   if (String(referredChatId) === String(referrerChatId)) return;
   const existing = readJsonl(REFERRALS_FILE).find((r) => r.referredChatId === String(referredChatId));
@@ -145,21 +146,6 @@ function recordReferralIfNew(referredChatId, referrerChatId) {
   appendJsonl(REFERRALS_FILE, {
     referredChatId: String(referredChatId),
     referrerChatId: String(referrerChatId),
-    rewarded: false,
-    createdAt: new Date().toISOString(),
-  });
-}
-
-function getReferralFor(referredChatId) {
-  const all = readJsonl(REFERRALS_FILE).filter((r) => r.referredChatId === String(referredChatId));
-  return all.length > 0 ? all[all.length - 1] : null;
-}
-
-function markReferralRewarded(referredChatId, referrerChatId) {
-  appendJsonl(REFERRALS_FILE, {
-    referredChatId: String(referredChatId),
-    referrerChatId: String(referrerChatId),
-    rewarded: true,
     createdAt: new Date().toISOString(),
   });
 }
@@ -369,79 +355,12 @@ async function sendReferralLink(chatId) {
   // corrupting the link into something that doesn't resolve.
   bot.sendMessage(
     chatId,
-    `🔗 دعوت از دوستان\n\nاین لینک رو برای دوستات بفرست:\n${link}\n\nهر دوستی که با این لینک بیاد و اولین خریدش رو کامل کنه:\n🎉 تو ${REFERRAL_BONUS_DAYS} روز رایگان می‌گیری\n🎁 خودش هم ${REFERRED_USER_BONUS_DAYS} روز رایگان می‌گیره\n\nهر چقدر بیشتر دعوت کنی، بیشتر می‌گیری - محدودیتی نداره.`,
+    `🔗 دعوت از دوستان\n\nاین لینک رو برای دوستات بفرست تا با NodeShield آشنا بشن:\n${link}`,
   );
 }
 
 function inviteReminderKeyboard() {
   return { inline_keyboard: [[{ text: "🔗 دریافت لینک دعوت", callback_data: "get_referral_link" }]] };
-}
-
-/**
- * Runs after a buyer's purchase is confirmed. If they arrived via a
- * referral link and this is the first purchase that completes it:
- *   - the direct referrer (L1) gets REFERRAL_BONUS_DAYS, if they already
- *     have a qualifying account (grant-bonus requires paidDeviceCount >= 1)
- *   - the referrer's own referrer (L2), if any, gets a smaller bonus
- *   - the new buyer themselves gets a small bonus too (double-sided)
- * Any leg that can't be applied automatically (no known wallet, no
- * qualifying account yet) notifies the admin instead of silently dropping
- * the reward.
- */
-async function handleReferralRewards(referredChatId, referredWalletAddress) {
-  const referral = getReferralFor(referredChatId);
-  if (!referral || referral.rewarded) return;
-
-  const referrerRecord = getBotUser(referral.referrerChatId);
-  if (!referrerRecord) {
-    if (ADMIN_CHAT_ID) {
-      bot.sendMessage(
-        ADMIN_CHAT_ID,
-        `ℹ️ یه رفرال کامل شد ولی رفرر (chat ${referral.referrerChatId}) هنوز از طریق ربات خریدی نکرده - نمی‌دونیم کیف‌پولش چیه، جایزه اعمال نشد.`,
-      );
-    }
-  } else {
-    const { ok, json } = await grantBonus(referrerRecord.walletAddress, REFERRAL_BONUS_DAYS);
-    if (ok && json?.ok) {
-      markReferralRewarded(referredChatId, referral.referrerChatId);
-      bot
-        .sendMessage(
-          referral.referrerChatId,
-          `🎉 یکی از دوستایی که با لینک تو دعوت کردی خریدش رو کامل کرد! ${REFERRAL_BONUS_DAYS} روز رایگان به اکانتت اضافه شد.`,
-        )
-        .catch(() => {});
-
-      // Level 2 - the referrer's own referrer, if any.
-      const l2 = getReferralFor(referral.referrerChatId);
-      if (l2) {
-        const l2Record = getBotUser(l2.referrerChatId);
-        if (l2Record) {
-          const l2Result = await grantBonus(l2Record.walletAddress, REFERRAL_L2_BONUS_DAYS);
-          if (l2Result.ok && l2Result.json?.ok) {
-            bot
-              .sendMessage(
-                l2.referrerChatId,
-                `🎉 زنجیره‌ی دعوت‌هات فعال شد! ${REFERRAL_L2_BONUS_DAYS} روز رایگان به اکانتت اضافه شد.`,
-              )
-              .catch(() => {});
-          }
-        }
-      }
-    } else if (ADMIN_CHAT_ID) {
-      bot.sendMessage(
-        ADMIN_CHAT_ID,
-        `ℹ️ یه رفرال کامل شد ولی جایزه‌ی رفرر اعمال نشد (${json?.error || "unknown"}) - رفرر (${referral.referrerChatId}, ${referrerRecord.walletAddress}) شاید هنوز کانفیگ فعالی نداره.`,
-      );
-    }
-  }
-
-  // The new buyer themselves, for having used a referral link.
-  const selfResult = await grantBonus(referredWalletAddress, REFERRED_USER_BONUS_DAYS);
-  if (selfResult.ok && selfResult.json?.ok) {
-    bot
-      .sendMessage(referredChatId, `🎁 چون با لینک دعوت اومدی، ${REFERRED_USER_BONUS_DAYS} روز رایگان هم به خودت اضافه شد!`)
-      .catch(() => {});
-  }
 }
 
 bot.onText(/^\/start(?:\s+(.+))?/, async (msg, match) => {
@@ -539,6 +458,32 @@ bot.onText(/^\/provision (.+)/, async (msg, match) => {
   }
   bot.sendMessage(chatId, `✅ دستگاه برای ${walletAddress} فعال شد.`);
   await sendDeviceConfigs(chatId, [json.account.devices[json.account.devices.length - 1]]);
+});
+
+// Manual bonus days - use this yourself for whatever reason you want
+// (rewarding a referral by hand, compensating downtime, a promo) instead of
+// an automatic reward. Requires the wallet to already have a paid device
+// (grant-bonus only extends an existing account's expiry, see
+// lib/vpn/store.ts's grantBonusDays).
+bot.onText(/^\/grant (\S+) (\d+)/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  if (!isAdmin(chatId)) return;
+  const walletAddress = match[1].trim();
+  const days = Number(match[2]);
+  if (!WALLET_RE.test(walletAddress)) {
+    bot.sendMessage(chatId, "آدرس کیف‌پول نامعتبره.");
+    return;
+  }
+  const { ok, json } = await callSiteApi("/api/admin/vpn/grant-bonus", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-bot-secret": BOT_SECRET },
+    body: JSON.stringify({ walletAddress, days }),
+  });
+  if (!ok || !json?.ok) {
+    bot.sendMessage(chatId, `اعمال نشد: ${json?.error || "unknown"}`);
+    return;
+  }
+  bot.sendMessage(chatId, `✅ ${days} روز به ${walletAddress} اضافه شد. انقضای جدید: ${new Date(json.account.expiresAt).toLocaleDateString()}`);
 });
 
 // --- Purchase wizard: button steps --------------------------------------
@@ -690,7 +635,7 @@ bot.on("message", async (msg) => {
   if (text === "ℹ️ راهنما") {
     bot.sendMessage(
       chatId,
-      "🛡️ *NodeShield VPN*\n\n«🛒 خرید VPN» - خرید کانفیگ جدید\n«🎁 تست رایگان» - ۱۰۰ مگابایت/۳ روز رایگان (یک بار، فقط VPN)\n«📊 وضعیت من» - آخرین وضعیت شناخته‌شده‌ی اکانتت\n«🔗 دعوت از دوستان» - لینک رفرال، پاداش دوطرفه برای هر خرید موفق\n\nپرداخت با USDT یا BNB روی BNB Smart Chain، مستقیم از کیف‌پول خودت.",
+      "🛡️ *NodeShield VPN*\n\n«🛒 خرید VPN» - خرید کانفیگ جدید\n«🎁 تست رایگان» - ۱۰۰ مگابایت/۳ روز رایگان (یک بار، فقط VPN)\n«📊 وضعیت من» - آخرین وضعیت شناخته‌شده‌ی اکانتت\n«🔗 دعوت از دوستان» - لینک اختصاصی برای معرفی به دوستات\n\nپرداخت با USDT یا BNB روی BNB Smart Chain، مستقیم از کیف‌پول خودت.",
       { parse_mode: "Markdown" },
     );
     return;
@@ -794,7 +739,7 @@ bot.on("message", async (msg) => {
     if (newDevices.length > 0 && newDevices.every((d) => d.provisionedAt)) {
       bot.sendMessage(chatId, "✅ پرداخت تأیید شد! این‌م کانفیگ‌هات:");
       await sendDeviceConfigs(chatId, newDevices);
-      bot.sendMessage(chatId, "دوستات رو دعوت کن و روز رایگان بگیر 👇", { reply_markup: inviteReminderKeyboard() });
+      bot.sendMessage(chatId, "دوستات رو هم با NodeShield آشنا کن 👇", { reply_markup: inviteReminderKeyboard() });
     } else {
       bot.sendMessage(
         chatId,
@@ -808,7 +753,6 @@ bot.on("message", async (msg) => {
       }
     }
 
-    await handleReferralRewards(chatId, session.walletAddress);
     resetSession(chatId);
     return;
   }
