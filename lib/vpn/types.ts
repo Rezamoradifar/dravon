@@ -36,6 +36,15 @@ export interface VpnPayment {
   paidAt: string;
 }
 
+/** User-facing label for a backend - "Marzban" is an internal panel name
+ * with no meaning to a buyer, so it's shown simply as "VPN" everywhere a
+ * backend is displayed to the account owner (WireGuard is a recognizable
+ * enough brand name to show as-is). Not translated - same convention as
+ * "USDT"/"BNB" elsewhere in this app. */
+export function backendDisplayLabel(backend: VpnBackend): string {
+  return backend === "wireguard" ? "WireGuard" : "VPN";
+}
+
 export interface VpnAccount {
   walletAddress: string;
   expiresAt: string;

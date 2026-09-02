@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "@/contexts/language-context";
-import type { VpnAccount, VpnDevice } from "@/lib/vpn/types";
+import { backendDisplayLabel, type VpnAccount, type VpnDevice } from "@/lib/vpn/types";
 
 function downloadConfig(device: VpnDevice) {
   const slug = device.label.replace(/\s+/g, "-").toLowerCase();
@@ -36,9 +36,7 @@ function DeviceRow({ device }: { device: VpnDevice }) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary">{device.label}</Badge>
-          <Badge variant="outline" className="uppercase">
-            {device.backend}
-          </Badge>
+          <Badge variant="outline">{backendDisplayLabel(device.backend)}</Badge>
           <span className="text-xs text-muted-foreground">
             {new Date(device.provisionedAt).toLocaleDateString()}
           </span>
@@ -108,7 +106,7 @@ export function MyVpnAccount({
   isLoading: boolean;
   error: string | null;
 }) {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const { t } = useTranslation();
 
   React.useEffect(() => {
@@ -127,6 +125,11 @@ export function MyVpnAccount({
           <CardTitle className="flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-primary" />
             {t("myVpn.title")}
+            {address && (
+              <span className="font-mono text-xs font-normal text-muted-foreground">
+                {address.slice(0, 6)}...{address.slice(-4)}
+              </span>
+            )}
           </CardTitle>
           {account && (
             <CardDescription className="flex flex-wrap items-center gap-1.5">
@@ -135,9 +138,7 @@ export function MyVpnAccount({
                   ? t("myVpn.expired")
                   : t("myVpn.expiresOn", { date: new Date(account.expiresAt).toLocaleDateString() })}
               </span>
-              <Badge variant="outline" className="uppercase">
-                {account.backend}
-              </Badge>
+              <Badge variant="outline">{backendDisplayLabel(account.backend)}</Badge>
             </CardDescription>
           )}
         </div>

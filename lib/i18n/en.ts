@@ -900,6 +900,8 @@ export const en = {
     productName: "NodeShield",
     productTagline: "$1 per device, per month - unlimited bandwidth.",
     deviceCount: "Devices",
+    serverLocation: "Server location",
+    comingSoon: "Soon",
     addCount: "Additional devices",
     modeRenew: "Renew {count} device(s)",
     modeAdd: "Add extra device(s)",

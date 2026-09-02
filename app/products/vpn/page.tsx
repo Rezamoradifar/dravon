@@ -14,9 +14,25 @@ import { useVpnPayment, type PaymentIntent, type PaymentMethod } from "@/hooks/u
 import { useVpnAccount } from "@/hooks/useVpnAccount";
 import { VPN_PAYMENTS_LIVE, PRICE_PER_DEVICE_USD } from "@/lib/vpn/publicConfig";
 import { useTranslation } from "@/contexts/language-context";
-import type { VpnAccount, VpnBackend } from "@/lib/vpn/types";
+import { backendDisplayLabel, type VpnAccount, type VpnBackend } from "@/lib/vpn/types";
 
 const MAX_DEVICES = 10;
+
+/** Only "US" actually maps to a running server today (185.172.64.24,
+ * geolocated to the United States) - the rest are shown as a roadmap, not a
+ * working choice, so nobody thinks picking one changes anything yet. */
+const VPN_COUNTRIES: { code: string; flag: string; name: string; available: boolean }[] = [
+  { code: "US", flag: "🇺🇸", name: "United States", available: true },
+  { code: "DE", flag: "🇩🇪", name: "Germany", available: false },
+  { code: "NL", flag: "🇳🇱", name: "Netherlands", available: false },
+  { code: "GB", flag: "🇬🇧", name: "United Kingdom", available: false },
+  { code: "SG", flag: "🇸🇬", name: "Singapore", available: false },
+  { code: "JP", flag: "🇯🇵", name: "Japan", available: false },
+  { code: "CA", flag: "🇨🇦", name: "Canada", available: false },
+  { code: "FR", flag: "🇫🇷", name: "France", available: false },
+  { code: "AE", flag: "🇦🇪", name: "UAE", available: false },
+  { code: "TR", flag: "🇹🇷", name: "Turkey", available: false },
+];
 
 function PurchaseCard({ account, onPaid }: { account: VpnAccount | null; onPaid: () => void }) {
   const { pay, phase, error, reset, requiredUsd, estimatedBnb } = useVpnPayment();
@@ -51,6 +67,31 @@ function PurchaseCard({ account, onPaid }: { account: VpnAccount | null; onPaid:
         <CardDescription>{t("vpnPage.productTagline")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
+        <div className="space-y-1.5">
+          <span className="text-sm text-muted-foreground">{t("vpnPage.serverLocation")}</span>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+            {VPN_COUNTRIES.map((country) => (
+              <div
+                key={country.code}
+                className={cn(
+                  "relative flex flex-col items-center gap-0.5 rounded-lg border px-2 py-2 text-center text-xs",
+                  country.available
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground opacity-50",
+                )}
+              >
+                <span className="text-lg leading-none">{country.flag}</span>
+                <span className="truncate">{country.name}</span>
+                {!country.available && (
+                  <span className="absolute -top-1.5 right-1 rounded-full bg-muted px-1.5 text-[9px] leading-4 text-muted-foreground">
+                    {t("vpnPage.comingSoon")}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
         {hasAccount && (
           <div className="flex gap-2">
             {(["renew", "add"] as const).map((m) => (
@@ -121,7 +162,9 @@ function PurchaseCard({ account, onPaid }: { account: VpnAccount | null; onPaid:
         </div>
 
         {hasAccount ? (
-          <p className="text-xs text-muted-foreground">{t("vpnPage.backendFixed", { backend: effectiveBackend })}</p>
+          <p className="text-xs text-muted-foreground">
+            {t("vpnPage.backendFixed", { backend: backendDisplayLabel(effectiveBackend) })}
+          </p>
         ) : (
           <div className="space-y-1.5">
             <span className="text-sm text-muted-foreground">{t("vpnPage.backend")}</span>

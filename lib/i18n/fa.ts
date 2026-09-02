@@ -902,6 +902,8 @@ export const fa: Dictionary = {
     productName: "NodeShield",
     productTagline: "ماهی $۱ به‌ازای هر دستگاه - پهنای‌باند نامحدود.",
     deviceCount: "تعداد دستگاه",
+    serverLocation: "موقعیت سرور",
+    comingSoon: "به‌زودی",
     addCount: "دستگاه اضافه",
     modeRenew: "تمدید {count} دستگاه",
     modeAdd: "افزودن دستگاه اضافه",
