@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { isAddress } from "viem";
 import { useAccount } from "wagmi";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Shield } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { NetworkBanner } from "@/components/shared/network-banner";
@@ -30,6 +30,26 @@ function AlreadyRegisteredNotice() {
         <Button asChild className="gap-1.5">
           <Link href="/charge">
             {t("registerPage.goToCharge")} <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function VpnPromoCard() {
+  const { t } = useTranslation();
+  return (
+    <Card className="card-glow border-primary/30">
+      <CardContent className="flex flex-col items-center gap-3 py-6 text-center sm:flex-row sm:text-start">
+        <Shield className="h-8 w-8 shrink-0 text-primary" />
+        <div className="flex-1">
+          <p className="font-semibold">{t("registerPage.vpnPromoTitle")}</p>
+          <p className="text-sm text-muted-foreground">{t("registerPage.vpnPromoBody")}</p>
+        </div>
+        <Button asChild className="shrink-0 gap-1.5">
+          <Link href="/products/vpn">
+            {t("registerPage.vpnPromoCta")} <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </Button>
       </CardContent>
@@ -67,6 +87,7 @@ function RegisterPageContent() {
             <div className="max-w-xl">
               <RegisterForm entrance={selectedEntrance} initialDirect={initialDirect} />
             </div>
+            <VpnPromoCard />
           </div>
         )}
       </ConnectWalletGuard>

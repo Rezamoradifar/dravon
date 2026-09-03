@@ -305,6 +305,9 @@ export const en = {
     alreadyRegisteredBody:
       "factory.userAddrExists() found an existing account for this address. Head to Charge Account to top up instead.",
     goToCharge: "Go to Charge Account",
+    vpnPromoTitle: "You're about to go live on-chain - lock down the connection too",
+    vpnPromoBody: "NodeShield VPN keeps your wallet activity private on any network, for just $1/month. Grab a config before you register, or add it any time after.",
+    vpnPromoCta: "Get NodeShield VPN",
   },
   chargePage: {
     title: "Charge Account",

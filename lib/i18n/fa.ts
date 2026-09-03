@@ -307,6 +307,9 @@ export const fa: Dictionary = {
     alreadyRegisteredBody:
       "factory.userAddrExists() یک حساب موجود برای این آدرس پیدا کرد. برای شارژ حساب به صفحه «شارژ حساب» بروید.",
     goToCharge: "رفتن به شارژ حساب",
+    vpnPromoTitle: "داری وارد شبکه می‌شی - امنیت اتصالت رو هم جدی بگیر",
+    vpnPromoBody: "با NodeShield VPN، فعالیت کیف‌پولت رو تو هر شبکه‌ای خصوصی نگه دار - فقط $۱ در ماه. همین الان یا هر وقت خواستی بعد از ثبت‌نام، یه کانفیگ بگیر.",
+    vpnPromoCta: "دریافت NodeShield VPN",
   },
   chargePage: {
     title: "شارژ حساب",
