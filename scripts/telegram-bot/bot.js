@@ -13,6 +13,14 @@
  * their prices are fetched from /api/vpn/plans (also site-owned) rather
  * than hardcoded here, so the bot can never quote a stale price.
  *
+ * Bilingual (English default, Persian available via the 🌐 Language
+ * button) - see the T dictionary and t() below. Every user-facing string
+ * goes through t(lang, key, params); nothing is hardcoded to one language
+ * except country names and plan labels/IDs (proper nouns / site-shared
+ * data, kept as-is in both languages) and the "VPN Unlimited" plan's
+ * marketing description (Persian, written verbatim at the site owner's
+ * request - not part of this bilingual system).
+ *
  * Run as its own process (not part of the Next.js app):
  *   pm2 start scripts/telegram-bot/bot.js --name dravon-bot \
  *     --node-args="--env-file-if-exists=.env.local"
@@ -41,6 +49,8 @@
  *                                   via a referral deep link. Tracking only
  *                                   - no automatic reward (see /grant for
  *                                   manually rewarding someone).
+ *   telegram-bot-lang.jsonl       - chatId -> chosen language ("en"/"fa").
+ *                                   Defaults to "en" when absent.
  *
  * Only one VPN server exists today (185.172.64.24, geolocated to the
  * United States) - the country picker below shows nine more as an honest
@@ -63,6 +73,7 @@ const SITE_BASE_URL = process.env.SITE_BASE_URL || "http://localhost:3000";
 const PAYMENT_ADDRESS = process.env.NEXT_PUBLIC_VPN_PAYMENT_ADDRESS;
 const PRICE_PER_DEVICE_USD = Number(process.env.NEXT_PUBLIC_VPN_PRICE_PER_DEVICE_USD || "1");
 const MAX_DEVICES = 10;
+const DEFAULT_LANG = "en";
 const WALLET_RE = /^0x[0-9a-fA-F]{40}$/;
 const TXHASH_RE = /^0x[0-9a-fA-F]{64}$/;
 
@@ -98,12 +109,173 @@ if (!PAYMENT_ADDRESS) {
 const bot = new TelegramBot(TOKEN, { polling: true });
 let botUsername = null;
 
+// --- i18n -------------------------------------------------------------
+
+const T = {
+  en: {
+    buttonBuy: "🛒 Buy VPN",
+    buttonTrial: "🎁 Free Trial",
+    buttonStatus: "📊 My Status",
+    buttonInvite: "🔗 Invite Friends",
+    buttonLanguage: "🌐 Language",
+    buttonHelp: "ℹ️ Help",
+    cancel: "❌ Cancel",
+    cancelled: "Cancelled. Tap 🛒 Buy VPN whenever you're ready.",
+    countrySoonAlert: "🚧 This country is launching soon!",
+    salesNotLive: "Sales aren't live yet - check back later.",
+    chooseCountry: "🌍 Which country?",
+    countrySoonLabel: " (soon)",
+    countryChosen: "🌍 Country: *🇺🇸 United States*\n\n🖥️ How many configs do you want?",
+    deviceCountChosen: (p) => `🖥️ Count: *${p.count}*\n\n🔐 Which type?`,
+    backendWireguard: "🔒 WireGuard",
+    backendMarzban: "🌐 VPN (V2Ray/Shadowsocks)",
+    backendChosenMarzban: "🔐 Type: *VPN (V2Ray/Shadowsocks)*\n\n📶 How much data do you want?",
+    backendChosenWireguard: "🔐 Type: *WireGuard*\n\n💳 How will you pay?",
+    dataPlanChosen: (p) => `📶 Data: *${p.label}*\n\n💳 How will you pay?`,
+    methodChosen: (p) => `💳 Method: *${p.method}*\n\n👛 Send the wallet address you'll pay from (starts with 0x).`,
+    invalidWallet: "Invalid wallet address - must start with 0x, followed by 40 characters.",
+    invalidTxHash: "Invalid transaction hash - must start with 0x, followed by 64 characters.",
+    payUsdt: (p) =>
+      `💵 Send exactly *$${p.amount}* USDT (BEP-20, BNB Smart Chain) to this address:\n\n\`${p.address}\`\n\nOnce the transaction confirms, send its transaction hash (txHash) here.`,
+    payBnb: (p) =>
+      `💰 Amount needed: *$${p.amount}*\n${p.estimate ? `About *${p.estimate} BNB* (at the current price)` : "Live BNB price unavailable - work out the dollar equivalent from your wallet."}\n\nSend that amount to this address:\n\n\`${p.address}\`\n\nThe actual amount is re-checked against the live price at verification, so send a bit extra to be safe.\n\nOnce the transaction confirms, send its transaction hash (txHash) here.`,
+    checkingPayment: "⏳ Checking your payment on-chain...",
+    paymentFailed: (p) => `❌ Payment verification failed: ${p.error}\n\nYou can resend the same hash, or /cancel to start over.`,
+    paymentConfirmedHeader: "✅ Payment confirmed! Here are your configs:",
+    provisioningPending: "✅ Payment confirmed, but your config is still being generated. The admin has been notified and will send it shortly.",
+    inviteFriendsPrompt: "Introduce your friends to NodeShield too 👇",
+    dataLabel: "Data:",
+    singleUserNotice: "Single user, single device - don't share this config.",
+    qrCaption: (p) => `📷 QR code for ${p.label}`,
+    startWelcome: (p) => `🛡️ *NodeShield VPN*\n\nEach config, $1/month, unlimited bandwidth, single user.\n\nPay directly from your own wallet (USDT or BNB on BNB Smart Chain) - same as the website.${p.statsLine}`,
+    statsLine: (p) => `\n\n✅ ${p.count} active configs so far`,
+    helpText: () =>
+      "🛡️ *NodeShield VPN*\n\n🛒 Buy VPN - purchase a new config\n🎁 Free Trial - 100MB/3 days free (once, VPN type only)\n📊 My Status - your last known account status\n🔗 Invite Friends - your personal link to share\n🌐 Language - switch between English/Persian\n\nPay with USDT or BNB on BNB Smart Chain, straight from your own wallet.",
+    trialIntro: "🎁 *Free Trial*\n\n100MB, 3 days, completely free - once per wallet (VPN/V2Ray type only).\n\nSend your wallet address (just to identify your account - no payment needed).",
+    trialGenerating: "⏳ Generating your trial config...",
+    trialAlreadyUsed: "❌ This wallet has already used its free trial - one per wallet.",
+    trialDailyLimit: "❌ The daily free trial limit has been reached - try again later.",
+    trialUnknownError: (p) => `❌ ${p.error || "Unknown error"}`,
+    trialSuccessFooter: (p) => `This config is active until *${p.date}* or until ${p.mb}MB is used (whichever comes first). If you like it, tap 🛒 Buy VPN.`,
+    statusNoRecord: "You haven't purchased through this bot yet. Tap 🛒 Buy VPN to get started.",
+    statusHeader: (p) =>
+      `📊 *My Status* (last known state - may be out of date if you renewed on the website)\n\nWallet: \`${p.wallet}\`\nType: ${p.backend}\nDevices: ${p.deviceCount}/${p.paidCount}\nExpires: ${p.expiry}`,
+    statusExpired: "expired",
+    resendConfigsButton: "📥 Resend configs",
+    upgradeButton: "🔺 Upgrade to Unlimited",
+    upgradeIntro: "🔺 *Upgrade to Unlimited*\n\nThis gives you a new unlimited config (your existing ones stay active too).\n\n💳 How will you pay?",
+    referralHeader: (p) => `🔗 Invite Friends\n\nSend this link to your friends to introduce them to NodeShield:\n${p.link}`,
+    getReferralLinkButton: "🔗 Get invite link",
+    languagePrompt: "🌐 Choose your language:",
+    languageSetEn: "Language set to English.",
+    languageSetFa: "زبان روی فارسی تنظیم شد.",
+    adminUnauthorizedDataError: (p) => `Error loading data: ${p.error}`,
+    adminStats: (p) => `📊 *NodeShield Stats*\n\nAccounts: ${p.accounts}\nTotal active devices: ${p.devices}\nAwaiting provisioning: ${p.pending}\nExpired: ${p.expired}`,
+    adminNoAccounts: "No accounts yet.",
+    adminUserLine: (p) => `${p.wallet}\n  ${p.deviceCount}/${p.paidCount} device(s) - ${p.backend} - ${p.status} until ${p.expiry}`,
+    adminStatusActive: "active",
+    adminStatusExpired: "expired",
+    adminInvalidWallet: "Invalid wallet address.",
+    adminProvisionFailed: (p) => `Provisioning failed: ${p.error}`,
+    adminProvisioned: (p) => `✅ Device provisioned for ${p.wallet}.`,
+    adminGrantFailed: (p) => `Not applied: ${p.error}`,
+    adminGranted: (p) => `✅ ${p.days} day(s) added to ${p.wallet}. New expiry: ${p.expiry}`,
+    pendingProvisionAdminNotice: (p) => `⏳ A payment was confirmed but automatic provisioning didn't finish.\nWallet: ${p.wallet}\n\nTo provision manually: /provision ${p.wallet}`,
+  },
+  fa: {
+    buttonBuy: "🛒 خرید VPN",
+    buttonTrial: "🎁 تست رایگان",
+    buttonStatus: "📊 وضعیت من",
+    buttonInvite: "🔗 دعوت از دوستان",
+    buttonLanguage: "🌐 زبان",
+    buttonHelp: "ℹ️ راهنما",
+    cancel: "❌ لغو",
+    cancelled: "لغو شد. هر وقت خواستی «🛒 خرید VPN» رو بزن.",
+    countrySoonAlert: "🚧 این کشور در حال لانچه - به‌زودی اضافه می‌شه!",
+    salesNotLive: "فروش هنوز فعال نشده - بعداً دوباره امتحان کن.",
+    chooseCountry: "🌍 کدوم کشور؟",
+    countrySoonLabel: " (به‌زودی)",
+    countryChosen: "🌍 کشور: *🇺🇸 United States*\n\n🖥️ چند تا کانفیگ می‌خوای؟",
+    deviceCountChosen: (p) => `🖥️ تعداد: *${p.count}*\n\n🔐 کدوم نوع؟`,
+    backendWireguard: "🔒 WireGuard",
+    backendMarzban: "🌐 VPN (V2Ray/Shadowsocks)",
+    backendChosenMarzban: "🔐 نوع: *VPN (V2Ray/Shadowsocks)*\n\n📶 چقدر حجم می‌خوای؟",
+    backendChosenWireguard: "🔐 نوع: *WireGuard*\n\n💳 با چی پرداخت می‌کنی؟",
+    dataPlanChosen: (p) => `📶 حجم: *${p.label}*\n\n💳 با چی پرداخت می‌کنی؟`,
+    methodChosen: (p) => `💳 روش: *${p.method}*\n\n👛 آدرس کیف‌پولی که ازش پرداخت می‌کنی رو بفرست (با 0x شروع می‌شه).`,
+    invalidWallet: "آدرس کیف‌پول نامعتبره - باید 0x و بعدش 40 کاراکتر باشه.",
+    invalidTxHash: "هش تراکنش نامعتبره - باید 0x و بعدش 64 کاراکتر باشه.",
+    payUsdt: (p) =>
+      `💵 دقیقاً *$${p.amount}* USDT (BEP-20، شبکه‌ی BNB Smart Chain) رو به این آدرس بفرست:\n\n\`${p.address}\`\n\nبعد از تأیید تراکنش، هش تراکنش (txHash) رو همینجا بفرست.`,
+    payBnb: (p) =>
+      `💰 مبلغ لازم: *$${p.amount}*\n${p.estimate ? `تقریباً *${p.estimate} BNB* (بر اساس قیمت لحظه‌ای)` : "قیمت لحظه‌ای BNB در دسترس نیست - از کیف‌پولت معادل دلاریش رو حساب کن."}\n\nاین مبلغ رو به این آدرس بفرست:\n\n\`${p.address}\`\n\nمقدار واقعی موقع تأیید دوباره از قیمت لحظه‌ای زنجیره چک می‌شه، یه‌کم بیشتر بفرست تا مطمئن باشی رد نشه.\n\nبعد از تأیید تراکنش، هش تراکنش (txHash) رو همینجا بفرست.`,
+    checkingPayment: "⏳ در حال بررسی پرداخت رو زنجیره...",
+    paymentFailed: (p) => `❌ تأیید پرداخت ناموفق بود: ${p.error}\n\nمی‌تونی دوباره همین هش رو بفرستی، یا /cancel بزنی و از اول شروع کنی.`,
+    paymentConfirmedHeader: "✅ پرداخت تأیید شد! این‌م کانفیگ‌هات:",
+    provisioningPending: "✅ پرداخت تأیید شد، ولی کانفیگ هنوز در حال آماده‌سازیه. به ادمین اطلاع داده شد، به‌زودی برات می‌فرسته.",
+    inviteFriendsPrompt: "دوستات رو هم با NodeShield آشنا کن 👇",
+    dataLabel: "حجم:",
+    singleUserNotice: "تک‌کاربر و تک‌دستگاه - این کانفیگ رو با کسی به اشتراک نذار.",
+    qrCaption: (p) => `📷 کد QR برای ${p.label}`,
+    startWelcome: (p) => `🛡️ *NodeShield VPN*\n\nهر کانفیگ، ماهی $1، پهنای‌باند نامحدود، تک‌کاربر.\n\nپرداخت مستقیم از کیف‌پول خودت (USDT یا BNB روی BNB Smart Chain) - همون روش سایت.${p.statsLine}`,
+    statsLine: (p) => `\n\n✅ ${p.count} کانفیگ فعال تا الان`,
+    helpText: () =>
+      "🛡️ *NodeShield VPN*\n\n🛒 خرید VPN - خرید کانفیگ جدید\n🎁 تست رایگان - ۱۰۰ مگابایت/۳ روز رایگان (یک بار، فقط VPN)\n📊 وضعیت من - آخرین وضعیت شناخته‌شده‌ی اکانتت\n🔗 دعوت از دوستان - لینک اختصاصی برای معرفی به دوستات\n🌐 زبان - تغییر بین فارسی/انگلیسی\n\nپرداخت با USDT یا BNB روی BNB Smart Chain، مستقیم از کیف‌پول خودت.",
+    trialIntro: "🎁 *تست رایگان*\n\n۱۰۰ مگابایت، ۳ روز، کاملاً رایگان - یک بار برای هر کیف‌پول (فقط نوع VPN/V2Ray).\n\nآدرس کیف‌پولت رو بفرست (فقط برای شناسایی اکانتت - نیازی به پرداخت نیست).",
+    trialGenerating: "⏳ در حال ساخت کانفیگ تست...",
+    trialAlreadyUsed: "❌ این کیف‌پول قبلاً از تست رایگانش استفاده کرده - یک بار برای هر کیف‌پوله.",
+    trialDailyLimit: "❌ سقف روزانه‌ی تست رایگان پر شده - بعداً دوباره امتحان کن.",
+    trialUnknownError: (p) => `❌ ${p.error || "خطای ناشناخته"}`,
+    trialSuccessFooter: (p) => `این کانفیگ تا *${p.date}* یا تا ${p.mb}MB مصرف (هرکدوم زودتر) فعاله. اگه خوشت اومد، «🛒 خرید VPN» رو بزن.`,
+    statusNoRecord: "هنوز از طریق این ربات خریدی نداشتی. برای شروع، «🛒 خرید VPN» رو بزن.",
+    statusHeader: (p) =>
+      `📊 *وضعیت من* (آخرین وضعیت شناخته‌شده - اگه رو سایت هم تمدید کرده باشی ممکنه به‌روز نباشه)\n\nکیف‌پول: \`${p.wallet}\`\nنوع: ${p.backend}\nدستگاه: ${p.deviceCount}/${p.paidCount}\nانقضا: ${p.expiry}`,
+    statusExpired: "منقضی‌شده",
+    resendConfigsButton: "📥 نمایش کانفیگ‌ها دوباره",
+    upgradeButton: "🔺 ارتقا به نامحدود",
+    upgradeIntro: "🔺 *ارتقا به نامحدود*\n\nاین یه کانفیگ نامحدود جدید بهت می‌ده (کانفیگ‌های قبلیت هم فعال می‌مونن).\n\n💳 با چی پرداخت می‌کنی؟",
+    referralHeader: (p) => `🔗 دعوت از دوستان\n\nاین لینک رو برای دوستات بفرست تا با NodeShield آشنا بشن:\n${p.link}`,
+    getReferralLinkButton: "🔗 دریافت لینک دعوت",
+    languagePrompt: "🌐 زبان رو انتخاب کن:",
+    languageSetEn: "Language set to English.",
+    languageSetFa: "زبان روی فارسی تنظیم شد.",
+    adminUnauthorizedDataError: (p) => `خطا در خوندن دیتا: ${p.error}`,
+    adminStats: (p) => `📊 *آمار NodeShield*\n\nتعداد اکانت: ${p.accounts}\nتعداد کل دستگاه فعال: ${p.devices}\nدر انتظار فعال‌سازی: ${p.pending}\nمنقضی‌شده: ${p.expired}`,
+    adminNoAccounts: "هنوز هیچ اکانتی ثبت نشده.",
+    adminUserLine: (p) => `${p.wallet}\n  ${p.deviceCount}/${p.paidCount} device(s) - ${p.backend} - ${p.status} تا ${p.expiry}`,
+    adminStatusActive: "فعال",
+    adminStatusExpired: "منقضی",
+    adminInvalidWallet: "آدرس کیف‌پول نامعتبره.",
+    adminProvisionFailed: (p) => `فعال‌سازی ناموفق: ${p.error}`,
+    adminProvisioned: (p) => `✅ دستگاه برای ${p.wallet} فعال شد.`,
+    adminGrantFailed: (p) => `اعمال نشد: ${p.error}`,
+    adminGranted: (p) => `✅ ${p.days} روز به ${p.wallet} اضافه شد. انقضای جدید: ${p.expiry}`,
+    pendingProvisionAdminNotice: (p) => `⏳ یه پرداخت تأیید شد ولی پرووایژن خودکار کامل نشد.\nکیف‌پول: ${p.wallet}\n\nبرای فعال‌سازی دستی: /provision ${p.wallet}`,
+  },
+};
+
+function t(lang, key, params) {
+  const dict = T[lang] || T[DEFAULT_LANG];
+  const entry = dict[key] !== undefined ? dict[key] : T[DEFAULT_LANG][key];
+  return typeof entry === "function" ? entry(params || {}) : entry;
+}
+
+const BUTTON_KEYS = ["buttonBuy", "buttonTrial", "buttonStatus", "buttonInvite", "buttonLanguage", "buttonHelp"];
+
+function matchButton(text) {
+  for (const key of BUTTON_KEYS) {
+    if (text === T.en[key] || text === T.fa[key]) return key;
+  }
+  return null;
+}
+
 // --- Local JSONL state (same append-only, latest-record-wins pattern as
 // lib/vpn/store.ts) --------------------------------------------------------
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const USERS_FILE = path.join(DATA_DIR, "telegram-bot-users.jsonl");
 const REFERRALS_FILE = path.join(DATA_DIR, "telegram-bot-referrals.jsonl");
+const LANG_FILE = path.join(DATA_DIR, "telegram-bot-lang.jsonl");
 
 function readJsonl(file) {
   try {
@@ -150,6 +322,25 @@ function recordReferralIfNew(referredChatId, referrerChatId) {
   });
 }
 
+/** Per-chat language, cached in memory (checked on every message) and
+ * backed by telegram-bot-lang.jsonl. Defaults to DEFAULT_LANG ("en") when
+ * a chat has never picked one. */
+const langCache = new Map();
+
+function getUserLang(chatId) {
+  const key = String(chatId);
+  if (langCache.has(key)) return langCache.get(key);
+  const all = readJsonl(LANG_FILE).filter((r) => r.chatId === key);
+  const lang = all.length > 0 ? all[all.length - 1].lang : DEFAULT_LANG;
+  langCache.set(key, lang);
+  return lang;
+}
+
+function setUserLang(chatId, lang) {
+  langCache.set(String(chatId), lang);
+  appendJsonl(LANG_FILE, { chatId: String(chatId), lang, updatedAt: new Date().toISOString() });
+}
+
 // --- Small helpers ---------------------------------------------------------
 
 /** In-memory per-chat purchase wizard state. Lost on a bot restart - a user
@@ -166,16 +357,31 @@ function resetSession(chatId) {
   sessions.delete(chatId);
 }
 
-const CANCEL_ROW = [{ text: "❌ لغو", callback_data: "cancel" }];
+function cancelRow(lang) {
+  return [{ text: t(lang, "cancel"), callback_data: "cancel" }];
+}
 
-const MAIN_KEYBOARD = {
-  keyboard: [
-    ["🛒 خرید VPN", "🎁 تست رایگان"],
-    ["📊 وضعیت من", "🔗 دعوت از دوستان"],
-    ["ℹ️ راهنما"],
-  ],
-  resize_keyboard: true,
-};
+function mainKeyboard(lang) {
+  return {
+    keyboard: [
+      [t(lang, "buttonBuy"), t(lang, "buttonTrial")],
+      [t(lang, "buttonStatus"), t(lang, "buttonInvite")],
+      [t(lang, "buttonLanguage"), t(lang, "buttonHelp")],
+    ],
+    resize_keyboard: true,
+  };
+}
+
+function languageKeyboard() {
+  return {
+    inline_keyboard: [
+      [
+        { text: "🇬🇧 English", callback_data: "lang_en" },
+        { text: "🇮🇷 فارسی", callback_data: "lang_fa" },
+      ],
+    ],
+  };
+}
 
 async function callSiteApi(path, options) {
   const res = await fetch(`${SITE_BASE_URL}${path}`, options);
@@ -209,105 +415,93 @@ async function fetchDataPlans() {
   return ok && json?.ok ? json.plans : [];
 }
 
-async function grantBonus(walletAddress, days) {
-  return callSiteApi("/api/admin/vpn/grant-bonus", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-bot-secret": BOT_SECRET },
-    body: JSON.stringify({ walletAddress, days }),
-  });
-}
-
-async function sendDeviceConfigs(chatId, devices) {
+async function sendDeviceConfigs(chatId, lang, devices) {
   for (const device of devices) {
     const backendLabel = device.backend === "wireguard" ? "WireGuard" : "VPN";
-    const planLine = device.dataPlanId && device.dataPlanId !== "unlimited" ? `\n📶 حجم: ${device.dataPlanId}` : "";
+    const planLine = device.dataPlanId && device.dataPlanId !== "unlimited" ? `\n📶 ${t(lang, "dataLabel")} ${device.dataPlanId}` : "";
     await bot.sendMessage(
       chatId,
-      `✅ *${device.label}* (${backendLabel})${planLine}\n\n\`${device.config}\`\n\n👤 تک‌کاربر و تک‌دستگاه - این کانفیگ رو با کسی به اشتراک نذار.`,
+      `✅ *${device.label}* (${backendLabel})${planLine}\n\n\`${device.config}\`\n\n👤 ${t(lang, "singleUserNotice")}`,
       { parse_mode: "Markdown" },
     );
     try {
       const qrBuffer = await QRCode.toBuffer(device.config, { width: 400 });
-      await bot.sendPhoto(chatId, qrBuffer, { caption: `📷 کد QR برای ${device.label}` });
+      await bot.sendPhoto(chatId, qrBuffer, { caption: t(lang, "qrCaption", { label: device.label }) });
     } catch (err) {
       console.error("QR generation failed:", err);
     }
   }
 }
 
-function countryKeyboard() {
+function countryKeyboard(lang) {
   const rows = [];
   for (let i = 0; i < COUNTRIES.length; i += 2) {
     rows.push(
       COUNTRIES.slice(i, i + 2).map((c) => ({
-        text: `${c.flag} ${c.name}${c.available ? "" : " (به‌زودی)"}`,
+        text: `${c.flag} ${c.name}${c.available ? "" : t(lang, "countrySoonLabel")}`,
         callback_data: c.available ? `country_${c.code}` : `countrysoon_${c.code}`,
       })),
     );
   }
-  rows.push(CANCEL_ROW);
+  rows.push(cancelRow(lang));
   return { inline_keyboard: rows };
 }
 
-function deviceCountKeyboard() {
+function deviceCountKeyboard(lang) {
   const numberRow = (start) =>
     Array.from({ length: 5 }, (_, i) => ({
       text: String(start + i),
       callback_data: `dc_${start + i}`,
     }));
-  return { inline_keyboard: [numberRow(1), numberRow(6), CANCEL_ROW] };
+  return { inline_keyboard: [numberRow(1), numberRow(6), cancelRow(lang)] };
 }
 
-function backendKeyboard() {
+function backendKeyboard(lang) {
   return {
     inline_keyboard: [
-      [{ text: "🔒 WireGuard", callback_data: "be_wireguard" }],
-      [{ text: "🌐 VPN (V2Ray/Shadowsocks)", callback_data: "be_marzban" }],
-      CANCEL_ROW,
+      [{ text: t(lang, "backendWireguard"), callback_data: "be_wireguard" }],
+      [{ text: t(lang, "backendMarzban"), callback_data: "be_marzban" }],
+      cancelRow(lang),
     ],
   };
 }
 
-function dataPlanKeyboard(plans) {
+function dataPlanKeyboard(lang, plans) {
   return {
-    inline_keyboard: [...plans.map((p) => [{ text: `${p.label} - $${p.priceUsd}`, callback_data: `dp_${p.id}` }]), CANCEL_ROW],
+    inline_keyboard: [...plans.map((p) => [{ text: `${p.label} - $${p.priceUsd}`, callback_data: `dp_${p.id}` }]), cancelRow(lang)],
   };
 }
 
-function methodKeyboard() {
+function methodKeyboard(lang) {
   return {
     inline_keyboard: [
       [
         { text: "💵 USDT", callback_data: "pm_usdt" },
         { text: "🟡 BNB", callback_data: "pm_bnb" },
       ],
-      CANCEL_ROW,
+      cancelRow(lang),
     ],
   };
 }
 
-function startBuyFlow(chatId) {
+function startBuyFlow(chatId, lang) {
   if (!PAYMENT_ADDRESS) {
-    bot.sendMessage(chatId, "فروش هنوز فعال نشده - بعداً دوباره امتحان کن.");
+    bot.sendMessage(chatId, t(lang, "salesNotLive"));
     return;
   }
   sessions.set(chatId, { step: "country" });
-  bot.sendMessage(chatId, "🌍 کدوم کشور؟", { reply_markup: countryKeyboard() });
+  bot.sendMessage(chatId, t(lang, "chooseCountry"), { reply_markup: countryKeyboard(lang) });
 }
 
-function startTrialFlow(chatId) {
+function startTrialFlow(chatId, lang) {
   sessions.set(chatId, { step: "trialWallet" });
-  bot.sendMessage(
-    chatId,
-    "🎁 *تست رایگان*\n\n۱۰۰ مگابایت، ۳ روز، کاملاً رایگان - یک بار برای هر کیف‌پول (فقط نوع VPN/V2Ray).\n\nآدرس کیف‌پولت رو بفرست (فقط برای شناسایی اکانتت - نیازی به پرداخت نیست).",
-    { parse_mode: "Markdown" },
-  );
+  bot.sendMessage(chatId, t(lang, "trialIntro"), { parse_mode: "Markdown" });
 }
 
-async function sendStatus(chatId) {
+async function sendStatus(chatId, lang) {
   const record = getBotUser(chatId);
   if (!record) {
-    bot.sendMessage(chatId, "هنوز از طریق این ربات خریدی نداشتی. برای شروع، «🛒 خرید VPN» رو بزن.");
+    bot.sendMessage(chatId, t(lang, "statusNoRecord"));
     return;
   }
   const account = record.account;
@@ -316,15 +510,21 @@ async function sendStatus(chatId) {
   const masked = `${record.walletAddress.slice(0, 6)}...${record.walletAddress.slice(-4)}`;
   const upgradeButton =
     account.backend === "marzban" && account.dataPlanId && account.dataPlanId !== "unlimited"
-      ? [[{ text: "🔺 ارتقا به نامحدود", callback_data: "upgrade_unlimited" }]]
+      ? [[{ text: t(lang, "upgradeButton"), callback_data: "upgrade_unlimited" }]]
       : [];
   bot.sendMessage(
     chatId,
-    `📊 *وضعیت من* (آخرین وضعیت شناخته‌شده - اگه رو سایت هم تمدید کرده باشی ممکنه به‌روز نباشه)\n\nکیف‌پول: \`${masked}\`\nنوع: ${backendLabel}\nدستگاه: ${account.devices.length}/${account.paidDeviceCount}\nانقضا: ${expired ? "منقضی‌شده" : new Date(account.expiresAt).toLocaleDateString()}`,
+    t(lang, "statusHeader", {
+      wallet: masked,
+      backend: backendLabel,
+      deviceCount: account.devices.length,
+      paidCount: account.paidDeviceCount,
+      expiry: expired ? t(lang, "statusExpired") : new Date(account.expiresAt).toLocaleDateString(),
+    }),
     {
       parse_mode: "Markdown",
       reply_markup: {
-        inline_keyboard: [[{ text: "📥 نمایش کانفیگ‌ها دوباره", callback_data: "resend_configs" }], ...upgradeButton],
+        inline_keyboard: [[{ text: t(lang, "resendConfigsButton"), callback_data: "resend_configs" }], ...upgradeButton],
       },
     },
   );
@@ -347,24 +547,22 @@ async function referralLinkFor(chatId) {
   return `https://t.me/${username}?start=ref_${chatId}`;
 }
 
-async function sendReferralLink(chatId) {
+async function sendReferralLink(chatId, lang) {
   const link = await referralLinkFor(chatId);
   // No parse_mode here on purpose: the link contains underscores (the bot
   // username and the "ref_<id>" payload), and Telegram's legacy Markdown
   // mode treats "_..._" as italics - it silently eats those underscores,
   // corrupting the link into something that doesn't resolve.
-  bot.sendMessage(
-    chatId,
-    `🔗 دعوت از دوستان\n\nاین لینک رو برای دوستات بفرست تا با NodeShield آشنا بشن:\n${link}`,
-  );
+  bot.sendMessage(chatId, t(lang, "referralHeader", { link }));
 }
 
-function inviteReminderKeyboard() {
-  return { inline_keyboard: [[{ text: "🔗 دریافت لینک دعوت", callback_data: "get_referral_link" }]] };
+function inviteReminderKeyboard(lang) {
+  return { inline_keyboard: [[{ text: t(lang, "getReferralLinkButton"), callback_data: "get_referral_link" }]] };
 }
 
 bot.onText(/^\/start(?:\s+(.+))?/, async (msg, match) => {
   const chatId = msg.chat.id;
+  const lang = getUserLang(chatId);
   resetSession(chatId);
 
   const payload = match && match[1];
@@ -373,32 +571,31 @@ bot.onText(/^\/start(?:\s+(.+))?/, async (msg, match) => {
   }
 
   const stats = await fetchPublicStats();
-  const statsLine = stats ? `\n\n✅ ${stats.totalDevices} کانفیگ فعال تا الان` : "";
+  const statsLine = stats ? t(lang, "statsLine", { count: stats.totalDevices }) : "";
 
-  bot.sendMessage(
-    chatId,
-    `🛡️ *NodeShield VPN*\n\nهر کانفیگ، ماهی $1، پهنای‌باند نامحدود، تک‌کاربر.\n\nپرداخت مستقیم از کیف‌پول خودت (USDT یا BNB روی BNB Smart Chain) - همون روش سایت.${statsLine}`,
-    { parse_mode: "Markdown", reply_markup: MAIN_KEYBOARD },
-  );
+  bot.sendMessage(chatId, t(lang, "startWelcome", { statsLine }), { parse_mode: "Markdown", reply_markup: mainKeyboard(lang) });
 });
 
 bot.onText(/^\/cancel/, (msg) => {
-  resetSession(msg.chat.id);
-  bot.sendMessage(msg.chat.id, "لغو شد. هر وقت خواستی «🛒 خرید VPN» رو بزن.");
+  const chatId = msg.chat.id;
+  const lang = getUserLang(chatId);
+  resetSession(chatId);
+  bot.sendMessage(chatId, t(lang, "cancelled"));
 });
 
-bot.onText(/^\/buy/, (msg) => startBuyFlow(msg.chat.id));
+bot.onText(/^\/buy/, (msg) => startBuyFlow(msg.chat.id, getUserLang(msg.chat.id)));
 
 // --- Admin-only commands -----------------------------------------------
 
 bot.onText(/^\/stats/, async (msg) => {
   const chatId = msg.chat.id;
   if (!isAdmin(chatId)) return;
+  const lang = getUserLang(chatId);
   const { ok, json } = await callSiteApi("/api/admin/vpn/list", {
     headers: { "x-bot-secret": BOT_SECRET },
   });
   if (!ok || !json?.ok) {
-    bot.sendMessage(chatId, `خطا در خوندن دیتا: ${json?.error || "unknown"}`);
+    bot.sendMessage(chatId, t(lang, "adminUnauthorizedDataError", { error: json?.error || "unknown" }));
     return;
   }
   const accounts = json.accounts;
@@ -407,7 +604,7 @@ bot.onText(/^\/stats/, async (msg) => {
   const expired = accounts.filter((a) => new Date(a.expiresAt).getTime() < Date.now()).length;
   bot.sendMessage(
     chatId,
-    `📊 *آمار NodeShield*\n\nتعداد اکانت: ${accounts.length}\nتعداد کل دستگاه فعال: ${totalDevices}\nدر انتظار فعال‌سازی: ${pending}\nمنقضی‌شده: ${expired}`,
+    t(lang, "adminStats", { accounts: accounts.length, devices: totalDevices, pending, expired }),
     { parse_mode: "Markdown" },
   );
 });
@@ -415,22 +612,30 @@ bot.onText(/^\/stats/, async (msg) => {
 bot.onText(/^\/users/, async (msg) => {
   const chatId = msg.chat.id;
   if (!isAdmin(chatId)) return;
+  const lang = getUserLang(chatId);
   const { ok, json } = await callSiteApi("/api/admin/vpn/list", {
     headers: { "x-bot-secret": BOT_SECRET },
   });
   if (!ok || !json?.ok) {
-    bot.sendMessage(chatId, `خطا در خوندن دیتا: ${json?.error || "unknown"}`);
+    bot.sendMessage(chatId, t(lang, "adminUnauthorizedDataError", { error: json?.error || "unknown" }));
     return;
   }
   const accounts = json.accounts;
   if (accounts.length === 0) {
-    bot.sendMessage(chatId, "هنوز هیچ اکانتی ثبت نشده.");
+    bot.sendMessage(chatId, t(lang, "adminNoAccounts"));
     return;
   }
   const lines = accounts.map((a) => {
     const expired = new Date(a.expiresAt).getTime() < Date.now();
     const backendLabel = a.backend === "wireguard" ? "WireGuard" : "VPN";
-    return `${a.walletAddress}\n  ${a.devices.length}/${a.paidDeviceCount} device(s) - ${backendLabel} - ${expired ? "منقضی" : "فعال"} تا ${new Date(a.expiresAt).toLocaleDateString()}`;
+    return t(lang, "adminUserLine", {
+      wallet: a.walletAddress,
+      deviceCount: a.devices.length,
+      paidCount: a.paidDeviceCount,
+      backend: backendLabel,
+      status: expired ? t(lang, "adminStatusExpired") : t(lang, "adminStatusActive"),
+      expiry: new Date(a.expiresAt).toLocaleDateString(),
+    });
   });
   // Telegram messages cap at ~4096 chars - chunk into batches.
   const chunkSize = 20;
@@ -442,9 +647,10 @@ bot.onText(/^\/users/, async (msg) => {
 bot.onText(/^\/provision (.+)/, async (msg, match) => {
   const chatId = msg.chat.id;
   if (!isAdmin(chatId)) return;
+  const lang = getUserLang(chatId);
   const walletAddress = match[1].trim();
   if (!WALLET_RE.test(walletAddress)) {
-    bot.sendMessage(chatId, "آدرس کیف‌پول نامعتبره.");
+    bot.sendMessage(chatId, t(lang, "adminInvalidWallet"));
     return;
   }
   const { ok, json } = await callSiteApi("/api/admin/vpn/bot-provision", {
@@ -453,11 +659,11 @@ bot.onText(/^\/provision (.+)/, async (msg, match) => {
     body: JSON.stringify({ walletAddress }),
   });
   if (!ok || !json?.ok) {
-    bot.sendMessage(chatId, `فعال‌سازی ناموفق: ${json?.error || "unknown"}`);
+    bot.sendMessage(chatId, t(lang, "adminProvisionFailed", { error: json?.error || "unknown" }));
     return;
   }
-  bot.sendMessage(chatId, `✅ دستگاه برای ${walletAddress} فعال شد.`);
-  await sendDeviceConfigs(chatId, [json.account.devices[json.account.devices.length - 1]]);
+  bot.sendMessage(chatId, t(lang, "adminProvisioned", { wallet: walletAddress }));
+  await sendDeviceConfigs(chatId, lang, [json.account.devices[json.account.devices.length - 1]]);
 });
 
 // Manual bonus days - use this yourself for whatever reason you want
@@ -468,10 +674,11 @@ bot.onText(/^\/provision (.+)/, async (msg, match) => {
 bot.onText(/^\/grant (\S+) (\d+)/, async (msg, match) => {
   const chatId = msg.chat.id;
   if (!isAdmin(chatId)) return;
+  const lang = getUserLang(chatId);
   const walletAddress = match[1].trim();
   const days = Number(match[2]);
   if (!WALLET_RE.test(walletAddress)) {
-    bot.sendMessage(chatId, "آدرس کیف‌پول نامعتبره.");
+    bot.sendMessage(chatId, t(lang, "adminInvalidWallet"));
     return;
   }
   const { ok, json } = await callSiteApi("/api/admin/vpn/grant-bonus", {
@@ -480,57 +687,61 @@ bot.onText(/^\/grant (\S+) (\d+)/, async (msg, match) => {
     body: JSON.stringify({ walletAddress, days }),
   });
   if (!ok || !json?.ok) {
-    bot.sendMessage(chatId, `اعمال نشد: ${json?.error || "unknown"}`);
+    bot.sendMessage(chatId, t(lang, "adminGrantFailed", { error: json?.error || "unknown" }));
     return;
   }
-  bot.sendMessage(chatId, `✅ ${days} روز به ${walletAddress} اضافه شد. انقضای جدید: ${new Date(json.account.expiresAt).toLocaleDateString()}`);
+  bot.sendMessage(chatId, t(lang, "adminGranted", { days, wallet: walletAddress, expiry: new Date(json.account.expiresAt).toLocaleDateString() }));
 });
 
 // --- Purchase wizard: button steps --------------------------------------
 
 bot.on("callback_query", async (query) => {
   const chatId = query.message.chat.id;
+  const lang = getUserLang(chatId);
   const data = query.data;
 
   if (data.startsWith("countrysoon_")) {
-    bot.answerCallbackQuery(query.id, { text: "🚧 این کشور در حال لانچه - به‌زودی اضافه می‌شه!", show_alert: true }).catch(() => {});
+    bot.answerCallbackQuery(query.id, { text: t(lang, "countrySoonAlert"), show_alert: true }).catch(() => {});
     return;
   }
 
   await bot.answerCallbackQuery(query.id).catch(() => {});
 
+  if (data === "lang_en" || data === "lang_fa") {
+    const newLang = data === "lang_en" ? "en" : "fa";
+    setUserLang(chatId, newLang);
+    bot.sendMessage(chatId, t(newLang, newLang === "en" ? "languageSetEn" : "languageSetFa"), {
+      reply_markup: mainKeyboard(newLang),
+    });
+    return;
+  }
+
   if (data === "cancel") {
     resetSession(chatId);
-    bot.editMessageText("لغو شد. هر وقت خواستی «🛒 خرید VPN» رو بزن.", {
-      chat_id: chatId,
-      message_id: query.message.message_id,
-    }).catch(() => {});
+    bot.editMessageText(t(lang, "cancelled"), { chat_id: chatId, message_id: query.message.message_id }).catch(() => {});
     return;
   }
 
   if (data === "buy_start") {
-    startBuyFlow(chatId);
+    startBuyFlow(chatId, lang);
     return;
   }
 
   if (data === "resend_configs") {
     const record = getBotUser(chatId);
     if (!record) return;
-    await sendDeviceConfigs(chatId, record.account.devices);
+    await sendDeviceConfigs(chatId, lang, record.account.devices);
     return;
   }
 
   if (data === "get_referral_link") {
-    await sendReferralLink(chatId);
+    await sendReferralLink(chatId, lang);
     return;
   }
 
   if (data === "upgrade_unlimited") {
     sessions.set(chatId, { step: "method", backend: "marzban", deviceCount: 1, dataPlanId: "unlimited", upgrade: true });
-    bot.sendMessage(chatId, "🔺 *ارتقا به نامحدود*\n\nاین یه کانفیگ نامحدود جدید بهت می‌ده (کانفیگ‌های قبلیت هم فعال می‌مونن).\n\n💳 با چی پرداخت می‌کنی؟", {
-      parse_mode: "Markdown",
-      reply_markup: methodKeyboard(),
-    });
+    bot.sendMessage(chatId, t(lang, "upgradeIntro"), { parse_mode: "Markdown", reply_markup: methodKeyboard(lang) });
     return;
   }
 
@@ -540,11 +751,11 @@ bot.on("callback_query", async (query) => {
   if (data.startsWith("country_") && session.step === "country") {
     session.country = data.slice(8);
     session.step = "deviceCount";
-    bot.editMessageText("🌍 کشور: *🇺🇸 United States*\n\n🖥️ چند تا کانفیگ می‌خوای؟", {
+    bot.editMessageText(t(lang, "countryChosen"), {
       chat_id: chatId,
       message_id: query.message.message_id,
       parse_mode: "Markdown",
-      reply_markup: deviceCountKeyboard(),
+      reply_markup: deviceCountKeyboard(lang),
     }).catch(() => {});
     return;
   }
@@ -552,11 +763,11 @@ bot.on("callback_query", async (query) => {
   if (data.startsWith("dc_") && session.step === "deviceCount") {
     session.deviceCount = Number(data.slice(3));
     session.step = "backend";
-    bot.editMessageText(`🖥️ تعداد: *${session.deviceCount}*\n\n🔐 کدوم نوع؟`, {
+    bot.editMessageText(t(lang, "deviceCountChosen", { count: session.deviceCount }), {
       chat_id: chatId,
       message_id: query.message.message_id,
       parse_mode: "Markdown",
-      reply_markup: backendKeyboard(),
+      reply_markup: backendKeyboard(lang),
     }).catch(() => {});
     return;
   }
@@ -567,19 +778,19 @@ bot.on("callback_query", async (query) => {
       session.step = "dataPlan";
       const plans = await fetchDataPlans();
       session._plans = plans;
-      bot.editMessageText("🔐 نوع: *VPN (V2Ray/Shadowsocks)*\n\n📶 چقدر حجم می‌خوای؟", {
+      bot.editMessageText(t(lang, "backendChosenMarzban"), {
         chat_id: chatId,
         message_id: query.message.message_id,
         parse_mode: "Markdown",
-        reply_markup: dataPlanKeyboard(plans),
+        reply_markup: dataPlanKeyboard(lang, plans),
       }).catch(() => {});
     } else {
       session.step = "method";
-      bot.editMessageText("🔐 نوع: *WireGuard*\n\n💳 با چی پرداخت می‌کنی؟", {
+      bot.editMessageText(t(lang, "backendChosenWireguard"), {
         chat_id: chatId,
         message_id: query.message.message_id,
         parse_mode: "Markdown",
-        reply_markup: methodKeyboard(),
+        reply_markup: methodKeyboard(lang),
       }).catch(() => {});
     }
     return;
@@ -592,11 +803,11 @@ bot.on("callback_query", async (query) => {
     if (plan?.description) {
       bot.sendMessage(chatId, plan.description).catch(() => {});
     }
-    bot.editMessageText(`📶 حجم: *${plan ? plan.label : session.dataPlanId}*\n\n💳 با چی پرداخت می‌کنی؟`, {
+    bot.editMessageText(t(lang, "dataPlanChosen", { label: plan ? plan.label : session.dataPlanId }), {
       chat_id: chatId,
       message_id: query.message.message_id,
       parse_mode: "Markdown",
-      reply_markup: methodKeyboard(),
+      reply_markup: methodKeyboard(lang),
     }).catch(() => {});
     return;
   }
@@ -604,10 +815,11 @@ bot.on("callback_query", async (query) => {
   if (data.startsWith("pm_") && session.step === "method") {
     session.method = data.slice(3);
     session.step = "wallet";
-    bot.editMessageText(
-      `💳 روش: *${session.method.toUpperCase()}*\n\n👛 آدرس کیف‌پولی که ازش پرداخت می‌کنی رو بفرست (همون آدرسی که تراکنش رو باهاش می‌زنی، با 0x شروع می‌شه).`,
-      { chat_id: chatId, message_id: query.message.message_id, parse_mode: "Markdown" },
-    ).catch(() => {});
+    bot.editMessageText(t(lang, "methodChosen", { method: session.method.toUpperCase() }), {
+      chat_id: chatId,
+      message_id: query.message.message_id,
+      parse_mode: "Markdown",
+    }).catch(() => {});
     return;
   }
 });
@@ -616,31 +828,33 @@ bot.on("callback_query", async (query) => {
 
 bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
+  const lang = getUserLang(chatId);
   const text = (msg.text || "").trim();
   if (text.startsWith("/")) return; // commands handled above
 
-  if (text === "🛒 خرید VPN") {
-    startBuyFlow(chatId);
+  const buttonKey = matchButton(text);
+  if (buttonKey === "buttonBuy") {
+    startBuyFlow(chatId, lang);
     return;
   }
-  if (text === "🎁 تست رایگان") {
-    startTrialFlow(chatId);
+  if (buttonKey === "buttonTrial") {
+    startTrialFlow(chatId, lang);
     return;
   }
-  if (text === "📊 وضعیت من") {
-    await sendStatus(chatId);
+  if (buttonKey === "buttonStatus") {
+    await sendStatus(chatId, lang);
     return;
   }
-  if (text === "🔗 دعوت از دوستان") {
-    await sendReferralLink(chatId);
+  if (buttonKey === "buttonInvite") {
+    await sendReferralLink(chatId, lang);
     return;
   }
-  if (text === "ℹ️ راهنما") {
-    bot.sendMessage(
-      chatId,
-      "🛡️ *NodeShield VPN*\n\n«🛒 خرید VPN» - خرید کانفیگ جدید\n«🎁 تست رایگان» - ۱۰۰ مگابایت/۳ روز رایگان (یک بار، فقط VPN)\n«📊 وضعیت من» - آخرین وضعیت شناخته‌شده‌ی اکانتت\n«🔗 دعوت از دوستان» - لینک اختصاصی برای معرفی به دوستات\n\nپرداخت با USDT یا BNB روی BNB Smart Chain، مستقیم از کیف‌پول خودت.",
-      { parse_mode: "Markdown" },
-    );
+  if (buttonKey === "buttonLanguage") {
+    bot.sendMessage(chatId, t(lang, "languagePrompt"), { reply_markup: languageKeyboard() });
+    return;
+  }
+  if (buttonKey === "buttonHelp") {
+    bot.sendMessage(chatId, t(lang, "helpText"), { parse_mode: "Markdown" });
     return;
   }
 
@@ -649,10 +863,10 @@ bot.on("message", async (msg) => {
 
   if (session.step === "trialWallet") {
     if (!WALLET_RE.test(text)) {
-      bot.sendMessage(chatId, "آدرس کیف‌پول نامعتبره - باید 0x و بعدش 40 کاراکتر باشه.");
+      bot.sendMessage(chatId, t(lang, "invalidWallet"));
       return;
     }
-    bot.sendMessage(chatId, "⏳ در حال ساخت کانفیگ تست...");
+    bot.sendMessage(chatId, t(lang, "trialGenerating"));
     const { ok, json } = await callSiteApi("/api/vpn/free-trial", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -660,26 +874,24 @@ bot.on("message", async (msg) => {
     });
     if (!ok || !json?.ok) {
       const raw = json?.error || "";
-      let message = `❌ ${raw || "خطای ناشناخته"}`;
-      if (raw.includes("already used")) message = "❌ این کیف‌پول قبلاً از تست رایگانش استفاده کرده - یک بار برای هر کیف‌پوله.";
-      else if (raw.includes("daily")) message = "❌ سقف روزانه‌ی تست رایگان پر شده - بعداً دوباره امتحان کن.";
+      let message = t(lang, "trialUnknownError", { error: raw });
+      if (raw.includes("already used")) message = t(lang, "trialAlreadyUsed");
+      else if (raw.includes("daily")) message = t(lang, "trialDailyLimit");
       bot.sendMessage(chatId, message);
       resetSession(chatId);
       return;
     }
-    await sendDeviceConfigs(chatId, [{ label: "Trial", backend: "marzban", config: json.subscriptionUrl }]);
-    bot.sendMessage(
-      chatId,
-      `این کانفیگ تا *${new Date(json.expiresAt).toLocaleDateString()}* یا تا ${json.dataLimitMb}MB مصرف (هرکدوم زودتر) فعاله. اگه خوشت اومد، «🛒 خرید VPN» رو بزن.`,
-      { parse_mode: "Markdown" },
-    );
+    await sendDeviceConfigs(chatId, lang, [{ label: "Trial", backend: "marzban", config: json.subscriptionUrl }]);
+    bot.sendMessage(chatId, t(lang, "trialSuccessFooter", { date: new Date(json.expiresAt).toLocaleDateString(), mb: json.dataLimitMb }), {
+      parse_mode: "Markdown",
+    });
     resetSession(chatId);
     return;
   }
 
   if (session.step === "wallet") {
     if (!WALLET_RE.test(text)) {
-      bot.sendMessage(chatId, "آدرس کیف‌پول نامعتبره - باید 0x و بعدش 40 کاراکتر باشه.");
+      bot.sendMessage(chatId, t(lang, "invalidWallet"));
       return;
     }
     session.walletAddress = text;
@@ -690,29 +902,21 @@ bot.on("message", async (msg) => {
     const requiredUsd = session.deviceCount * unitPrice;
 
     if (session.method === "usdt") {
-      bot.sendMessage(
-        chatId,
-        `💵 دقیقاً *$${requiredUsd}* USDT (BEP-20، شبکه‌ی BNB Smart Chain) رو به این آدرس بفرست:\n\n\`${PAYMENT_ADDRESS}\`\n\nبعد از تأیید تراکنش، هش تراکنش (txHash) رو همینجا بفرست.`,
-        { parse_mode: "Markdown" },
-      );
+      bot.sendMessage(chatId, t(lang, "payUsdt", { amount: requiredUsd, address: PAYMENT_ADDRESS }), { parse_mode: "Markdown" });
     } else {
       const bnbPrice = await fetchBnbUsdPrice();
       const estimate = bnbPrice ? ((requiredUsd / bnbPrice) * 1.08).toFixed(6) : null;
-      bot.sendMessage(
-        chatId,
-        `💰 مبلغ لازم: *$${requiredUsd}*\n${estimate ? `تقریباً *${estimate} BNB* (بر اساس قیمت لحظه‌ای)` : "قیمت لحظه‌ای BNB در دسترس نیست - از کیف‌پولت معادل دلاریش رو حساب کن."}\n\nاین مبلغ رو به این آدرس بفرست:\n\n\`${PAYMENT_ADDRESS}\`\n\nمقدار واقعی موقع تأیید دوباره از قیمت لحظه‌ای زنجیره چک می‌شه، یه‌کم بیشتر بفرست تا مطمئن باشی رد نشه.\n\nبعد از تأیید تراکنش، هش تراکنش (txHash) رو همینجا بفرست.`,
-        { parse_mode: "Markdown" },
-      );
+      bot.sendMessage(chatId, t(lang, "payBnb", { amount: requiredUsd, estimate, address: PAYMENT_ADDRESS }), { parse_mode: "Markdown" });
     }
     return;
   }
 
   if (session.step === "txHash") {
     if (!TXHASH_RE.test(text)) {
-      bot.sendMessage(chatId, "هش تراکنش نامعتبره - باید 0x و بعدش 64 کاراکتر باشه.");
+      bot.sendMessage(chatId, t(lang, "invalidTxHash"));
       return;
     }
-    bot.sendMessage(chatId, "⏳ در حال بررسی پرداخت رو زنجیره...");
+    bot.sendMessage(chatId, t(lang, "checkingPayment"));
 
     const body = {
       walletAddress: session.walletAddress,
@@ -731,7 +935,7 @@ bot.on("message", async (msg) => {
     });
 
     if (!ok || !json?.ok) {
-      bot.sendMessage(chatId, `❌ تأیید پرداخت ناموفق بود: ${json?.error || "unknown error"}\n\nمی‌تونی دوباره همین هش رو بفرستی، یا /cancel بزنی و از اول شروع کنی.`);
+      bot.sendMessage(chatId, t(lang, "paymentFailed", { error: json?.error || "unknown error" }));
       return;
     }
 
@@ -740,19 +944,13 @@ bot.on("message", async (msg) => {
 
     const newDevices = account.devices.slice(-session.deviceCount);
     if (newDevices.length > 0 && newDevices.every((d) => d.provisionedAt)) {
-      bot.sendMessage(chatId, "✅ پرداخت تأیید شد! این‌م کانفیگ‌هات:");
-      await sendDeviceConfigs(chatId, newDevices);
-      bot.sendMessage(chatId, "دوستات رو هم با NodeShield آشنا کن 👇", { reply_markup: inviteReminderKeyboard() });
+      bot.sendMessage(chatId, t(lang, "paymentConfirmedHeader"));
+      await sendDeviceConfigs(chatId, lang, newDevices);
+      bot.sendMessage(chatId, t(lang, "inviteFriendsPrompt"), { reply_markup: inviteReminderKeyboard(lang) });
     } else {
-      bot.sendMessage(
-        chatId,
-        "✅ پرداخت تأیید شد، ولی کانفیگ هنوز در حال آماده‌سازیه. به ادمین اطلاع داده شد، به‌زودی برات می‌فرسته.",
-      );
+      bot.sendMessage(chatId, t(lang, "provisioningPending"));
       if (ADMIN_CHAT_ID) {
-        bot.sendMessage(
-          ADMIN_CHAT_ID,
-          `⏳ یه پرداخت تأیید شد ولی پرووایژن خودکار کامل نشد.\nکیف‌پول: ${session.walletAddress}\n\nبرای فعال‌سازی دستی: /provision ${session.walletAddress}`,
-        );
+        bot.sendMessage(ADMIN_CHAT_ID, t(getUserLang(ADMIN_CHAT_ID), "pendingProvisionAdminNotice", { wallet: session.walletAddress }));
       }
     }
 
