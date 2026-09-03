@@ -4,7 +4,7 @@ import { useSignMessage } from "wagmi";
 
 /** Client-side counterpart to lib/vpn/walletAuth.ts's message format. */
 function walletAuthMessage(timestamp: number): string {
-  return `dravon-vpn-account-action:${timestamp}`;
+  return `NodeShield VPN (smartchainnetwork.online) account action:${timestamp}`;
 }
 
 /** Signs a short, timestamped proof-of-wallet-control message - used for

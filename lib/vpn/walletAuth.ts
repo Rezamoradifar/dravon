@@ -3,7 +3,7 @@ import { verifyMessage } from "viem";
 const MAX_SIGNATURE_AGE_MS = 5 * 60_000;
 
 export function walletAuthMessage(timestamp: number): string {
-  return `dravon-vpn-account-action:${timestamp}`;
+  return `NodeShield VPN (smartchainnetwork.online) account action:${timestamp}`;
 }
 
 /**
