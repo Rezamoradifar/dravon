@@ -17,6 +17,7 @@ export const en = {
     learn: "Learning Center",
     products: "Products",
     vpn: "NodeShield VPN",
+    giftCards: "Gift Cards",
     news: "News",
     games: "Game Center",
     contractActions: "Contract Actions",
@@ -892,6 +893,19 @@ export const en = {
     credited: "{credited} credited points",
     yourLegs: "Your legs this week",
     legsValue: "Left ${left} · Right ${right}",
+  },
+  giftCardsPage: {
+    title: "Digital Gift Cards",
+    description: "Game top-ups, subscriptions, and app-store credit - paid with crypto.",
+    notLive: "Not live yet",
+    notLiveBody: "We're connecting a real gift card supplier so every code is genuine and instantly delivered. This page will list real, purchasable cards once that's wired up.",
+    comingSoon: "Coming soon",
+    category: {
+      gaming: "Game Top-ups",
+      subscriptions: "Subscriptions",
+      appstores: "Google Play / App Store",
+    },
+    paymentNote: "Once live: pay directly with USDT or BNB from your connected wallet, same as NodeShield.",
   },
   vpnPage: {
     title: "NodeShield",

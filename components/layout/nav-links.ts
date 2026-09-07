@@ -19,6 +19,7 @@ import {
   Gamepad2,
   Radio,
   Coins,
+  Gift,
 } from "lucide-react";
 
 export interface NavLink {
@@ -60,6 +61,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/learn", labelKey: "nav.learn", icon: GraduationCap },
       { href: "/products", labelKey: "nav.products", icon: LayoutGrid },
       { href: "/products/vpn", labelKey: "nav.vpn", icon: Shield },
+      { href: "/products/giftcards", labelKey: "nav.giftCards", icon: Gift },
       { href: "/news", labelKey: "nav.news", icon: Megaphone },
       { href: "/games", labelKey: "nav.games", icon: Gamepad2 },
       { href: "/help", labelKey: "nav.help", icon: HelpCircle },

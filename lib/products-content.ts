@@ -186,6 +186,16 @@ export const PRODUCTS: Product[] = [
     features: ["$1 per device per month", "Pay with USDT or BNB", "Unlimited bandwidth", "On-chain payment verification"],
     href: "/products/vpn",
   },
+  {
+    slug: "giftcards",
+    name: "Digital Gift Cards",
+    status: "Coming Soon",
+    tagline: "Game top-ups, subscriptions, and app-store credit - paid with crypto",
+    description:
+      "Real gift cards and digital top-ups (game credit, streaming subscriptions, Google Play/App Store) fulfilled through a real wholesale supplier and paid for with USDT or BNB. Stays marked Coming Soon until that supplier integration is live and a real order has been verified end to end.",
+    features: ["Game top-ups", "Streaming subscriptions", "Google Play / App Store credit", "Pay with USDT or BNB"],
+    href: "/products/giftcards",
+  },
 ];
 
 type LocalizedProductFields = Pick<Product, "name" | "tagline" | "description" | "features" | "statusLabel">;
@@ -322,6 +332,14 @@ export const PRODUCTS_FA: Record<string, LocalizedProductFields> = {
     description:
       "یه VPN مبتنی بر WireGuard با قیمت‌گذاری per-device: هر کانفیگ ماهی $۱، پهنای‌باند نامحدود، یک دستگاه به‌ازای هر کانفیگ - پرداخت با USDT یا BNB مستقیم از کیف‌پول متصل، بدون کارت، بدون درگاه واسطه. مسیر پرداخت و فعال‌سازی واقعیه؛ تا وقتی یه پرداخت واقعی کامل تست نشه، همچنان «به‌زودی» علامت‌گذاری می‌مونه.",
     features: ["ماهی $۱ به‌ازای هر دستگاه", "پرداخت با USDT یا BNB", "پهنای‌باند نامحدود", "تأیید پرداخت روی زنجیره"],
+  },
+  giftcards: {
+    name: "گیفت‌کارت دیجیتال",
+    statusLabel: "به‌زودی",
+    tagline: "شارژ گیم، اشتراک، و اعتبار اپ‌استور - پرداخت با کریپتو",
+    description:
+      "گیفت‌کارت و شارژ دیجیتال واقعی (شارژ گیم، اشتراک استریمینگ، اعتبار گوگل‌پلی/اپ‌استور) که از طریق یه تأمین‌کننده‌ی واقعی عمده‌فروشی تحویل داده می‌شه و با USDT یا BNB پرداخت می‌شه. تا وقتی این یکپارچگی زنده نشه و یه سفارش واقعی سرتاسر تست نشه، «به‌زودی» می‌مونه.",
+    features: ["شارژ گیم", "اشتراک استریمینگ", "اعتبار گوگل‌پلی / اپ‌استور", "پرداخت با USDT یا BNB"],
   },
 };
 

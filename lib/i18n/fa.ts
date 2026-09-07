@@ -19,6 +19,7 @@ export const fa: Dictionary = {
     learn: "مرکز آموزش",
     products: "محصولات",
     vpn: "NodeShield VPN",
+    giftCards: "گیفت‌کارت",
     news: "اخبار",
     games: "مرکز بازی",
     contractActions: "عملیات قرارداد",
@@ -894,6 +895,19 @@ export const fa: Dictionary = {
     credited: "{credited} امتیاز اعتباری",
     yourLegs: "دو پای شما این هفته",
     legsValue: "چپ: ${left} · راست: ${right}",
+  },
+  giftCardsPage: {
+    title: "گیفت‌کارت دیجیتال",
+    description: "شارژ گیم، اشتراک، و اعتبار اپ‌استور - پرداخت با کریپتو.",
+    notLive: "هنوز فعال نشده",
+    notLiveBody: "داریم به یه تأمین‌کننده‌ی واقعی گیفت‌کارت وصل می‌شیم تا هر کد واقعی و آنی تحویل داده بشه. این صفحه بعد از وصل‌شدن، کارت‌های واقعی و قابل‌خرید رو نشون می‌ده.",
+    comingSoon: "به‌زودی",
+    category: {
+      gaming: "شارژ گیم",
+      subscriptions: "اشتراک",
+      appstores: "گوگل پلی / اپ‌استور",
+    },
+    paymentNote: "بعد از فعال‌شدن: پرداخت مستقیم با USDT یا BNB از کیف‌پول متصل‌شده، دقیقاً مثل NodeShield.",
   },
   vpnPage: {
     title: "NodeShield",
