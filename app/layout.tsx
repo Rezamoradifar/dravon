@@ -7,6 +7,7 @@ import { Providers } from "./providers";
 import { AppShell } from "@/components/layout/app-shell";
 import { FloatingLights } from "@/components/layout/floating-lights";
 import { AskAssistant } from "@/components/assistant/ask-assistant";
+import { RegisterServiceWorker } from "@/components/pwa/register-service-worker";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const vazirmatn = Vazirmatn({ subsets: ["arabic"], variable: "--font-vazirmatn", display: "swap" });
@@ -29,6 +30,22 @@ export const metadata: Metadata = {
     description,
   },
   robots: { index: true, follow: true },
+  // Installable "app" shell for NodeShield VPN (see public/manifest.webmanifest)
+  // - opens straight to /products/vpn when launched from a home-screen icon.
+  // This doesn't grant real system-level VPN tunneling (only a native app
+  // could do that) - it makes buying/managing configs feel like an app; the
+  // actual tunnel still runs through the WireGuard/V2Ray client the buyer
+  // already has, same as every other config-based VPN reseller.
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+  appleWebApp: {
+    capable: true,
+    title: "NodeShield",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export const viewport: Viewport = {
@@ -131,6 +148,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             })();
           `}
         </Script>
+        <RegisterServiceWorker />
         <Providers>
           <FloatingLights />
           <AppShell maintenanceMode={MAINTENANCE_MODE}>{children}</AppShell>

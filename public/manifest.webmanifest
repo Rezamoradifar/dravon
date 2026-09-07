@@ -1,0 +1,15 @@
+{
+  "name": "NodeShield VPN",
+  "short_name": "NodeShield",
+  "description": "Buy and manage NodeShield VPN configs with your wallet - $1/device/month, unlimited bandwidth.",
+  "start_url": "/products/vpn",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#05070D",
+  "theme_color": "#05070D",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

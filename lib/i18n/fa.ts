@@ -941,6 +941,8 @@ export const fa: Dictionary = {
     afterPayNotice: "دستگاه‌ها معمولاً خودکار و ظرف چند لحظه بعد از پرداخت فعال می‌شن - پنل زیر رو چک کن.",
     telegramBotNotice: "تلگرام رو ترجیح می‌دی؟ می‌تونی مستقیم از ربات ما NodeShield رو بخری و مدیریت کنی - این‌جا حتی نیازی به وصل‌کردن کیف‌پول نداری.",
     telegramBotCta: "باز کردن ربات تلگرام",
+    installAppCta: "نصب اپلیکیشن",
+    installAppIosHint: "رو آیفون: دکمه‌ی Share رو بزن، بعد «Add to Home Screen» تا مثل یه اپ نصب بشه.",
   },
   vpnAdmin: {
     title: "اکانت‌های VPN",

@@ -939,6 +939,8 @@ export const en = {
     afterPayNotice: "Devices are usually provisioned automatically within moments of payment - check the panel below.",
     telegramBotNotice: "Prefer Telegram? Buy and manage NodeShield right from our bot - no wallet connect needed on this page.",
     telegramBotCta: "Open Telegram bot",
+    installAppCta: "Install App",
+    installAppIosHint: "On iPhone: tap Share, then \"Add to Home Screen\" to install this as an app.",
   },
   vpnAdmin: {
     title: "VPN Accounts",

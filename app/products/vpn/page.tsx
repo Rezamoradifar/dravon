@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MyVpnAccount } from "@/components/vpn/my-vpn-account";
+import { InstallAppButton } from "@/components/vpn/install-app-button";
 import { useVpnPayment, type PaymentIntent, type PaymentMethod } from "@/hooks/useVpnPayment";
 import { useVpnAccount } from "@/hooks/useVpnAccount";
 import { VPN_PAYMENTS_LIVE, PRICE_PER_DEVICE_USD, TELEGRAM_BOT_URL } from "@/lib/vpn/publicConfig";
@@ -277,6 +278,8 @@ export default function VpnProductPage() {
           </Button>
         </CardContent>
       </Card>
+
+      <InstallAppButton />
 
       {!VPN_PAYMENTS_LIVE ? (
         <Card className="card-glow border-dashed">
