@@ -3,7 +3,7 @@ import { NodeSSH } from "node-ssh";
 
 import { getVpnConfig, isServerConfigured, isMarzbanConfigured, type VpnConfig } from "@/lib/vpn/config";
 import { provisionMarzbanDevice } from "@/lib/vpn/marzban";
-import { dataPlanLimitBytes, getDataPlan, TRIAL_DATA_LIMIT_MB, TRIAL_DAYS } from "@/lib/vpn/types";
+import { dataPlanLimitBytes, getDataPlan, DEFAULT_LOCATION_ID, TRIAL_DATA_LIMIT_MB, TRIAL_DAYS } from "@/lib/vpn/types";
 import type { VpnBackend, VpnDevice } from "@/lib/vpn/store";
 
 const WALLET_RE = /^0x[0-9a-fA-F]{40}$/;
@@ -58,14 +58,16 @@ export async function provisionDevice(
   deviceIndex: number,
   backend: VpnBackend,
   dataPlanId?: string,
+  locationId?: string,
 ): Promise<ProvisionResult> {
   if (!WALLET_RE.test(walletAddress)) return { ok: false, error: "Invalid wallet address" };
   const label = `Device ${deviceIndex}`;
 
   if (backend === "wireguard") return provisionWireguardDevice(walletAddress, label);
 
+  const location = locationId ?? DEFAULT_LOCATION_ID;
   const config = getVpnConfig();
-  if (!isMarzbanConfigured(config)) return { ok: false, error: "Marzban is not configured yet" };
+  if (!isMarzbanConfigured(config, location)) return { ok: false, error: "Marzban is not configured yet for this location" };
 
   const plan = getDataPlan(dataPlanId);
 
@@ -73,7 +75,7 @@ export async function provisionDevice(
   // per-user expiry independent of our account-level one, so a device stays
   // usable even if re-provisioned slightly before our own expiry check runs.
   const expireUnix = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
-  const result = await provisionMarzbanDevice(walletAddress, deviceIndex, expireUnix, dataPlanLimitBytes(plan));
+  const result = await provisionMarzbanDevice(walletAddress, deviceIndex, expireUnix, dataPlanLimitBytes(plan), location);
   if (!result.ok) return { ok: false, error: result.error };
 
   return {
@@ -85,6 +87,7 @@ export async function provisionDevice(
       backend: "marzban",
       config: result.subscriptionUrl,
       dataPlanId: plan.id,
+      locationId: location,
     },
   };
 }

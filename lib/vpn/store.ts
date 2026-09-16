@@ -65,6 +65,9 @@ export async function applyPayment(params: {
   /** Marzban-only - see VpnAccount.dataPlanId. Undefined leaves the
    * account's existing plan default (or unset, for WireGuard) untouched. */
   dataPlanId?: string;
+  /** Marzban-only - see VpnAccount.locationId. Undefined leaves the
+   * account's existing location default (or unset, for WireGuard) untouched. */
+  locationId?: string;
 }): Promise<VpnAccount> {
   const existing = await getAccount(params.walletAddress);
   const now = Date.now();
@@ -82,6 +85,7 @@ export async function applyPayment(params: {
     // "upgrade") for whatever device(s) it's paying for; already-
     // provisioned devices keep their own recorded dataPlanId regardless.
     dataPlanId: params.dataPlanId ?? existing?.dataPlanId,
+    locationId: params.locationId ?? existing?.locationId,
     devices: existing?.devices ?? [],
     payments: [
       ...(existing?.payments ?? []),

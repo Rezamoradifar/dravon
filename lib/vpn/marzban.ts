@@ -1,4 +1,5 @@
-import { getVpnConfig, isMarzbanConfigured } from "@/lib/vpn/config";
+import { getVpnConfig, isMarzbanConfigured, type MarzbanServerConfig } from "@/lib/vpn/config";
+import { DEFAULT_LOCATION_ID } from "@/lib/vpn/types";
 
 interface MarzbanInboundInfo {
   tag: string;
@@ -7,21 +8,19 @@ interface MarzbanInboundInfo {
 
 type MarzbanInboundsByProtocol = Record<string, MarzbanInboundInfo[]>;
 
-async function getMarzbanToken(): Promise<string> {
-  const config = getVpnConfig();
-  const res = await fetch(`${config.marzban.apiUrl}/api/admin/token`, {
+async function getMarzbanToken(server: MarzbanServerConfig): Promise<string> {
+  const res = await fetch(`${server.apiUrl}/api/admin/token`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ username: config.marzban.username!, password: config.marzban.password! }),
+    body: new URLSearchParams({ username: server.username, password: server.password }),
   });
   if (!res.ok) throw new Error(`Marzban auth failed (${res.status})`);
   const json = await res.json();
   return json.access_token as string;
 }
 
-async function getMarzbanInbounds(token: string): Promise<MarzbanInboundsByProtocol> {
-  const config = getVpnConfig();
-  const res = await fetch(`${config.marzban.apiUrl}/api/inbounds`, {
+async function getMarzbanInbounds(server: MarzbanServerConfig, token: string): Promise<MarzbanInboundsByProtocol> {
+  const res = await fetch(`${server.apiUrl}/api/inbounds`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error(`Marzban inbounds fetch failed (${res.status})`);
@@ -50,19 +49,26 @@ export type MarzbanResult =
  * `dataLimitBytes` caps total transfer for this Marzban user - 0 means
  * unlimited (Marzban's own convention). Used for both the paid GB-based
  * data plans and the free 100MB trial.
+ *
+ * `locationId` picks which Marzban server (see VPN_LOCATIONS /
+ * lib/vpn/config.ts) actually gets the API calls - defaults to the
+ * original single server ("us") so every existing caller keeps working
+ * unchanged.
  */
 export async function provisionMarzbanDevice(
   walletAddress: string,
   deviceIndex: number | string,
   expireUnixSeconds: number,
   dataLimitBytes: number = 0,
+  locationId: string = DEFAULT_LOCATION_ID,
 ): Promise<MarzbanResult> {
   const config = getVpnConfig();
-  if (!isMarzbanConfigured(config)) return { ok: false, error: "Marzban is not configured yet" };
+  if (!isMarzbanConfigured(config, locationId)) return { ok: false, error: "Marzban is not configured yet for this location" };
+  const server = config.marzban[locationId]!;
 
   try {
-    const token = await getMarzbanToken();
-    const inboundsByProtocol = await getMarzbanInbounds(token);
+    const token = await getMarzbanToken(server);
+    const inboundsByProtocol = await getMarzbanInbounds(server, token);
 
     if (Object.keys(inboundsByProtocol).length === 0) {
       return { ok: false, error: "No inbounds configured on the Marzban server yet" };
@@ -76,7 +82,7 @@ export async function provisionMarzbanDevice(
     }
 
     const username = marzbanUsername(walletAddress, deviceIndex);
-    const res = await fetch(`${config.marzban.apiUrl}/api/user`, {
+    const res = await fetch(`${server.apiUrl}/api/user`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({
@@ -93,19 +99,19 @@ export async function provisionMarzbanDevice(
       // A device that already exists for this wallet (e.g. a renewal) is
       // fine - fetch its existing subscription instead of failing.
       if (res.status === 409) {
-        const existing = await fetch(`${config.marzban.apiUrl}/api/user/${username}`, {
+        const existing = await fetch(`${server.apiUrl}/api/user/${username}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (existing.ok) {
           const json = await existing.json();
-          return { ok: true, subscriptionUrl: `${config.marzban.apiUrl}${json.subscription_url}` };
+          return { ok: true, subscriptionUrl: `${server.apiUrl}${json.subscription_url}` };
         }
       }
       return { ok: false, error: `Marzban user creation failed (${res.status}): ${await res.text()}` };
     }
 
     const json = await res.json();
-    return { ok: true, subscriptionUrl: `${config.marzban.apiUrl}${json.subscription_url}` };
+    return { ok: true, subscriptionUrl: `${server.apiUrl}${json.subscription_url}` };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Unknown Marzban error" };
   }

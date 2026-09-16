@@ -30,6 +30,11 @@ export interface VpnDevice {
    * (see MARZBAN_DATA_PLANS). Absent for WireGuard devices and for older
    * records from before data plans existed (those are all "unlimited"). */
   dataPlanId?: string;
+  /** Marzban-only - which server location this device actually got
+   * provisioned on (see VPN_LOCATIONS). Absent for WireGuard devices and
+   * for older records from before multi-location support existed (those
+   * are all "us", the original single server). */
+  locationId?: string;
 }
 
 /** A GB-capped alternative to the flat unlimited price, offered only for
@@ -65,6 +70,39 @@ export const MARZBAN_DATA_PLANS: DataPlan[] = [
 ];
 
 export const DEFAULT_DATA_PLAN_ID = "unlimited";
+
+/** A server location a Marzban device can be provisioned on. WireGuard has
+ * no multi-location support - it stays the single server configured via
+ * VPN_SERVER_HOST regardless of this list. `available` is NOT stored here -
+ * it depends on whether that location's Marzban credentials are actually
+ * configured (see lib/vpn/config.ts), which only the server can check; the
+ * public /api/vpn/locations route is the single source of truth both the
+ * website and the bot read for real availability. */
+export interface VpnLocation {
+  id: string;
+  code: string;
+  flag: string;
+  name: string;
+}
+
+export const VPN_LOCATIONS: VpnLocation[] = [
+  { id: "us", code: "US", flag: "🇺🇸", name: "United States" },
+  { id: "de", code: "DE", flag: "🇩🇪", name: "Germany" },
+  { id: "nl", code: "NL", flag: "🇳🇱", name: "Netherlands" },
+  { id: "gb", code: "GB", flag: "🇬🇧", name: "United Kingdom" },
+  { id: "sg", code: "SG", flag: "🇸🇬", name: "Singapore" },
+  { id: "jp", code: "JP", flag: "🇯🇵", name: "Japan" },
+  { id: "ca", code: "CA", flag: "🇨🇦", name: "Canada" },
+  { id: "fr", code: "FR", flag: "🇫🇷", name: "France" },
+  { id: "ae", code: "AE", flag: "🇦🇪", name: "UAE" },
+  { id: "tr", code: "TR", flag: "🇹🇷", name: "Turkey" },
+];
+
+export const DEFAULT_LOCATION_ID = "us";
+
+export function getLocation(id: string | undefined): VpnLocation {
+  return VPN_LOCATIONS.find((l) => l.id === id) ?? VPN_LOCATIONS.find((l) => l.id === DEFAULT_LOCATION_ID)!;
+}
 
 export function getDataPlan(id: string | undefined): DataPlan {
   return MARZBAN_DATA_PLANS.find((p) => p.id === id) ?? MARZBAN_DATA_PLANS.find((p) => p.id === DEFAULT_DATA_PLAN_ID)!;
@@ -119,6 +157,12 @@ export interface VpnAccount {
    * actual Marzban data_limit - those keep whatever they were created
    * with (see VpnDevice.dataPlanId for the per-device record of that). */
   dataPlanId?: string;
+  /** Marzban-only - the server location to use for the *next* device(s)
+   * this account still owes (see VPN_LOCATIONS). Same "not fixed forever"
+   * rule as dataPlanId: a later payment can pick a different location;
+   * already-provisioned devices keep whatever they were actually created
+   * on (see VpnDevice.locationId). */
+  locationId?: string;
   devices: VpnDevice[];
   payments: VpnPayment[];
 }

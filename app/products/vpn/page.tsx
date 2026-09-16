@@ -15,25 +15,36 @@ import { useVpnPayment, type PaymentIntent, type PaymentMethod } from "@/hooks/u
 import { useVpnAccount } from "@/hooks/useVpnAccount";
 import { VPN_PAYMENTS_LIVE, PRICE_PER_DEVICE_USD, TELEGRAM_BOT_URL } from "@/lib/vpn/publicConfig";
 import { useTranslation } from "@/contexts/language-context";
-import { backendDisplayLabel, type VpnAccount, type VpnBackend } from "@/lib/vpn/types";
+import { backendDisplayLabel, VPN_LOCATIONS, type VpnAccount, type VpnBackend } from "@/lib/vpn/types";
 
 const MAX_DEVICES = 10;
 
-/** Only "US" actually maps to a running server today (185.172.64.24,
- * geolocated to the United States) - the rest are shown as a roadmap, not a
- * working choice, so nobody thinks picking one changes anything yet. */
-const VPN_COUNTRIES: { code: string; flag: string; name: string; available: boolean }[] = [
-  { code: "US", flag: "🇺🇸", name: "United States", available: true },
-  { code: "DE", flag: "🇩🇪", name: "Germany", available: false },
-  { code: "NL", flag: "🇳🇱", name: "Netherlands", available: false },
-  { code: "GB", flag: "🇬🇧", name: "United Kingdom", available: false },
-  { code: "SG", flag: "🇸🇬", name: "Singapore", available: false },
-  { code: "JP", flag: "🇯🇵", name: "Japan", available: false },
-  { code: "CA", flag: "🇨🇦", name: "Canada", available: false },
-  { code: "FR", flag: "🇫🇷", name: "France", available: false },
-  { code: "AE", flag: "🇦🇪", name: "UAE", available: false },
-  { code: "TR", flag: "🇹🇷", name: "Turkey", available: false },
-];
+/** Purely decorative here (no click handler - picking a country doesn't
+ * change anything about the purchase yet). `available` starts from the
+ * marketed location list (only "US" assumed live) and is refined after
+ * mount from /api/vpn/locations - the same real-config check the Telegram
+ * bot's actual country picker uses - so a newly-configured server shows as
+ * live here without another code change. */
+function useVpnCountries() {
+  const [countries, setCountries] = React.useState(
+    VPN_LOCATIONS.map((location) => ({ ...location, available: location.id === "us" })),
+  );
+
+  React.useEffect(() => {
+    let cancelled = false;
+    fetch("/api/vpn/locations")
+      .then((res) => res.json())
+      .then((json) => {
+        if (!cancelled && json?.ok) setCountries(json.locations);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return countries;
+}
 
 function PurchaseCard({ account, onPaid }: { account: VpnAccount | null; onPaid: () => void }) {
   const { pay, phase, error, reset, requiredUsd, estimatedBnb } = useVpnPayment();
@@ -45,6 +56,7 @@ function PurchaseCard({ account, onPaid }: { account: VpnAccount | null; onPaid:
   const [method, setMethod] = React.useState<PaymentMethod>("usdt");
   const [backend, setBackend] = React.useState<VpnBackend>("wireguard");
   const isBusy = phase === "paying" || phase === "confirming" || phase === "verifying";
+  const countries = useVpnCountries();
 
   // Once the account loads (e.g. right after this page mounts), default to
   // "renew" for an existing buyer instead of leaving the first-purchase
@@ -71,9 +83,9 @@ function PurchaseCard({ account, onPaid }: { account: VpnAccount | null; onPaid:
         <div className="space-y-1.5">
           <span className="text-sm text-muted-foreground">{t("vpnPage.serverLocation")}</span>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-            {VPN_COUNTRIES.map((country) => (
+            {countries.map((country) => (
               <div
-                key={country.code}
+                key={country.id}
                 className={cn(
                   "relative flex flex-col items-center gap-0.5 rounded-lg border px-2 py-2 text-center text-xs",
                   country.available

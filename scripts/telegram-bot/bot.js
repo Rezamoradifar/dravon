@@ -52,11 +52,13 @@
  *   telegram-bot-lang.jsonl       - chatId -> chosen language ("en"/"fa").
  *                                   Defaults to "en" when absent.
  *
- * Only one VPN server exists today (185.172.64.24, geolocated to the
- * United States) - the country picker below shows nine more as an honest
- * roadmap ("launching soon"), never as a working choice, so nobody thinks
- * picking one changes anything yet. This mirrors the website's own
- * app/products/vpn/page.tsx country picker exactly.
+ * The country picker fetches its list (and real per-country availability)
+ * from /api/vpn/locations - the same source the website's decorative one
+ * reads - so a newly-configured Marzban server (see lib/vpn/config.ts)
+ * shows up here automatically, with no code change. Selecting a country
+ * sends its id along with the purchase as `locationId`, provisioning that
+ * device on that specific server; picking an unavailable one just shows a
+ * "launching soon" alert.
  */
 
 const fs = require("fs");
@@ -76,19 +78,6 @@ const MAX_DEVICES = 10;
 const DEFAULT_LANG = "en";
 const WALLET_RE = /^0x[0-9a-fA-F]{40}$/;
 const TXHASH_RE = /^0x[0-9a-fA-F]{64}$/;
-
-const COUNTRIES = [
-  { code: "US", flag: "🇺🇸", name: "United States", available: true },
-  { code: "DE", flag: "🇩🇪", name: "Germany", available: false },
-  { code: "NL", flag: "🇳🇱", name: "Netherlands", available: false },
-  { code: "GB", flag: "🇬🇧", name: "United Kingdom", available: false },
-  { code: "SG", flag: "🇸🇬", name: "Singapore", available: false },
-  { code: "JP", flag: "🇯🇵", name: "Japan", available: false },
-  { code: "CA", flag: "🇨🇦", name: "Canada", available: false },
-  { code: "FR", flag: "🇫🇷", name: "France", available: false },
-  { code: "AE", flag: "🇦🇪", name: "UAE", available: false },
-  { code: "TR", flag: "🇹🇷", name: "Turkey", available: false },
-];
 
 if (!TOKEN) {
   console.error("TELEGRAM_BOT_TOKEN is not set - refusing to start.");
@@ -125,7 +114,7 @@ const T = {
     salesNotLive: "Sales aren't live yet - check back later.",
     chooseCountry: "🌍 Which country?",
     countrySoonLabel: " (soon)",
-    countryChosen: "🌍 Country: *🇺🇸 United States*\n\n🖥️ How many configs do you want?",
+    countryChosen: (p) => `🌍 Country: *${p.flag} ${p.name}*\n\n🖥️ How many configs do you want?`,
     deviceCountChosen: (p) => `🖥️ Count: *${p.count}*\n\n🔐 Which type?`,
     backendWireguard: "🔒 WireGuard",
     backendMarzban: "🌐 VPN (V2Ray/Shadowsocks)",
@@ -195,7 +184,7 @@ const T = {
     salesNotLive: "فروش هنوز فعال نشده - بعداً دوباره امتحان کن.",
     chooseCountry: "🌍 کدوم کشور؟",
     countrySoonLabel: " (به‌زودی)",
-    countryChosen: "🌍 کشور: *🇺🇸 United States*\n\n🖥️ چند تا کانفیگ می‌خوای؟",
+    countryChosen: (p) => `🌍 کشور: *${p.flag} ${p.name}*\n\n🖥️ چند تا کانفیگ می‌خوای؟`,
     deviceCountChosen: (p) => `🖥️ تعداد: *${p.count}*\n\n🔐 کدوم نوع؟`,
     backendWireguard: "🔒 WireGuard",
     backendMarzban: "🌐 VPN (V2Ray/Shadowsocks)",
@@ -415,6 +404,11 @@ async function fetchDataPlans() {
   return ok && json?.ok ? json.plans : [];
 }
 
+async function fetchLocations() {
+  const { ok, json } = await callSiteApi("/api/vpn/locations", {});
+  return ok && json?.ok ? json.locations : [];
+}
+
 async function sendDeviceConfigs(chatId, lang, devices) {
   for (const device of devices) {
     const backendLabel = device.backend === "wireguard" ? "WireGuard" : "VPN";
@@ -433,13 +427,13 @@ async function sendDeviceConfigs(chatId, lang, devices) {
   }
 }
 
-function countryKeyboard(lang) {
+function countryKeyboard(lang, locations) {
   const rows = [];
-  for (let i = 0; i < COUNTRIES.length; i += 2) {
+  for (let i = 0; i < locations.length; i += 2) {
     rows.push(
-      COUNTRIES.slice(i, i + 2).map((c) => ({
+      locations.slice(i, i + 2).map((c) => ({
         text: `${c.flag} ${c.name}${c.available ? "" : t(lang, "countrySoonLabel")}`,
-        callback_data: c.available ? `country_${c.code}` : `countrysoon_${c.code}`,
+        callback_data: c.available ? `country_${c.id}` : `countrysoon_${c.id}`,
       })),
     );
   }
@@ -484,13 +478,14 @@ function methodKeyboard(lang) {
   };
 }
 
-function startBuyFlow(chatId, lang) {
+async function startBuyFlow(chatId, lang) {
   if (!PAYMENT_ADDRESS) {
     bot.sendMessage(chatId, t(lang, "salesNotLive"));
     return;
   }
-  sessions.set(chatId, { step: "country" });
-  bot.sendMessage(chatId, t(lang, "chooseCountry"), { reply_markup: countryKeyboard(lang) });
+  const locations = await fetchLocations();
+  sessions.set(chatId, { step: "country", _locations: locations });
+  bot.sendMessage(chatId, t(lang, "chooseCountry"), { reply_markup: countryKeyboard(lang, locations) });
 }
 
 function startTrialFlow(chatId, lang) {
@@ -723,7 +718,7 @@ bot.on("callback_query", async (query) => {
   }
 
   if (data === "buy_start") {
-    startBuyFlow(chatId, lang);
+    await startBuyFlow(chatId, lang);
     return;
   }
 
@@ -749,9 +744,11 @@ bot.on("callback_query", async (query) => {
   if (!session) return;
 
   if (data.startsWith("country_") && session.step === "country") {
-    session.country = data.slice(8);
+    const locationId = data.slice(8);
+    const location = (session._locations || []).find((l) => l.id === locationId);
+    session.locationId = locationId;
     session.step = "deviceCount";
-    bot.editMessageText(t(lang, "countryChosen"), {
+    bot.editMessageText(t(lang, "countryChosen", { flag: location?.flag ?? "🌍", name: location?.name ?? locationId }), {
       chat_id: chatId,
       message_id: query.message.message_id,
       parse_mode: "Markdown",
@@ -834,7 +831,7 @@ bot.on("message", async (msg) => {
 
   const buttonKey = matchButton(text);
   if (buttonKey === "buttonBuy") {
-    startBuyFlow(chatId, lang);
+    await startBuyFlow(chatId, lang);
     return;
   }
   if (buttonKey === "buttonTrial") {
@@ -927,6 +924,7 @@ bot.on("message", async (msg) => {
       intent: "add",
     };
     if (session.backend === "marzban" && session.dataPlanId) body.dataPlanId = session.dataPlanId;
+    if (session.backend === "marzban" && session.locationId) body.locationId = session.locationId;
 
     const { ok, json } = await callSiteApi("/api/vpn/verify-payment", {
       method: "POST",

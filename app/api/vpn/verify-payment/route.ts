@@ -8,7 +8,7 @@ import { getVpnConfig, isPaymentConfigured, isServerConfigured, isMarzbanConfigu
 import { provisionDevice } from "@/lib/vpn/provision";
 import { vpnServerPublicClient } from "@/lib/vpn/serverPublicClient";
 import { addDevice, applyPayment, findByTxHash, getAccount } from "@/lib/vpn/store";
-import { getDataPlan, MARZBAN_DATA_PLANS } from "@/lib/vpn/types";
+import { getDataPlan, MARZBAN_DATA_PLANS, VPN_LOCATIONS } from "@/lib/vpn/types";
 import { bsc } from "viem/chains";
 
 export const runtime = "nodejs";
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { walletAddress, txHash, method, deviceCount, backend, intent, dataPlanId } = (body ?? {}) as {
+  const { walletAddress, txHash, method, deviceCount, backend, intent, dataPlanId, locationId } = (body ?? {}) as {
     walletAddress?: unknown;
     txHash?: unknown;
     method?: unknown;
@@ -40,6 +40,7 @@ export async function POST(request: Request) {
     backend?: unknown;
     intent?: unknown;
     dataPlanId?: unknown;
+    locationId?: unknown;
   };
 
   if (typeof walletAddress !== "string" || !isAddress(walletAddress)) {
@@ -68,6 +69,16 @@ export async function POST(request: Request) {
     }
     if (typeof dataPlanId !== "string" || !MARZBAN_DATA_PLANS.some((p) => p.id === dataPlanId)) {
       return NextResponse.json({ error: "Invalid dataPlanId" }, { status: 400 });
+    }
+  }
+  // Server location is likewise Marzban-only - WireGuard is always the
+  // single VPN_SERVER_HOST server regardless of this field.
+  if (locationId !== undefined) {
+    if (backend !== "marzban") {
+      return NextResponse.json({ error: "locationId is only valid for the 'marzban' backend" }, { status: 400 });
+    }
+    if (typeof locationId !== "string" || !VPN_LOCATIONS.some((l) => l.id === locationId)) {
+      return NextResponse.json({ error: "Invalid locationId" }, { status: 400 });
     }
   }
 
@@ -203,16 +214,24 @@ export async function POST(request: Request) {
     chargeDeviceCount,
     backend,
     dataPlanId: backend === "marzban" ? (dataPlanId as string | undefined) : undefined,
+    locationId: backend === "marzban" ? (locationId as string | undefined) : undefined,
   });
 
   // Provision whatever devices this payment brought the account up to,
   // capped per-call - if the backend isn't configured, or a provisioning
   // call fails partway through, the account simply stays under its
   // paidDeviceCount and the admin panel's fallback list picks up the rest.
-  const backendReady = account.backend === "wireguard" ? isServerConfigured(config) : isMarzbanConfigured(config);
+  const backendReady =
+    account.backend === "wireguard" ? isServerConfigured(config) : isMarzbanConfigured(config, account.locationId);
   if (backendReady) {
     while (account.devices.length < account.paidDeviceCount && account.devices.length < MAX_DEVICES_PER_CALL) {
-      const result = await provisionDevice(walletAddress, account.devices.length + 1, account.backend, account.dataPlanId);
+      const result = await provisionDevice(
+        walletAddress,
+        account.devices.length + 1,
+        account.backend,
+        account.dataPlanId,
+        account.locationId,
+      );
       if (!result.ok) break;
       account = await addDevice(walletAddress, result.device);
     }
