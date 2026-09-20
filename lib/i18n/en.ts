@@ -18,6 +18,7 @@ export const en = {
     products: "Products",
     vpn: "NodeShield VPN",
     giftCards: "Gift Cards",
+    promptGuide: "Prompt Guide",
     news: "News",
     games: "Game Center",
     contractActions: "Contract Actions",
@@ -906,6 +907,13 @@ export const en = {
       appstores: "Google Play / App Store",
     },
     paymentNote: "Once live: pay directly with USDT or BNB from your connected wallet, same as NodeShield.",
+  },
+  promptGuidePage: {
+    title: "Prompt Writing Guide",
+    description: "Free lessons and files on writing better AI prompts - added directly by the site operator.",
+    emptyState: "No lessons yet",
+    emptyStateBody: "The operator hasn't added any files here yet. Check back soon - this page fills up as real lessons (PDFs, videos, files) are added.",
+    open: "Open",
   },
   vpnPage: {
     title: "NodeShield",

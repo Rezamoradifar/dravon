@@ -196,6 +196,16 @@ export const PRODUCTS: Product[] = [
     features: ["Game top-ups", "Streaming subscriptions", "Google Play / App Store credit", "Pay with USDT or BNB"],
     href: "/products/giftcards",
   },
+  {
+    slug: "prompt-guide",
+    name: "Prompt Writing Guide",
+    status: "Educational",
+    tagline: "Free lessons and files on writing better AI prompts",
+    description:
+      "A free, growing library of prompt-writing lessons - PDFs, videos and other files - added by the operator directly. No payment, no account needed.",
+    features: ["Free to everyone", "PDF, video and file downloads", "Grows as new lessons are added"],
+    href: "/products/prompt-guide",
+  },
 ];
 
 type LocalizedProductFields = Pick<Product, "name" | "tagline" | "description" | "features" | "statusLabel">;
@@ -340,6 +350,14 @@ export const PRODUCTS_FA: Record<string, LocalizedProductFields> = {
     description:
       "گیفت‌کارت و شارژ دیجیتال واقعی (شارژ گیم، اشتراک استریمینگ، اعتبار گوگل‌پلی/اپ‌استور) که از طریق یه تأمین‌کننده‌ی واقعی عمده‌فروشی تحویل داده می‌شه و با USDT یا BNB پرداخت می‌شه. تا وقتی این یکپارچگی زنده نشه و یه سفارش واقعی سرتاسر تست نشه، «به‌زودی» می‌مونه.",
     features: ["شارژ گیم", "اشتراک استریمینگ", "اعتبار گوگل‌پلی / اپ‌استور", "پرداخت با USDT یا BNB"],
+  },
+  "prompt-guide": {
+    name: "راهنمای پرامت‌نویسی",
+    statusLabel: "آموزشی",
+    tagline: "درس‌ها و فایل‌های رایگان برای نوشتن پرامت بهتر",
+    description:
+      "یه کتابخونه‌ی رایگان و رو به رشد از درس‌های پرامت‌نویسی - PDF، ویدیو و فایل‌های دیگه - که مستقیم توسط مدیر سایت اضافه می‌شن. بدون پرداخت، بدون نیاز به حساب کاربری.",
+    features: ["رایگان برای همه", "دانلود PDF، ویدیو و فایل", "با اضافه شدن درس جدید بزرگ‌تر می‌شه"],
   },
 };
 

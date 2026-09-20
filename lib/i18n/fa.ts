@@ -20,6 +20,7 @@ export const fa: Dictionary = {
     products: "محصولات",
     vpn: "NodeShield VPN",
     giftCards: "گیفت‌کارت",
+    promptGuide: "راهنمای پرامت",
     news: "اخبار",
     games: "مرکز بازی",
     contractActions: "عملیات قرارداد",
@@ -908,6 +909,13 @@ export const fa: Dictionary = {
       appstores: "گوگل پلی / اپ‌استور",
     },
     paymentNote: "بعد از فعال‌شدن: پرداخت مستقیم با USDT یا BNB از کیف‌پول متصل‌شده، دقیقاً مثل NodeShield.",
+  },
+  promptGuidePage: {
+    title: "راهنمای پرامت‌نویسی",
+    description: "درس‌ها و فایل‌های رایگان برای نوشتن پرامت بهتر - مستقیم توسط مدیر سایت اضافه می‌شن.",
+    emptyState: "هنوز درسی اضافه نشده",
+    emptyStateBody: "مدیر سایت هنوز فایلی اینجا نذاشته. به‌زودی سر بزن - این صفحه با اضافه شدن درس‌های واقعی (PDF، ویدیو، فایل) پر می‌شه.",
+    open: "باز کردن",
   },
   vpnPage: {
     title: "NodeShield",
