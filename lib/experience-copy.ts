@@ -1,7 +1,7 @@
 import { useTranslation } from "@/contexts/language-context";
 
 const en = {
-  ecosystem: "THE DRAVON ECOSYSTEM",
+  ecosystem: "SMART CONTRACT ECOSYSTEM",
   home: "Home",
   explore: "Explore products",
   dashboard: "Open dashboard",
@@ -32,7 +32,7 @@ const en = {
   collection: "THE DIGITAL COLLECTION",
   productsTitle: "Useful by design.",
   productsBody:
-    "Discover the tools, guides and digital services in the Dravon ecosystem. Availability is shown on every product.",
+    "Discover the tools, guides and digital services in the smart contract ecosystem. Availability is shown on every product.",
   allProducts: "All products",
   tools: "Web3 tools",
   learning: "Learning",
@@ -63,7 +63,7 @@ const en = {
   faqLabel: "GOOD TO KNOW",
   faqLink: "Visit the help center",
   ctaTitle: "Everything starts with a little curiosity.",
-  ctaBody: "Find your way around Dravon. Your workspace is ready when you are.",
+  ctaBody: "Explore the ecosystem. Your workspace is ready when you are.",
   footer: "A connected space for Web3.",
   platform: "Platform",
   resources: "Resources",
@@ -100,19 +100,19 @@ const en = {
   activity: "Network overview",
   activityHint: "Data is read from the configured smart contracts.",
   supportTitle: "Need a hand?",
-  supportBody: "Find your next step in the Dravon guide.",
+  supportBody: "Find your next step in the ecosystem guide.",
   menu: "Open navigation",
   closeMenu: "Close navigation",
   navLabel: "Main navigation",
   skip: "Skip to content",
   mobileNav: "Quick navigation",
-  catalogEyebrow: "DISCOVER DRAVON",
+  catalogEyebrow: "EXPLORE THE ECOSYSTEM",
   catalogTitle: "One ecosystem. More possibilities.",
   catalogBody:
     "From everyday tools to your next new skill. Find what you need, and see what’s on the way.",
   productDetails: "What’s included",
   collectionAlt:
-    "Glass shield, metal digital cards and a book representing Dravon’s digital collection",
+    "Glass shield, metal digital cards and a book representing the ecosystem’s digital collection",
   networkAlt:
     "Blue glass and titanium loop surrounding connected network nodes",
   educationTitle: "A little knowledge. A new perspective.",
@@ -121,7 +121,7 @@ const en = {
 };
 type Copy = { [K in keyof typeof en]: string };
 const fa: Copy = {
-  ecosystem: "دنیای دراوون",
+  ecosystem: "اکوسیستم قرارداد هوشمند",
   home: "خانه",
   explore: "کشف محصولات",
   dashboard: "ورود به داشبورد",
@@ -146,10 +146,10 @@ const fa: Copy = {
   networkBody: "شبکهٔ معرفی و ارتباط‌های آن را در نمایی تعاملی دنبال کنید.",
   academy: "با ریتم خودتان یاد بگیرید",
   academyBody: "راهنماهای کاربردی وب۳، امنیت کیف پول و پرامت‌نویسی را بخوانید.",
-  collection: "مجموعهٔ دیجیتال دراوون",
+  collection: "مجموعهٔ دیجیتال اکوسیستم",
   productsTitle: "زیبا، ساده، کاربردی.",
   productsBody:
-    "ابزارها، راهنماها و خدمات دیجیتال دراوون را کشف کنید. وضعیت دسترسی هر محصول مشخص است.",
+    "ابزارها، راهنماها و خدمات دیجیتال اکوسیستم را کشف کنید. وضعیت دسترسی هر محصول مشخص است.",
   allProducts: "همهٔ محصولات",
   tools: "ابزارهای وب۳",
   learning: "آموزش",
@@ -180,7 +180,7 @@ const fa: Copy = {
   faqLabel: "خوب است بدانید",
   faqLink: "رفتن به مرکز راهنما",
   ctaTitle: "یک شروع تازه، با کمی کنجکاوی.",
-  ctaBody: "دراوون را کشف کنید. فضای کار شما منتظرتان است.",
+  ctaBody: "اکوسیستم را کشف کنید. فضای کار شما منتظرتان است.",
   footer: "فضایی به‌هم‌پیوسته برای وب۳.",
   platform: "پلتفرم",
   resources: "منابع",
@@ -197,7 +197,7 @@ const fa: Copy = {
   disclaimer:
     "تراکنش‌های روی زنجیره کارمزد و ریسک دارند. پیش از امضا، جزئیات هر اقدام را بررسی کنید.",
   welcome: "فضای کار شما",
-  welcomeTitle: "به دراوون خوش آمدید.",
+  welcomeTitle: "به اکوسیستم خوش آمدید.",
   welcomeBody: "نمایی روشن از شبکه، با دسترسی سریع به کارهایی که نیاز دارید.",
   quick: "دسترسی سریع",
   quickBody: "مسیرهای پرکاربرد، همیشه در دسترس شما.",
@@ -216,19 +216,19 @@ const fa: Copy = {
   activity: "نمای کلی شبکه",
   activityHint: "اطلاعات از قراردادهای هوشمند تنظیم‌شده خوانده می‌شود.",
   supportTitle: "راهنمایی می‌خواهید؟",
-  supportBody: "قدم بعدی را در راهنمای دراوون پیدا کنید.",
+  supportBody: "قدم بعدی را در راهنمای اکوسیستم پیدا کنید.",
   menu: "بازکردن منو",
   closeMenu: "بستن منو",
   navLabel: "منوی اصلی",
   skip: "رفتن به محتوای اصلی",
   mobileNav: "دسترسی سریع موبایل",
-  catalogEyebrow: "کشف دراوون",
+  catalogEyebrow: "کشف اکوسیستم",
   catalogTitle: "یک دنیا، فرصت‌های تازه.",
   catalogBody:
     "از ابزارهای روزمره تا مهارتی تازه؛ آنچه نیاز دارید پیدا کنید و با محصولات آینده آشنا شوید.",
   productDetails: "امکانات محصول",
   collectionAlt:
-    "سپر شیشه‌ای، کارت‌های فلزی و کتاب؛ نمادی از مجموعهٔ دیجیتال دراوون",
+    "سپر شیشه‌ای، کارت‌های فلزی و کتاب؛ نمادی از مجموعهٔ دیجیتال اکوسیستم",
   networkAlt: "حلقه‌ای از شیشهٔ آبی و تیتانیوم، پیرامون گره‌های متصل شبکه",
   educationTitle: "دانش بیشتر، نگاه تازه‌تر.",
   educationBody:

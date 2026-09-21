@@ -74,7 +74,7 @@ export default function LandingPage() {
       </a>
       <header className="landing-header">
         <div className="landing-container flex h-20 items-center justify-between gap-3">
-          <Link href="/" aria-label="Dravon">
+          <Link href="/" aria-label={c.ecosystem}>
             <Brand />
           </Link>
           <nav
@@ -174,7 +174,7 @@ export default function LandingPage() {
             <div className="hero-image-caption">
               <span className="flex items-center gap-2 text-xs text-white/75">
                 <Layers className="h-4 w-4" />
-                DRAVON / WEB3
+                {c.ecosystem}
               </span>
               <span className="text-[10px] tracking-[0.18em] text-white/50">
                 CONNECTED BY DESIGN
@@ -320,7 +320,7 @@ export default function LandingPage() {
         <section className="landing-container pb-16">
           <div className="closing-panel">
             <div>
-              <p className="eyebrow">DRAVON</p>
+              <p className="eyebrow">{c.ecosystem}</p>
               <h2 className="section-title">{c.ctaTitle}</h2>
               <p className="mt-3 max-w-lg text-sm leading-7 text-muted-foreground">
                 {c.ctaBody}
@@ -377,7 +377,7 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="flex flex-col justify-between gap-4 border-t py-6 text-xs leading-6 text-muted-foreground sm:flex-row">
-            <span dir="ltr">© {new Date().getFullYear()} DRAVON</span>
+            <span>© {new Date().getFullYear()} · {c.ecosystem}</span>
             <p>{c.disclaimer}</p>
           </div>
         </div>

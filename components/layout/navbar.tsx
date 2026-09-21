@@ -30,7 +30,7 @@ export function Navbar() {
           >
             <Menu />
           </Button>
-          <Link href="/" aria-label="Dravon">
+          <Link href="/" aria-label={c.ecosystem}>
             <span className="hidden sm:inline">
               <Brand />
             </span>

@@ -47,7 +47,7 @@ export function AppShell({
           <div className="mx-auto max-w-[1400px]">
             <PageTransition>{children}</PageTransition>
             <footer className="workspace-footer">
-              <span dir="ltr">DRAVON / WEB3</span>
+              <span dir="ltr">{c.ecosystem}</span>
               <Link href="/help">{c.help}</Link>
             </footer>
           </div>
