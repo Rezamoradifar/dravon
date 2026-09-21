@@ -1,33 +1,41 @@
-const RELOAD_KEY = "round-dashboard:chunk-reload-attempted";
+// Shared with the pre-hydration handler in app/layout.tsx.
+const RELOAD_KEY = "dravon:chunk-recovery:v2";
+const COOLDOWN_MS = 5 * 60 * 1000;
 
-/**
- * Webpack's own ChunkLoadError sets `error.name` to "ChunkLoadError" but often
- * leaves `error.message` EMPTY (confirmed in production: the caught error's
- * printed text was the bare string "ChunkLoadError" with no message at all) -
- * checking only `.message` missed exactly the shape this is meant to catch.
- * Check name, message, and stack so any of the three forms is recognized.
- */
-function isChunkLoadError(error: Error): boolean {
-  const haystack = `${error.name || ""} ${error.message || ""} ${error.stack || ""}`;
-  return /chunkloaderror|loading chunk [\w.-]+ failed/i.test(haystack);
+export function isChunkLoadError(error: Error): boolean {
+  const detail = `${error.name || ""} ${error.message || ""} ${error.stack || ""}`;
+  return /chunkloaderror|loading (?:css )?chunk [\w.-]+ failed/i.test(detail);
 }
 
-/**
- * A stale tab still holding an old build's HTML references a _next/static
- * chunk hash that a newer deploy has since replaced and deleted - that 404s
- * as a ChunkLoadError (a React error boundary catches this when it comes
- * from a next/dynamic import). One reload fetches the current HTML with
- * correct hashes and silently fixes it. Guarded by sessionStorage so a
- * genuinely broken deploy still surfaces the error instead of loop-reloading.
- */
+/** Fetch fresh HTML rather than retrying imports from the broken document. */
+export function reloadFreshDocument(): void {
+  const url = new URL(window.location.href);
+  url.searchParams.set("_dravon_reload", String(Date.now()));
+  window.location.replace(url.toString());
+}
+
+/** Automatic recovery is bounded; a missing server asset must still be repaired. */
 export function tryRecoverFromChunkError(error: Error): boolean {
-  if (!isChunkLoadError(error)) return false;
+  if (!isChunkLoadError(error) || navigator.onLine === false) return false;
   try {
-    if (sessionStorage.getItem(RELOAD_KEY)) return false;
-    sessionStorage.setItem(RELOAD_KEY, "1");
+    const previous = Number(sessionStorage.getItem(RELOAD_KEY));
+    const now = Date.now();
+    if (previous && now - previous < COOLDOWN_MS) return false;
+    sessionStorage.setItem(RELOAD_KEY, String(now));
   } catch {
+    // Without persistent loop protection, leave recovery to the user's button.
     return false;
   }
-  window.location.reload();
+  reloadFreshDocument();
   return true;
+}
+
+export function retryAfterError(error: Error, reset: () => void): void {
+  if (!isChunkLoadError(error)) {
+    reset();
+    return;
+  }
+  // A manual attempt also consumes the automatic retry budget for the new page.
+  try { sessionStorage.setItem(RELOAD_KEY, String(Date.now())); } catch { /* optional */ }
+  reloadFreshDocument();
 }

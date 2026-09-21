@@ -78,7 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Script id="crash-diagnostic" strategy="beforeInteractive">
           {`
             (function () {
-              var RELOAD_KEY = '__chunk_reload_attempted';
+              var RELOAD_KEY = 'dravon:chunk-recovery:v2';
 
               function isChunkLoadError(message) {
                 // Webpack's ChunkLoadError sets error.name to "ChunkLoadError" but
@@ -95,14 +95,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               // error. Guarded by sessionStorage so a genuinely broken deploy
               // still falls through to the visible overlay instead of looping.
               function tryAutoRecover(message) {
-                if (!isChunkLoadError(message)) return false;
+                if (!isChunkLoadError(message) || navigator.onLine === false) return false;
                 try {
-                  if (sessionStorage.getItem(RELOAD_KEY)) return false;
-                  sessionStorage.setItem(RELOAD_KEY, '1');
+                  var previous = Number(sessionStorage.getItem(RELOAD_KEY));
+                  var now = Date.now();
+                  if (previous && now - previous < 5 * 60 * 1000) return false;
+                  sessionStorage.setItem(RELOAD_KEY, String(now));
                 } catch (e) {
                   return false;
                 }
-                location.reload();
+                var fresh = new URL(location.href);
+                fresh.searchParams.set("_dravon_reload", String(Date.now()));
+                location.replace(fresh.toString());
                 return true;
               }
 
