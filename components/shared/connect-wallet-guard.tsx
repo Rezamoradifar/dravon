@@ -1,6 +1,6 @@
 "use client";
 
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { WalletButton } from "@/components/experience/wallet-button";
 import { useAccount } from "wagmi";
 import { WalletMinimal } from "lucide-react";
 
@@ -23,7 +23,7 @@ export function ConnectWalletGuard({ children }: { children: React.ReactNode }) 
           <p className="font-medium">{t("connectWalletGuard.title")}</p>
           <p className="mt-1 text-sm text-muted-foreground">{t("connectWalletGuard.body")}</p>
         </div>
-        <ConnectButton />
+        <WalletButton />
       </CardContent>
     </Card>
   );

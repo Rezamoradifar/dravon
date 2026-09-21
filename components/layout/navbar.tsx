@@ -2,71 +2,68 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Menu, Layers, ArrowLeft } from "lucide-react";
-
+import { Menu, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ThemeToggle } from "./theme-toggle";
 import { LanguageToggle } from "./language-toggle";
 import { Sidebar } from "./sidebar";
 import { NotificationBell } from "@/components/shared/notification-bell";
-import { cn } from "@/lib/utils";
-import { useTranslation } from "@/contexts/language-context";
+import { Brand } from "@/components/experience/brand";
+import { WalletButton } from "@/components/experience/wallet-button";
+import { useExperienceCopy } from "@/lib/experience-copy";
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const { t } = useTranslation();
-
+  const c = useExperienceCopy();
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
-      <div className="flex h-16 items-center justify-between px-4 md:px-6">
-        <div className="flex items-center gap-3">
+    <header className="app-navbar sticky top-0 z-40 border-b bg-background/90 backdrop-blur-xl">
+      <div className="flex h-[72px] items-center justify-between gap-2 px-3 sm:px-6">
+        <div className="flex min-w-0 items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
-            aria-label={t("nav.toggleNavigation")}
-            onClick={() => setMobileOpen((v) => !v)}
+            className="lg:hidden"
+            aria-label={c.menu}
+            aria-expanded={mobileOpen}
+            onClick={() => setMobileOpen(true)}
           >
             <Menu />
           </Button>
-          <Link href="/dashboard" className="flex items-center gap-2 font-semibold tracking-tight">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Layers className="h-4 w-4" />
+          <Link href="/" aria-label="Dravon">
+            <span className="hidden sm:inline">
+              <Brand />
             </span>
-            <span className="hidden sm:inline">{t("nav.brand")}</span>
+            <span className="sm:hidden">
+              <Brand compact />
+            </span>
           </Link>
         </div>
-
-        <div className="flex items-center gap-2">
-          <Button asChild variant="ghost" size="icon" className="sm:hidden" aria-label={t("nav.backToLanding")}>
-            <Link href="/">
-              <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
-            </Link>
-          </Button>
-          <Button asChild variant="ghost" size="sm" className="hidden gap-1.5 sm:inline-flex">
-            <Link href="/">
-              <ArrowLeft className="h-3.5 w-3.5 rtl:rotate-180" />
-              {t("nav.backToLanding")}
-            </Link>
-          </Button>
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <Link
+            href="/"
+            className="me-4 hidden items-center gap-1 text-xs text-muted-foreground xl:flex"
+          >
+            {c.home}
+            <ArrowUpRight className="h-3 w-3 rtl:-rotate-90" />
+          </Link>
           <LanguageToggle />
           <ThemeToggle />
           <NotificationBell />
-          <ConnectButton showBalance={false} chainStatus="icon" accountStatus="full" />
+          <WalletButton compact />
         </div>
       </div>
-
-      <div
-        className={cn(
-          "overflow-hidden border-t border-primary/20 bg-background/95 backdrop-blur-md transition-[max-height] duration-300 md:hidden",
-          mobileOpen ? "max-h-[80vh]" : "max-h-0",
-        )}
-      >
-        <div className="max-h-[80vh] overflow-y-auto scrollbar-thin">
+      <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
+        <DialogContent
+          aria-describedby={undefined}
+          className="mobile-drawer max-h-[90dvh] overflow-y-auto"
+        >
+          <DialogTitle className="px-3 pt-2">
+            <Brand />
+          </DialogTitle>
           <Sidebar onNavigate={() => setMobileOpen(false)} />
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 }
