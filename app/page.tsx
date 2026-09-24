@@ -1,679 +1,384 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import Image from "next/image";
 import {
   ArrowRight,
+  ArrowUpRight,
+  ChevronDown,
+  LayoutDashboard,
+  Network,
+  BookOpen,
+  UserRound,
+  Wallet,
+  Compass,
+  CheckCheck,
+  Menu,
+  X,
   Layers,
   ShieldCheck,
-  Coins,
-  Flame,
-  Radio,
-  Gamepad2,
-  Sparkles,
-  Wallet,
-  Package,
-  UserPlus,
-  LayoutDashboard,
-  Dice5,
-  Trophy,
-  HelpCircle,
-  BadgeCheck,
-  Rocket,
-  Lock,
-  Cpu,
-  FileCode2,
-  Box,
-  Globe2,
-  ExternalLink,
 } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { LanguageToggle } from "@/components/layout/language-toggle";
-import { NetworkCanvas } from "@/components/landing/network-canvas";
-import { useMainBulkInfo } from "@/hooks/useMainBulkInfo";
-import { useCountUp } from "@/hooks/useCountUp";
+import { Brand } from "@/components/experience/brand";
+import { useExperienceCopy } from "@/lib/experience-copy";
 import { useTranslation } from "@/contexts/language-context";
 import { getLocalizedHelpFaq } from "@/lib/help-content";
-import { FACTORY_ADDRESS } from "@/contracts/addresses";
-
-const VERIFIED_SOURCE_URL = `https://bscscan.com/address/${FACTORY_ADDRESS}#code`;
-
-/** A small abstract circuit-board glyph for the (not-yet-live) arbitrage bot tiers -
- * deliberately iconographic rather than a fabricated product screenshot. */
-function BotCircuitIcon({ variant }: { variant: "plus" | "pro" }) {
-  const accent = variant === "pro" ? "var(--fx-accent)" : "var(--fx-secondary)";
-  return (
-    <svg viewBox="0 0 48 48" className="h-10 w-10" fill="none" aria-hidden="true">
-      <rect x="15" y="15" width="18" height="18" rx="3" stroke="var(--fx-primary)" strokeWidth="1.5" />
-      <circle cx="24" cy="24" r="3.5" fill="var(--fx-primary)" />
-      <path d="M24 15V5M24 33v10M15 24H5M33 24h10" stroke={accent} strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="24" cy="5" r="2" fill={accent} />
-      <circle cx="24" cy="43" r="2" fill={accent} />
-      <circle cx="5" cy="24" r="2" fill={accent} />
-      <circle cx="43" cy="24" r="2" fill={accent} />
-    </svg>
-  );
-}
-
-const NETWORK_FLOW = [
-  { key: "node", icon: Cpu },
-  { key: "validator", icon: ShieldCheck },
-  { key: "smartContract", icon: FileCode2 },
-  { key: "block", icon: Box },
-  { key: "network", icon: Globe2 },
-] as const;
-
-function toNumber(value?: string): number {
-  if (!value) return 0;
-  const n = Number(value);
-  return Number.isNaN(n) ? 0 : n;
-}
-
-const STAT_ACCENT_VAR: Record<"primary" | "secondary" | "accent", string> = {
-  primary: "var(--fx-primary)",
-  secondary: "var(--fx-secondary)",
-  accent: "var(--fx-accent)",
-};
-
-function AnimatedStat({
-  value,
-  prefix = "",
-  accent,
-}: {
-  value: number;
-  prefix?: string;
-  accent: "primary" | "secondary" | "accent";
-}) {
-  const animated = useCountUp(value, 1200);
-  return (
-    <div
-      className="font-mono text-lg font-bold tabular-nums md:text-2xl"
-      style={{ color: STAT_ACCENT_VAR[accent] }}
-    >
-      {prefix}
-      {Math.round(animated).toLocaleString("en-US")}
-    </div>
-  );
-}
-
-const FEATURES = [
-  { key: "stages", icon: ShieldCheck, href: "/dashboard" },
-  { key: "weekly", icon: Coins, href: "/weekly" },
-  { key: "streak", icon: Flame, href: "/genealogy" },
-  { key: "pulse", icon: Radio, href: "/pulse" },
-  { key: "games", icon: Gamepad2, href: "/games" },
-  { key: "network", icon: Sparkles, href: "/products" },
-] as const;
-
-const STEPS = [
-  { key: "connect", icon: Wallet },
-  { key: "choose", icon: Package },
-  { key: "register", icon: UserPlus },
-  { key: "track", icon: LayoutDashboard },
-] as const;
-
-const NAV_ITEMS = [
-  { key: "howItWorks", href: "#how-it-works" },
-  { key: "features", href: "#features" },
-  { key: "games", href: "#games" },
-  { key: "faq", href: "#faq" },
-] as const;
-
-const FOOTER_COLUMNS = [
-  {
-    key: "product",
-    links: [
-      { key: "dashboard", href: "/dashboard" },
-      { key: "register", href: "/register" },
-      { key: "genealogy", href: "/genealogy" },
-      { key: "weeklyFund", href: "/weekly" },
-      { key: "pulse", href: "/pulse" },
-    ],
-  },
-  {
-    key: "learn",
-    links: [
-      { key: "learningCenter", href: "/learn" },
-      { key: "flashLoans", href: "/learn/flash-loans" },
-      { key: "arbitrage", href: "/learn/arbitrage" },
-      { key: "walletSecurity", href: "/learn/wallet-security" },
-    ],
-  },
-  {
-    key: "resources",
-    links: [
-      { key: "help", href: "/help" },
-      { key: "products", href: "/products" },
-      { key: "news", href: "/news" },
-      { key: "games", href: "/games" },
-    ],
-  },
-] as const;
 
 export default function LandingPage() {
-  const { t, locale } = useTranslation();
-  const { info } = useMainBulkInfo(0);
-  const faqPreview = getLocalizedHelpFaq(locale).slice(0, 4);
-
+  const c = useExperienceCopy();
+  const { locale } = useTranslation();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const features = [
+    {
+      title: c.overview,
+      body: c.overviewBody,
+      icon: LayoutDashboard,
+      href: "/dashboard",
+      number: "01",
+    },
+    {
+      title: c.account,
+      body: c.accountBody,
+      icon: UserRound,
+      href: "/user",
+      number: "02",
+    },
+    {
+      title: c.networkTitle,
+      body: c.networkBody,
+      icon: Network,
+      href: "/genealogy",
+      number: "03",
+    },
+    {
+      title: c.academy,
+      body: c.academyBody,
+      icon: BookOpen,
+      href: "/learn",
+      number: "04",
+    },
+  ];
+  const nav = [
+    { label: c.products, href: "/products" },
+    { label: c.learn, href: "/learn" },
+    { label: c.help, href: "/help" },
+  ];
+  const faq = getLocalizedHelpFaq(locale).slice(0, 4);
   return (
-    <div className="landing-fx relative min-h-screen overflow-x-hidden bg-background text-foreground">
-      {/* Ambient background - same neon duotone used across the app */}
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-primary/20 blur-[120px]" />
-        <div className="absolute -right-40 top-1/3 h-[480px] w-[480px] rounded-full bg-[hsl(var(--accent-2)/0.15)] blur-[120px]" />
-        <div className="absolute bottom-0 left-1/3 h-[420px] w-[420px] rounded-full bg-primary/10 blur-[100px]" />
-      </div>
-
-      {/* Marketing header with nav menu */}
-      <header className="sticky top-0 z-40 border-b border-border/40 bg-background/70 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:px-8">
-          <div className="flex items-center gap-2 font-semibold tracking-tight">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Layers className="h-4 w-4" />
-            </span>
-            {t("nav.brand")}
-          </div>
-
-          <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground lg:flex">
-            {NAV_ITEMS.map((item) => (
-              <a key={item.key} href={item.href} className="transition-colors hover:text-foreground">
-                {t(`landing.nav.${item.key}`)}
-              </a>
+    <div className="dr-landing">
+      <a href="#main-content" className="skip-link">
+        {c.skip}
+      </a>
+      <header className="landing-header">
+        <div className="landing-container flex h-20 items-center justify-between gap-3">
+          <Link href="/" aria-label={c.ecosystem}>
+            <Brand />
+          </Link>
+          <nav
+            className="hidden items-center gap-8 md:flex"
+            aria-label={c.navLabel}
+          >
+            {nav.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {item.label}
+              </Link>
             ))}
           </nav>
-
           <div className="flex items-center gap-2">
             <LanguageToggle />
             <ThemeToggle />
-            <Button asChild size="sm" className="gap-1.5">
+            <Button asChild className="hidden gap-2 lg:inline-flex">
               <Link href="/dashboard">
-                {t("landing.launchApp")}
-                <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
+                {c.dashboard}
+                <ArrowUpRight className="h-4 w-4 rtl:-rotate-90" />
               </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-expanded={menuOpen}
+              aria-controls="landing-mobile-menu"
+              aria-label={menuOpen ? c.closeMenu : c.menu}
+            >
+              {menuOpen ? <X /> : <Menu />}
             </Button>
           </div>
         </div>
+        {menuOpen && (
+          <nav
+            id="landing-mobile-menu"
+            className="landing-container space-y-1 border-t py-4 md:hidden"
+            aria-label={c.navLabel}
+          >
+            {[...nav, { label: c.dashboard, href: "/dashboard" }].map(
+              (item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  className="block rounded-xl px-3 py-3 text-sm hover:bg-secondary"
+                >
+                  {item.label}
+                </Link>
+              ),
+            )}
+          </nav>
+        )}
       </header>
-
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-[color:var(--fx-bg)]">
-        <div className="pointer-events-none absolute inset-0 -z-10">
-          <NetworkCanvas className="h-full w-full" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[color:var(--fx-bg)]/50 to-background" />
-        </div>
-        <div className="mx-auto max-w-5xl px-4 pb-16 pt-20 text-center md:px-8 md:pt-28">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-5 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium"
-          style={{
-            borderColor: "color-mix(in srgb, var(--fx-primary) 30%, transparent)",
-            backgroundColor: "color-mix(in srgb, var(--fx-primary) 10%, transparent)",
-            color: "var(--fx-primary)",
-          }}
-        >
-          <Sparkles className="h-3.5 w-3.5" />
-          {t("landing.badge")}
-        </motion.div>
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.05 }}
-          className="text-gradient-fx text-4xl font-bold uppercase leading-tight tracking-tight md:text-6xl"
-        >
-          {t("landing.heroTitle")}
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="mx-auto mt-5 max-w-2xl text-base md:text-lg"
-          style={{ color: "var(--fx-text-muted)" }}
-        >
-          {t("landing.heroSubtitle")}
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.15 }}
-          className="mt-8 flex flex-wrap items-center justify-center gap-3"
-        >
-          <Button asChild size="lg" className="gap-2">
-            <Link href="/pulse">
-              {t("landing.ctaPrimary")}
-              <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-            </Link>
-          </Button>
-          <Button asChild size="lg" variant="outline">
-            <Link href="/register">{t("landing.ctaSecondary")}</Link>
-          </Button>
-        </motion.div>
-        </div>
-      </section>
-
-      {/* Smart contract execution */}
-      <section className="border-y" style={{ borderColor: "var(--fx-border)", backgroundColor: "var(--fx-surface)" }}>
-        <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-4 py-20 md:grid-cols-2 md:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.4 }}
-          >
-            <div
-              className="mb-3 text-xs font-semibold uppercase tracking-widest"
-              style={{ color: "var(--fx-secondary)" }}
-            >
-              {t("landing.smartContract.eyebrow")}
-            </div>
-            <h2 className="mb-4 text-2xl font-bold tracking-tight md:text-3xl" style={{ color: "var(--fx-text)" }}>
-              {t("landing.smartContract.title")}
-            </h2>
-            <p className="mb-6 text-sm md:text-base" style={{ color: "var(--fx-text-muted)" }}>
-              {t("landing.smartContract.description")}
+      <main id="main-content">
+        <section className="landing-container hero-grid">
+          <div className="hero-copy">
+            <p className="eyebrow">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              {c.ecosystem}
             </p>
-            <div className="flex flex-wrap gap-2">
-              <a
-                href={VERIFIED_SOURCE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide transition-opacity hover:opacity-80"
-                style={{ borderColor: "var(--fx-border)", color: "var(--fx-success)" }}
-              >
-                <BadgeCheck className="h-3.5 w-3.5" />
-                {t("landing.smartContract.verified")}
-                <ExternalLink className="h-3 w-3" />
-              </a>
-              <span
-                className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide"
-                style={{ borderColor: "var(--fx-border)", color: "var(--fx-secondary)" }}
-              >
-                <Rocket className="h-3.5 w-3.5" />
-                {t("landing.smartContract.deployed")}
-              </span>
-              <span
-                className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide"
-                style={{ borderColor: "var(--fx-border)", color: "var(--fx-accent)" }}
-              >
-                <Lock className="h-3.5 w-3.5" />
-                {t("landing.smartContract.secure")}
-              </span>
+            <h1 className="hero-title">
+              {c.heroTitle}
+              <br />
+              <span>{c.heroAccent}</span>
+            </h1>
+            <p className="hero-description">{c.heroBody}</p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button asChild size="lg" className="gap-3">
+                <Link href="/dashboard">
+                  {c.dashboard}
+                  <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link href="/products">{c.explore}</Link>
+              </Button>
             </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="overflow-hidden rounded-2xl border shadow-2xl"
-            style={{ borderColor: "var(--fx-border)", backgroundColor: "var(--fx-surface-2)" }}
-          >
-            <div
-              className="flex items-center gap-1.5 border-b px-4 py-3"
-              style={{ borderColor: "var(--fx-border)" }}
-            >
-              <span className="h-2.5 w-2.5 rounded-full bg-[#FF5570]" />
-              <span className="h-2.5 w-2.5 rounded-full bg-[#FFC93E]" />
-              <span className="h-2.5 w-2.5 rounded-full bg-[#21D19F]" />
-              <span className="ms-2 font-mono text-[11px]" style={{ color: "var(--fx-text-muted)" }}>
-                Window.sol
-              </span>
-            </div>
-            <pre className="overflow-x-auto p-5 font-mono text-[12px] leading-relaxed md:text-[13px]" dir="ltr">
-              <code style={{ color: "var(--fx-text-muted)" }}>
-                <span style={{ color: "var(--fx-accent)" }}>function</span>{" "}
-                <span style={{ color: "var(--fx-primary)" }}>begin</span>({"\n"}
-                {"    "}
-                <span style={{ color: "var(--fx-secondary)" }}>uint24</span> startBox,{"\n"}
-                {"    "}
-                <span style={{ color: "var(--fx-secondary)" }}>address</span> direct,{"\n"}
-                {"    "}
-                <span style={{ color: "var(--fx-secondary)" }}>address</span> referral{"\n"}
-                ) <span style={{ color: "var(--fx-accent)" }}>external payable</span>{"\n"}
-                {"    "}
-                nonReentrant onlyLatestWindow {"{"}
-                {"\n"}
-                {"    "}(uint256 enterUSD, ) = _calculateEntryRequirements({"\n"}
-                {"        "}startBox, msg.value, msg.sender{"\n"}
-                {"    "});{"\n"}
-                {"    "}factory.join(msg.sender, direct, referral, startBox, enterUSD);{"\n"}
-                {"}"}
-              </code>
-            </pre>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Network architecture flow */}
-      <section
-        className="border-b py-20"
-        style={{ borderColor: "var(--fx-border)", backgroundColor: "var(--fx-bg)" }}
-      >
-        <div className="mx-auto max-w-2xl px-4 md:px-8">
-          <div className="mb-12 text-center">
-            <div
-              className="mb-3 text-xs font-semibold uppercase tracking-widest"
-              style={{ color: "var(--fx-secondary)" }}
-            >
-              {t("landing.network.eyebrow")}
-            </div>
-            <h2 className="text-2xl font-bold tracking-tight md:text-3xl" style={{ color: "var(--fx-text)" }}>
-              {t("landing.network.title")}
-            </h2>
+            <p className="mt-5 text-xs leading-6 text-muted-foreground">
+              {c.heroNote}
+            </p>
           </div>
-
-          <div className="relative flex flex-col items-center gap-8">
-            <div
-              className="absolute inset-y-0 start-1/2 w-px -translate-x-1/2"
-              style={{ background: "linear-gradient(to bottom, var(--fx-primary), var(--fx-accent))", opacity: 0.25 }}
+          <div className="hero-visual">
+            <Image
+              src="/images/experience/network.webp"
+              alt={c.networkAlt}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 55vw"
+              className="object-cover"
             />
-            {NETWORK_FLOW.map(({ key, icon: Icon }, i) => (
-              <motion.div
-                key={key}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.35, delay: i * 0.08 }}
-                className="relative z-10 flex items-center gap-3 rounded-xl border px-6 py-3.5 backdrop-blur-sm"
-                style={{ borderColor: "var(--fx-border)", backgroundColor: "var(--fx-surface)" }}
-              >
-                <Icon className="h-4 w-4" style={{ color: "var(--fx-primary)" }} />
-                <span className="font-mono text-sm font-semibold tracking-wide" style={{ color: "var(--fx-text)" }}>
-                  {t(`landing.network.${key}`)}
-                </span>
-              </motion.div>
-            ))}
+            <div className="hero-image-caption">
+              <span className="flex items-center gap-2 text-xs text-white/75">
+                <Layers className="h-4 w-4" />
+                {c.ecosystem}
+              </span>
+              <span className="text-[10px] tracking-[0.18em] text-white/50">
+                CONNECTED BY DESIGN
+              </span>
+            </div>
+          </div>
+        </section>
+        <div className="landing-container">
+          <div className="trust-strip">
+            <div>
+              <Layers className="h-5 w-5 text-primary" />
+              <span>{c.network}</span>
+              <span className="hidden text-muted-foreground sm:inline">
+                / {c.networkCaption}
+              </span>
+            </div>
+            <div>
+              <ShieldCheck className="h-5 w-5 text-primary" />
+              <span>{c.selfCustody}</span>
+            </div>
+            <Link href="/help" className="text-primary">
+              {c.help}
+              <ArrowUpRight className="h-4 w-4 rtl:-rotate-90" />
+            </Link>
           </div>
         </div>
-      </section>
-
-      {/* Live stats strip - real numbers, same data source as /pulse */}
-      <section className="py-16" style={{ backgroundColor: "var(--fx-surface)" }}>
-        <div className="mx-auto max-w-6xl px-4 md:px-8">
-          <div
-            className="grid grid-cols-2 gap-4 rounded-2xl border p-6 backdrop-blur-sm sm:grid-cols-3 lg:grid-cols-5"
-            style={{ borderColor: "var(--fx-border)", backgroundColor: "var(--fx-surface-2)" }}
-          >
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1.5">
-                <span className="relative flex h-2 w-2">
-                  <span
-                    className="absolute inline-flex h-full w-full animate-ping rounded-full"
-                    style={{ backgroundColor: info ? "var(--fx-success)" : "var(--fx-text-muted)", opacity: 0.6 }}
-                  />
-                  <span
-                    className="relative inline-flex h-2 w-2 rounded-full"
-                    style={{ backgroundColor: info ? "var(--fx-success)" : "var(--fx-text-muted)" }}
-                  />
-                </span>
-                <div className="font-mono text-lg font-bold tabular-nums md:text-2xl" style={{ color: "var(--fx-success)" }}>
-                  {info ? t("landing.stats.online") : t("landing.stats.syncing")}
-                </div>
-              </div>
-              <div className="mt-1 text-xs" style={{ color: "var(--fx-text-muted)" }}>{t("landing.stats.status")}</div>
+        <section className="landing-container landing-section" id="features">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">{c.builtFor}</p>
+              <h2>{c.featuresTitle}</h2>
             </div>
-            <div className="text-center">
-              <AnimatedStat value={toNumber(info?.allEnteredUSD)} prefix="$" accent="primary" />
-              <div className="mt-1 text-xs" style={{ color: "var(--fx-text-muted)" }}>{t("landing.statVolume")}</div>
-            </div>
-            <div className="text-center">
-              <AnimatedStat value={Number(info?.userCount ?? 0n)} accent="secondary" />
-              <div className="mt-1 text-xs" style={{ color: "var(--fx-text-muted)" }}>{t("landing.stats.participants")}</div>
-            </div>
-            <div className="text-center">
-              <AnimatedStat value={toNumber(info?.pointValue)} prefix="$" accent="accent" />
-              <div className="mt-1 text-xs" style={{ color: "var(--fx-text-muted)" }}>{t("landing.statPointValue")}</div>
-            </div>
-            <div className="text-center">
-              <div className="font-mono text-xl font-bold md:text-2xl" style={{ color: "var(--fx-primary)" }}>12h</div>
-              <div className="mt-1 text-xs" style={{ color: "var(--fx-text-muted)" }}>{t("landing.stats.cadence")}</div>
-            </div>
+            <p>{c.featuresBody}</p>
           </div>
-        </div>
-      </section>
-
-      {/* New products - DEX arbitrage bot (in development) */}
-      <section className="py-20" style={{ backgroundColor: "var(--fx-bg)" }}>
-        <div className="mx-auto max-w-5xl px-4 md:px-8">
-          <div className="mb-10 text-center">
-            <div
-              className="mb-3 text-xs font-semibold uppercase tracking-widest"
-              style={{ color: "var(--fx-secondary)" }}
-            >
-              {t("landing.arbitrageBot.eyebrow")}
-            </div>
-            <h2 className="text-2xl font-bold tracking-tight md:text-3xl" style={{ color: "var(--fx-text)" }}>
-              {t("landing.arbitrageBot.title")}
-            </h2>
-            <p className="mx-auto mt-3 max-w-xl text-sm" style={{ color: "var(--fx-text-muted)" }}>
-              {t("landing.arbitrageBot.subtitle")}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            {(["plus", "pro"] as const).map((tier, i) => (
-              <motion.div
-                key={tier}
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.4, delay: i * 0.08 }}
-                className="rounded-2xl border p-6"
-                style={{ borderColor: "var(--fx-border)", backgroundColor: "var(--fx-surface)" }}
-              >
-                <div className="mb-4 flex items-start justify-between">
-                  <BotCircuitIcon variant={tier} />
-                  <span
-                    className="rounded-full border px-2.5 py-1 text-[10px] font-semibold tracking-wide"
-                    style={{ borderColor: "var(--fx-border)", color: "var(--fx-text-muted)" }}
-                  >
-                    {t("landing.arbitrageBot.badge")}
+          <div className="feature-grid">
+            {features.map(({ title, body, icon: Icon, href, number }) => (
+              <Link href={href} key={href} className="feature-card group">
+                <div className="flex items-center justify-between">
+                  <span className="feature-icon">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {number}
                   </span>
                 </div>
-                <h3 className="mb-1.5 text-lg font-semibold" style={{ color: "var(--fx-text)" }}>
-                  {t(`landing.arbitrageBot.${tier}.name`)}
-                </h3>
-                <p className="text-sm" style={{ color: "var(--fx-text-muted)" }}>
-                  {t(`landing.arbitrageBot.${tier}.description`)}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-
-          <div className="mt-6 flex flex-col items-center gap-3 text-center">
-            <p className="text-xs" style={{ color: "var(--fx-text-muted)" }}>
-              {t("landing.arbitrageBot.disclaimer")}
-            </p>
-            <Link
-              href="/learn/arbitrage"
-              className="text-sm font-medium underline-offset-4 hover:underline"
-              style={{ color: "var(--fx-primary)" }}
-            >
-              {t("landing.arbitrageBot.learnMore")}
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section id="how-it-works" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-24 md:px-8">
-        <h2 className="mb-2 text-center text-2xl font-bold tracking-tight md:text-3xl">
-          {t("landing.howItWorksTitle")}
-        </h2>
-        <p className="mx-auto mb-10 max-w-xl text-center text-sm text-muted-foreground">
-          {t("landing.howItWorksSubtitle")}
-        </p>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {STEPS.map(({ key, icon: Icon }, i) => (
-            <motion.div
-              key={key}
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.4, delay: i * 0.06 }}
-              className="relative rounded-2xl border border-border/60 bg-card/40 p-6 text-center"
-            >
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <Icon className="h-5 w-5" />
-              </div>
-              <div className="mb-1.5 text-xs font-semibold text-primary">
-                {t("landing.step", { n: String(i + 1) })}
-              </div>
-              <h3 className="mb-1.5 font-semibold">{t(`landing.steps.${key}.title`)}</h3>
-              <p className="text-sm text-muted-foreground">{t(`landing.steps.${key}.description`)}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Feature grid */}
-      <section id="features" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-24 md:px-8">
-        <h2 className="mb-8 text-center text-2xl font-bold tracking-tight md:text-3xl">
-          {t("landing.featuresTitle")}
-        </h2>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map(({ key, icon: Icon, href }, i) => (
-            <motion.div
-              key={key}
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.4, delay: i * 0.05 }}
-            >
-              <Link href={href} className="card-glow block rounded-2xl p-6 transition-transform hover:-translate-y-1">
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <h3 className="mb-1.5 font-semibold">{t(`landing.feature.${key}.title`)}</h3>
-                <p className="text-sm text-muted-foreground">{t(`landing.feature.${key}.description`)}</p>
+                <h3>{title}</h3>
+                <p>{body}</p>
+                <ArrowUpRight className="mt-6 h-5 w-5 text-primary transition-transform group-hover:-translate-y-1 rtl:-rotate-90" />
               </Link>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Games spotlight */}
-      <section id="games" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-24 md:px-8">
-        <h2 className="mb-2 text-center text-2xl font-bold tracking-tight md:text-3xl">
-          {t("landing.gamesTitle")}
-        </h2>
-        <p className="mx-auto mb-10 max-w-xl text-center text-sm text-muted-foreground">
-          {t("landing.gamesSubtitle")}
-        </p>
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          <Link
-            href="/games/backgammon"
-            className="card-glow group block overflow-hidden rounded-2xl p-8 transition-transform hover:-translate-y-1"
-          >
-            <Dice5 className="mb-4 h-8 w-8 text-primary" />
-            <h3 className="mb-2 text-lg font-semibold">{t("landing.gameFree.title")}</h3>
-            <p className="mb-4 text-sm text-muted-foreground">{t("landing.gameFree.description")}</p>
-            <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-              {t("landing.playNow")}
-              <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
-            </span>
-          </Link>
-          <Link
-            href="/games/backgammon-onchain"
-            className="card-glow group block overflow-hidden rounded-2xl p-8 transition-transform hover:-translate-y-1"
-          >
-            <Trophy className="mb-4 h-8 w-8 text-[hsl(var(--accent-2))]" />
-            <h3 className="mb-2 text-lg font-semibold">{t("landing.gameOnchain.title")}</h3>
-            <p className="mb-4 text-sm text-muted-foreground">{t("landing.gameOnchain.description")}</p>
-            <span className="inline-flex items-center gap-1.5 text-sm font-medium text-[hsl(var(--accent-2))]">
-              {t("landing.playNow")}
-              <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
-            </span>
-          </Link>
-        </div>
-      </section>
-
-      {/* FAQ preview */}
-      <section id="faq" className="mx-auto max-w-4xl scroll-mt-20 px-4 pb-24 md:px-8">
-        <h2 className="mb-8 text-center text-2xl font-bold tracking-tight md:text-3xl">
-          {t("landing.faqTitle")}
-        </h2>
-        <div className="space-y-3">
-          {faqPreview.map((item, i) => (
-            <motion.div
-              key={item.question}
-              initial={{ opacity: 0, y: 8 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.35, delay: i * 0.05 }}
-              className="rounded-xl border border-border/60 bg-card/40 p-5"
-            >
-              <div className="mb-1.5 flex items-start gap-2 font-medium">
-                <HelpCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                {item.question}
-              </div>
-              <p className="ps-6 text-sm text-muted-foreground">{item.answer}</p>
-            </motion.div>
-          ))}
-        </div>
-        <div className="mt-6 text-center">
-          <Button asChild variant="outline">
-            <Link href="/help">{t("landing.viewAllFaq")}</Link>
-          </Button>
-        </div>
-      </section>
-
-      {/* Closing CTA */}
-      <section className="mx-auto max-w-4xl px-4 pb-24 text-center md:px-8">
-        <div className="card-glow rounded-2xl px-8 py-14">
-          <h2 className="text-gradient text-2xl font-bold tracking-tight md:text-3xl">
-            {t("landing.closingTitle")}
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground md:text-base">
-            {t("landing.closingSubtitle")}
-          </p>
-          <Button asChild size="lg" className="mt-7 gap-2">
-            <Link href="/dashboard">
-              {t("landing.ctaPrimary")}
-              <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-            </Link>
-          </Button>
-        </div>
-      </section>
-
-      {/* Full footer */}
-      <footer className="border-t border-border/40">
-        <div className="mx-auto max-w-6xl px-4 py-14 md:px-8">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-            <div className="col-span-2 md:col-span-1">
-              <div className="mb-3 flex items-center gap-2 font-semibold tracking-tight">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  <Layers className="h-3.5 w-3.5" />
-                </span>
-                {t("nav.brand")}
-              </div>
-              <p className="text-xs text-muted-foreground">{t("landing.footerTagline")}</p>
+            ))}
+          </div>
+        </section>
+        <section className="landing-container pb-16 md:pb-24" id="products">
+          <div className="collection-feature">
+            <div className="collection-image">
+              <Image
+                src="/images/experience/collection.webp"
+                alt={c.collectionAlt}
+                fill
+                sizes="(max-width: 768px) 100vw, 55vw"
+                className="object-cover"
+              />
             </div>
-            {FOOTER_COLUMNS.map((col) => (
-              <div key={col.key}>
-                <h4 className="mb-3 text-sm font-semibold">{t(`landing.footerCol.${col.key}`)}</h4>
-                <ul className="space-y-2">
+            <div className="collection-copy">
+              <p className="eyebrow">{c.collection}</p>
+              <h2>{c.productsTitle}</h2>
+              <p className="mt-4 text-sm leading-7 text-muted-foreground">
+                {c.productsBody}
+              </p>
+              <div className="my-6 flex flex-wrap gap-2">
+                {[c.tools, c.digital, c.learning].map((label) => (
+                  <span
+                    key={label}
+                    className="rounded-full border px-3 py-1.5 text-xs text-muted-foreground"
+                  >
+                    {label}
+                  </span>
+                ))}
+              </div>
+              <Button asChild className="gap-2">
+                <Link href="/products">
+                  {c.allProducts}
+                  <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+        <section className="onboarding-section">
+          <div className="landing-container py-16 md:py-20">
+            <p className="eyebrow">{c.start}</p>
+            <h2 className="section-title">{c.startTitle}</h2>
+            <div className="mt-10 grid gap-8 md:grid-cols-3">
+              {[
+                { title: c.stepOne, body: c.stepOneBody, icon: Compass },
+                { title: c.stepTwo, body: c.stepTwoBody, icon: Wallet },
+                { title: c.stepThree, body: c.stepThreeBody, icon: CheckCheck },
+              ].map(({ title, body, icon: Icon }, i) => (
+                <div key={title} className="step-card">
+                  <div className="mb-5 flex items-center gap-4">
+                    <span className="text-xs font-medium text-primary">
+                      0{i + 1}
+                    </span>
+                    <span className="h-px flex-1 bg-border" />
+                    <Icon className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-lg font-semibold">{title}</h3>
+                  <p className="mt-3 max-w-sm text-sm leading-7 text-muted-foreground">
+                    {body}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+        <section
+          className="landing-container landing-section faq-grid"
+          id="faq"
+        >
+          <div>
+            <p className="eyebrow">{c.faqLabel}</p>
+            <h2 className="section-title">{c.faq}</h2>
+            <Link
+              href="/help"
+              className="mt-6 inline-flex items-center gap-2 text-sm text-primary"
+            >
+              {c.faqLink}
+              <ArrowUpRight className="h-4 w-4 rtl:-rotate-90" />
+            </Link>
+          </div>
+          <div>
+            {faq.map((item) => (
+              <details key={item.question} className="faq-item">
+                <summary>
+                  <span>{item.question}</span>
+                  <ChevronDown className="h-4 w-4 shrink-0 transition-transform" />
+                </summary>
+                <p>{item.answer}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+        <section className="landing-container pb-16">
+          <div className="closing-panel">
+            <div>
+              <p className="eyebrow">{c.ecosystem}</p>
+              <h2 className="section-title">{c.ctaTitle}</h2>
+              <p className="mt-3 max-w-lg text-sm leading-7 text-muted-foreground">
+                {c.ctaBody}
+              </p>
+            </div>
+            <Button asChild size="lg" className="shrink-0 gap-2">
+              <Link href="/dashboard">
+                {c.dashboard}
+                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+              </Link>
+            </Button>
+          </div>
+        </section>
+      </main>
+      <footer className="landing-footer">
+        <div className="landing-container">
+          <div className="grid gap-10 py-12 sm:grid-cols-3">
+            <div>
+              <Brand />
+              <p className="mt-4 text-sm text-muted-foreground">{c.footer}</p>
+            </div>
+            {[
+              {
+                title: c.platform,
+                links: [
+                  { label: c.dashboard, href: "/dashboard" },
+                  { label: c.user, href: "/user" },
+                  { label: c.products, href: "/products" },
+                ],
+              },
+              {
+                title: c.resources,
+                links: [
+                  { label: c.learn, href: "/learn" },
+                  { label: c.help, href: "/help" },
+                  { label: c.preferences, href: "/account" },
+                ],
+              },
+            ].map((col) => (
+              <div key={col.title}>
+                <h3 className="mb-4 text-sm font-semibold">{col.title}</h3>
+                <div className="flex flex-col gap-3">
                   {col.links.map((link) => (
-                    <li key={link.key}>
-                      <Link
-                        href={link.href}
-                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {t(`landing.footerLink.${link.key}`)}
-                      </Link>
-                    </li>
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="text-sm text-muted-foreground hover:text-primary"
+                    >
+                      {link.label}
+                    </Link>
                   ))}
-                </ul>
+                </div>
               </div>
             ))}
           </div>
-          <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-border/40 pt-6 text-xs text-muted-foreground md:flex-row">
-            <span>{t("landing.footer")}</span>
-            <span>{t("landing.footerDisclaimer")}</span>
+          <div className="flex flex-col justify-between gap-4 border-t py-6 text-xs leading-6 text-muted-foreground sm:flex-row">
+            <span>© {new Date().getFullYear()} · {c.ecosystem}</span>
+            <p>{c.disclaimer}</p>
           </div>
         </div>
       </footer>

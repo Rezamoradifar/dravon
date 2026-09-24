@@ -1,11 +1,18 @@
 "use client";
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 import { MessageCircleQuestion, X, Send, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { getAssistantKnowledge } from "@/lib/assistant-knowledge";
 import { searchAssistant, type AssistantMatch } from "@/lib/assistant-search";
 import { useTranslation } from "@/contexts/language-context";
@@ -18,6 +25,7 @@ interface Turn {
 
 export function AskAssistant() {
   const { t, locale } = useTranslation();
+  const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const [turns, setTurns] = React.useState<Turn[]>([]);
@@ -32,25 +40,44 @@ export function AskAssistant() {
   }
 
   return (
-    <div className="fixed bottom-5 end-5 z-50">
+    <div
+      className={cn(
+        "fixed end-4 z-40 lg:bottom-5",
+        pathname === "/"
+          ? "bottom-5"
+          : "bottom-[calc(5.5rem+env(safe-area-inset-bottom))]",
+      )}
+    >
       {open && (
-        <Card className="card-glow mb-3 flex h-[28rem] w-[22rem] max-w-[90vw] flex-col overflow-hidden">
+        <Card className="card-glow mb-3 flex h-[28rem] max-h-[calc(100dvh-12rem)] w-[22rem] max-w-[90vw] flex-col overflow-hidden">
           <CardHeader className="flex-row items-center justify-between gap-2 space-y-0 border-b border-border/60">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
               <div>
-                <CardTitle className="text-sm">{t("assistant.title")}</CardTitle>
-                <CardDescription className="text-xs">{t("assistant.subtitle")}</CardDescription>
+                <CardTitle className="text-sm">
+                  {t("assistant.title")}
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  {t("assistant.subtitle")}
+                </CardDescription>
               </div>
             </div>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setOpen(false)} aria-label={t("assistant.close")}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => setOpen(false)}
+              aria-label={t("assistant.close")}
+            >
               <X className="h-4 w-4" />
             </Button>
           </CardHeader>
 
           <CardContent className="flex-1 space-y-4 overflow-y-auto p-3 scrollbar-thin">
             {turns.length === 0 && (
-              <p className="text-xs text-muted-foreground">{t("assistant.hint")}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("assistant.hint")}
+              </p>
             )}
             {turns.map((turn, i) => (
               <div key={i} className="space-y-2">
@@ -63,9 +90,14 @@ export function AskAssistant() {
                   </p>
                 ) : (
                   turn.matches.map((m, j) => (
-                    <div key={j} className="rounded-lg border border-border/60 bg-card/60 px-3 py-2">
+                    <div
+                      key={j}
+                      className="rounded-lg border border-border/60 bg-card/60 px-3 py-2"
+                    >
                       {j === 0 ? null : (
-                        <p className="mb-1 text-[11px] font-medium text-muted-foreground">{m.question}</p>
+                        <p className="mb-1 text-[11px] font-medium text-muted-foreground">
+                          {m.question}
+                        </p>
                       )}
                       <p className="text-xs leading-relaxed">{m.answer}</p>
                     </div>
@@ -75,14 +107,22 @@ export function AskAssistant() {
             ))}
           </CardContent>
 
-          <form onSubmit={handleAsk} className="flex items-center gap-2 border-t border-border/60 p-3">
+          <form
+            onSubmit={handleAsk}
+            className="flex items-center gap-2 border-t border-border/60 p-3"
+          >
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t("assistant.placeholder")}
               className="h-9 text-sm"
             />
-            <Button type="submit" size="icon" className="h-9 w-9 shrink-0" aria-label={t("assistant.send")}>
+            <Button
+              type="submit"
+              size="icon"
+              className="h-9 w-9 shrink-0"
+              aria-label={t("assistant.send")}
+            >
               <Send className="h-4 w-4" />
             </Button>
           </form>
@@ -99,7 +139,11 @@ export function AskAssistant() {
           open && "rotate-90",
         )}
       >
-        {open ? <X className="h-5 w-5" /> : <MessageCircleQuestion className="h-6 w-6" />}
+        {open ? (
+          <X className="h-5 w-5" />
+        ) : (
+          <MessageCircleQuestion className="h-6 w-6" />
+        )}
       </Button>
     </div>
   );

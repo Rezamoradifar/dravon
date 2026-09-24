@@ -1,7 +1,7 @@
 "use client";
 
 import { useAccount, useBalance, useChainId, useChains } from "wagmi";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { WalletButton } from "@/components/experience/wallet-button";
 import { Wallet2 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -22,16 +22,16 @@ export function WalletInfoCard() {
       <CardHeader className="flex-row items-center gap-2 space-y-0">
         <Wallet2 className="h-4 w-4 text-muted-foreground" />
         <CardTitle className="text-base">{t("walletCard.title")}</CardTitle>
-        <CardDescription className="ml-auto">{chain?.name ?? t("common.notConnected")}</CardDescription>
+        <CardDescription className="ms-auto">{chain?.name ?? t("common.notConnected")}</CardDescription>
       </CardHeader>
       <CardContent>
         {!isConnected || !address ? (
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">{t("walletCard.connectPrompt")}</p>
-            <ConnectButton />
+            <WalletButton />
           </div>
         ) : (
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <AddressPill address={address} chars={6} />
             {isLoading ? (
               <Skeleton className="h-6 w-24" />

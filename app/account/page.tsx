@@ -1,20 +1,19 @@
 "use client";
 
-import { PageHeader } from "@/components/shared/page-header";
+import { WorkspaceHero } from "@/components/experience/workspace-hero";
+import { QuickActions } from "@/components/experience/quick-actions";
 import { NetworkBanner } from "@/components/shared/network-banner";
 import { ConnectWalletGuard } from "@/components/shared/connect-wallet-guard";
 import { VoteShutdownCard } from "@/components/forms/vote-shutdown-card";
 import { TerminateAccountCard } from "@/components/forms/terminate-account-card";
 import { ResetWalletForm } from "@/components/forms/reset-wallet-form";
 import { PreferencesCard } from "@/components/account/preferences-card";
-import { useTranslation } from "@/contexts/language-context";
 
 export default function AccountActionsPage() {
-  const { t } = useTranslation();
-
   return (
     <div>
-      <PageHeader title={t("accountPage.title")} description={t("accountPage.description")} />
+      <WorkspaceHero kind="account" />
+      <QuickActions />
       <NetworkBanner />
 
       <div className="mb-4">

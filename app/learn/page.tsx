@@ -3,8 +3,14 @@
 import Link from "next/link";
 import { ArrowRight, FlaskConical } from "lucide-react";
 
-import { PageHeader } from "@/components/shared/page-header";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { WorkspaceHero } from "@/components/experience/workspace-hero";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RiskBadge } from "@/components/learn/risk-badge";
 import { getLocalizedTopics } from "@/lib/learning-content";
@@ -16,10 +22,9 @@ export default function LearningCenterPage() {
 
   return (
     <div>
-      <PageHeader
-        title={t("learnPage.title")}
-        description={t("learnPage.description")}
-      />
+      <div className="mb-8">
+        <WorkspaceHero kind="learn" />
+      </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {topics.map((topic) => (
@@ -34,7 +39,8 @@ export default function LearningCenterPage() {
               </CardHeader>
               <CardContent>
                 <span className="inline-flex items-center gap-1 text-sm text-primary">
-                  {t("learnPage.readMore")} <ArrowRight className="h-3.5 w-3.5" />
+                  {t("learnPage.readMore")}{" "}
+                  <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
                 </span>
               </CardContent>
             </Card>
@@ -45,13 +51,17 @@ export default function LearningCenterPage() {
           <Card className="card-glow h-full border-dashed transition-transform hover:-translate-y-0.5">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
-                <FlaskConical className="h-5 w-5" /> {t("learnPage.simulatorTitle")}
+                <FlaskConical className="h-5 w-5" />{" "}
+                {t("learnPage.simulatorTitle")}
               </CardTitle>
-              <CardDescription>{t("learnPage.simulatorDescription")}</CardDescription>
+              <CardDescription>
+                {t("learnPage.simulatorDescription")}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Button variant="outline" size="sm" className="gap-1">
-                {t("learnPage.openSimulator")} <ArrowRight className="h-3.5 w-3.5" />
+                {t("learnPage.openSimulator")}{" "}
+                <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
               </Button>
             </CardContent>
           </Card>

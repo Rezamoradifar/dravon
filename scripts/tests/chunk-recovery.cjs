@@ -1,0 +1,36 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const ts = require('typescript');
+const source = fs.readFileSync('lib/chunkRecovery.ts', 'utf8');
+const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
+function setup({ offline = false, denied = false } = {}) {
+  let now = 1000000;
+  const data = new Map();
+  const urls = [];
+  const context = { exports: {}, URL, Date: { now: () => now }, navigator: { onLine: !offline }, window: { location: { href: 'https://example.test/register?ref=alice#details', replace: value => urls.push(value) } }, sessionStorage: { getItem: k => { if (denied) throw Error('denied'); return data.get(k) ?? null; }, setItem: (k,v) => { if (denied) throw Error('denied'); data.set(k,v); } } };
+  vm.runInNewContext(js, context);
+  return { api: context.exports, urls, advance: n => { now += n; } };
+}
+const chunk = Object.assign(new Error('Loading chunk 7313 failed.'), {name:'ChunkLoadError'});
+const test = setup();
+assert.equal(test.api.tryRecoverFromChunkError(chunk),true);
+assert.equal(test.api.tryRecoverFromChunkError(chunk),false);
+assert.equal(test.urls.length,1);
+const url = new URL(test.urls[0]);
+assert.equal(url.searchParams.get('ref'),'alice');
+assert.equal(url.hash,'#details');
+assert.ok(url.searchParams.has('_dravon_reload'));
+test.advance(300001);
+assert.equal(test.api.tryRecoverFromChunkError(chunk),true);
+assert.equal(setup({offline:true}).api.tryRecoverFromChunkError(chunk),false);
+assert.equal(setup({denied:true}).api.tryRecoverFromChunkError(chunk),false);
+const manual = setup({denied:true});
+let resets = 0;
+manual.api.retryAfterError(chunk,()=>resets++);
+assert.equal(manual.urls.length,1);
+assert.equal(resets,0);
+manual.api.retryAfterError(new Error('different error'),()=>resets++);
+assert.equal(resets,1);
+assert.equal(manual.api.isChunkLoadError(Object.assign(new Error(''),{name:'ChunkLoadError'})),true);
+console.log('PASS: fresh-document retry, loop prevention, cooldown, offline/storage handling, referral/hash preservation and ordinary error reset');
