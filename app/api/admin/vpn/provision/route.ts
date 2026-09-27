@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { verifyAdminSignature } from "@/lib/vpn/adminAuth";
-import { provisionDevice } from "@/lib/vpn/provision";
-import { addDevice, getAccount } from "@/lib/vpn/store";
+import { deliverNextDevice } from "@/lib/vpn/delivery";
+import { getAccount } from "@/lib/vpn/store";
 
 export const runtime = "nodejs";
 
@@ -33,15 +33,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid walletAddress" }, { status: 400 });
   }
 
-  let account = await getAccount(walletAddress);
+  const account = await getAccount(walletAddress);
   if (!account) return NextResponse.json({ error: "No account found for this wallet" }, { status: 404 });
   if (account.devices.length >= account.paidDeviceCount) {
     return NextResponse.json({ error: "Nothing pending - this account already has every device it paid for." }, { status: 409 });
   }
 
-  const result = await provisionDevice(walletAddress, account.devices.length + 1, account.backend, account.dataPlanId, account.locationId);
+  const result = await deliverNextDevice(walletAddress);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 502 });
 
-  account = await addDevice(walletAddress, result.device);
-  return NextResponse.json({ ok: true, config: result.device.config, account });
+  return NextResponse.json(result);
 }

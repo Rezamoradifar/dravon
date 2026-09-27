@@ -969,6 +969,7 @@ export const en = {
     expiresOn: "expires {date}",
     expired: "expired",
     noAccountYet: "No devices yet - pay above to get your first config.",
+    retryDelivery: "Retry delivery — no new payment",
     awaitingProvisioning: "{count} device(s) still being set up - this usually only takes a moment, but check back if it's been a while.",
     loadFailed: "Couldn't load your account",
     copied: "Config copied",

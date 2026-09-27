@@ -21,7 +21,7 @@ export function useVpnAccount() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  const reload = React.useCallback(async () => {
+  const reload = React.useCallback(async (retryDelivery = false) => {
     if (!address) return;
     setIsLoading(true);
     setError(null);
@@ -30,7 +30,8 @@ export function useVpnAccount() {
       const res = await fetch("/api/vpn/my-account", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address, timestamp, signature }),
+        signal: AbortSignal.timeout(90_000),
+        body: JSON.stringify({ address, timestamp, signature, retryDelivery }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Failed to load account");

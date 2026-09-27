@@ -6,9 +6,9 @@ import { chainlinkAggregatorAbi } from "@/contracts/chainlinkAggregatorAbi";
 import { NATIVE_PRICE_FEEDS } from "@/lib/nativePriceFeeds";
 import { getVpnConfig, isPaymentConfigured, isServerConfigured, isMarzbanConfigured } from "@/lib/vpn/config";
 import { renewMarzbanDevice } from "@/lib/vpn/marzban";
-import { provisionDevice } from "@/lib/vpn/provision";
+import { deliverNextDevice } from "@/lib/vpn/delivery";
 import { vpnServerPublicClient } from "@/lib/vpn/serverPublicClient";
-import { addDevice, applyPayment, findByTxHash, getAccount } from "@/lib/vpn/store";
+import { applyPayment, findByTxHash, getAccount } from "@/lib/vpn/store";
 import { getDataPlan, MARZBAN_DATA_PLANS, VPN_LOCATIONS } from "@/lib/vpn/types";
 import { bsc } from "viem/chains";
 
@@ -233,19 +233,13 @@ export async function POST(request: Request) {
         ? "The WireGuard server is not configured."
         : `The ${account.locationId ?? "default"} server is not configured.`;
   } else {
-    while (account.devices.length < account.paidDeviceCount && account.devices.length < MAX_DEVICES_PER_CALL) {
-      const result = await provisionDevice(
-        walletAddress,
-        account.devices.length + 1,
-        account.backend,
-        account.dataPlanId,
-        account.locationId,
-      );
+    for (let delivered = 0; account.devices.length < account.paidDeviceCount && delivered < MAX_DEVICES_PER_CALL; delivered++) {
+      const result = await deliverNextDevice(walletAddress);
       if (!result.ok) {
         provisioningError = result.error;
         break;
       }
-      account = await addDevice(walletAddress, result.device);
+      account = result.account;
     }
   }
 
