@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useAccount, usePublicClient, useSendTransaction, useWriteContract } from "wagmi";
+import { useAccount, usePublicClient, useSendTransaction, useSwitchChain, useWriteContract } from "wagmi";
+import { bsc } from "wagmi/chains";
 import { parseEther, parseUnits } from "viem";
 
 import { erc20Abi } from "@/contracts/erc20Abi";
@@ -14,6 +15,10 @@ const USDT_ADDRESS = "0x55d398326f99059fF775485246999027B3197955" as const;
 // Absorbs ordinary BNB price drift between estimating and sending, same
 // convention as the app's other BNB payment flow (useTokenPayment).
 const BNB_BUFFER = 1.08;
+// How long to wait for the payment to be mined / the server to answer before
+// showing an error instead of spinning forever.
+const RECEIPT_TIMEOUT_MS = 3 * 60_000;
+const VERIFY_TIMEOUT_MS = 90_000;
 
 export type PaymentMethod = "usdt" | "bnb";
 /** "renew" extends every currently active device by 30 days (deviceCount
@@ -29,8 +34,10 @@ type Phase = "idle" | "paying" | "confirming" | "verifying" | "done" | "error";
  * /api/vpn/verify-payment) before treating the payment as recorded.
  */
 export function useVpnPayment() {
-  const { address } = useAccount();
-  const publicClient = usePublicClient();
+  const { address, chainId } = useAccount();
+  // Payments are always on BNB Smart Chain, whatever network the wallet shows.
+  const publicClient = usePublicClient({ chainId: bsc.id });
+  const { switchChainAsync } = useSwitchChain();
   const { writeContractAsync } = useWriteContract();
   const { sendTransactionAsync } = useSendTransaction();
   const { price: bnbPrice } = useNativePrice();
@@ -67,7 +74,10 @@ export function useVpnPayment() {
     setError(null);
     setProvisioningError(null);
     setPhase("paying");
+    let stage: "paying" | "confirming" | "verifying" = "paying";
+    let sentHash: string | undefined;
     try {
+      if (chainId !== bsc.id) await switchChainAsync({ chainId: bsc.id });
       let hash: `0x${string}`;
       if (method === "usdt") {
         const amount = parseUnits(String(requiredUsd(deviceCount, perDeviceUsd)), 18);
@@ -76,19 +86,29 @@ export function useVpnPayment() {
           abi: erc20Abi,
           functionName: "transfer",
           args: [VPN_PAYMENT_ADDRESS, amount],
+          chainId: bsc.id,
         });
       } else {
         const bnbAmount = estimatedBnb(deviceCount, perDeviceUsd);
         if (!bnbAmount) throw new Error("BNB price unavailable - try USDT instead");
-        hash = await sendTransactionAsync({ to: VPN_PAYMENT_ADDRESS, value: parseEther(bnbAmount.toFixed(8)) });
+        hash = await sendTransactionAsync({
+          to: VPN_PAYMENT_ADDRESS,
+          value: parseEther(bnbAmount.toFixed(8)),
+          chainId: bsc.id,
+        });
       }
       setTxHash(hash);
+      sentHash = hash;
+      stage = "confirming";
       setPhase("confirming");
-      await publicClient?.waitForTransactionReceipt({ hash });
+      if (!publicClient) throw new Error("BNB Smart Chain connection unavailable - refresh and try again");
+      await publicClient.waitForTransactionReceipt({ hash, timeout: RECEIPT_TIMEOUT_MS });
 
+      stage = "verifying";
       setPhase("verifying");
       const res = await fetch("/api/vpn/verify-payment", {
         method: "POST",
+        signal: AbortSignal.timeout(VERIFY_TIMEOUT_MS),
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           walletAddress: address,
@@ -106,6 +126,16 @@ export function useVpnPayment() {
 
       setPhase("done");
     } catch (err) {
+      const timedOut = err instanceof Error && /timeout|timed out/i.test(`${err.name} ${err.message}`);
+      if (timedOut && stage !== "paying") {
+        setError(
+          stage === "confirming"
+            ? `The network is slow to confirm your payment. It was sent (${sentHash}) - refresh this page in a few minutes to see your config.`
+            : `Your payment was sent (${sentHash}) but the server is slow to respond. Refresh this page in a minute to see your config.`,
+        );
+        setPhase("error");
+        return;
+      }
       setError(parseContractError(err));
       setPhase("error");
     }

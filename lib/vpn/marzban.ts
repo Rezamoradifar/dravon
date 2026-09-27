@@ -1,6 +1,12 @@
 import { getVpnConfig, isMarzbanConfigured, type MarzbanServerConfig } from "@/lib/vpn/config";
 import { DEFAULT_LOCATION_ID } from "@/lib/vpn/types";
 
+// A Marzban server that doesn't answer must fail fast, not hold the buyer's
+// request open for minutes.
+const MARZBAN_TIMEOUT_MS = 15_000;
+const timedFetch = (url: string, init: RequestInit = {}) =>
+  fetch(url, { ...init, signal: AbortSignal.timeout(MARZBAN_TIMEOUT_MS) });
+
 interface MarzbanInboundInfo {
   tag: string;
   protocol: string;
@@ -9,7 +15,7 @@ interface MarzbanInboundInfo {
 type MarzbanInboundsByProtocol = Record<string, MarzbanInboundInfo[]>;
 
 async function getMarzbanToken(server: MarzbanServerConfig): Promise<string> {
-  const res = await fetch(`${server.apiUrl}/api/admin/token`, {
+  const res = await timedFetch(`${server.apiUrl}/api/admin/token`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ username: server.username, password: server.password }),
@@ -20,7 +26,7 @@ async function getMarzbanToken(server: MarzbanServerConfig): Promise<string> {
 }
 
 async function getMarzbanInbounds(server: MarzbanServerConfig, token: string): Promise<MarzbanInboundsByProtocol> {
-  const res = await fetch(`${server.apiUrl}/api/inbounds`, {
+  const res = await timedFetch(`${server.apiUrl}/api/inbounds`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error(`Marzban inbounds fetch failed (${res.status})`);
@@ -89,7 +95,7 @@ export async function provisionMarzbanDevice(
     }
 
     const username = marzbanUsername(walletAddress, deviceIndex);
-    const res = await fetch(`${server.apiUrl}/api/user`, {
+    const res = await timedFetch(`${server.apiUrl}/api/user`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({
@@ -106,7 +112,7 @@ export async function provisionMarzbanDevice(
       // A device that already exists for this wallet (e.g. a renewal) is
       // fine - fetch its existing subscription instead of failing.
       if (res.status === 409) {
-        const existing = await fetch(`${server.apiUrl}/api/user/${username}`, {
+        const existing = await timedFetch(`${server.apiUrl}/api/user/${username}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (existing.ok) {
@@ -140,13 +146,13 @@ export async function renewMarzbanDevice(
   const username = marzbanUsername(walletAddress, deviceIndex);
   try {
     const token = await getMarzbanToken(server);
-    const res = await fetch(`${server.apiUrl}/api/user/${username}`, {
+    const res = await timedFetch(`${server.apiUrl}/api/user/${username}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ expire: expireUnixSeconds, status: "active" }),
     });
     if (!res.ok) return { ok: false, error: `Marzban renewal failed (${res.status}): ${await res.text()}` };
-    const reset = await fetch(`${server.apiUrl}/api/user/${username}/reset`, {
+    const reset = await timedFetch(`${server.apiUrl}/api/user/${username}/reset`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
     });
