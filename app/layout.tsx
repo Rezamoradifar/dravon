@@ -5,14 +5,13 @@ import Script from "next/script";
 import "./globals.css";
 import { Providers } from "./providers";
 import { AppShell } from "@/components/layout/app-shell";
-import { FloatingLights } from "@/components/layout/floating-lights";
 import { AskAssistant } from "@/components/assistant/ask-assistant";
 import { RegisterServiceWorker } from "@/components/pwa/register-service-worker";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const vazirmatn = Vazirmatn({ subsets: ["arabic"], variable: "--font-vazirmatn", display: "swap" });
 
-const title = "Round Dashboard - Web3 Round Window Control Center";
+const title = "Smart Contract Ecosystem";
 const description =
   "Manage registration, top-ups, statistics, referrals and account actions for the round-window smart contract, with live on-chain data and a built-in BNB Chain swap.";
 
@@ -79,7 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Script id="crash-diagnostic" strategy="beforeInteractive">
           {`
             (function () {
-              var RELOAD_KEY = '__chunk_reload_attempted';
+              var RELOAD_KEY = 'dravon:chunk-recovery:v2';
 
               function isChunkLoadError(message) {
                 // Webpack's ChunkLoadError sets error.name to "ChunkLoadError" but
@@ -96,14 +95,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               // error. Guarded by sessionStorage so a genuinely broken deploy
               // still falls through to the visible overlay instead of looping.
               function tryAutoRecover(message) {
-                if (!isChunkLoadError(message)) return false;
+                if (!isChunkLoadError(message) || navigator.onLine === false) return false;
                 try {
-                  if (sessionStorage.getItem(RELOAD_KEY)) return false;
-                  sessionStorage.setItem(RELOAD_KEY, '1');
+                  var previous = Number(sessionStorage.getItem(RELOAD_KEY));
+                  var now = Date.now();
+                  if (previous && now - previous < 5 * 60 * 1000) return false;
+                  sessionStorage.setItem(RELOAD_KEY, String(now));
                 } catch (e) {
                   return false;
                 }
-                location.reload();
+                var fresh = new URL(location.href);
+                fresh.searchParams.set("_dravon_reload", String(Date.now()));
+                location.replace(fresh.toString());
                 return true;
               }
 
@@ -150,7 +153,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Script>
         <RegisterServiceWorker />
         <Providers>
-          <FloatingLights />
           <AppShell maintenanceMode={MAINTENANCE_MODE}>{children}</AppShell>
           {!MAINTENANCE_MODE && <AskAssistant />}
         </Providers>
