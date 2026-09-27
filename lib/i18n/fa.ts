@@ -918,6 +918,8 @@ export const fa: Dictionary = {
     open: "باز کردن",
   },
   vpnPage: {
+    dataPlan: "پلن",
+    provisioningPending: "پرداخت دریافت شد، ولی کانفیگ VPN هنوز ساخته نشد. هش تراکنش زیر رو برای پشتیبانی بفرست تا دستی تحویل داده بشه.",
     title: "NodeShield",
     description: "یه VPN با پرداخت مستقیم از کیف‌پول متصل‌شده‌ی شما - WireGuard یا V2Ray/Shadowsocks (Marzban).",
     notLive: "هنوز فعال نیست",

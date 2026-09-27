@@ -916,6 +916,8 @@ export const en = {
     open: "Open",
   },
   vpnPage: {
+    dataPlan: "Plan",
+    provisioningPending: "Payment received, but your VPN config could not be created yet. Contact support with the transaction hash below and it will be delivered manually.",
     title: "NodeShield",
     description: "A VPN, paid for directly with your connected wallet - WireGuard or V2Ray/Shadowsocks (Marzban).",
     notLive: "Not live yet",

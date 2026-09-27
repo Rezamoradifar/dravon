@@ -37,12 +37,22 @@ export function useVpnPayment() {
   const [phase, setPhase] = React.useState<Phase>("idle");
   const [error, setError] = React.useState<string | null>(null);
   const [txHash, setTxHash] = React.useState<string | null>(null);
+  /** Set when the payment was recorded but the config could not be created yet. */
+  const [provisioningError, setProvisioningError] = React.useState<string | null>(null);
 
-  const requiredUsd = (deviceCount: number) => deviceCount * PRICE_PER_DEVICE_USD;
-  const estimatedBnb = (deviceCount: number) =>
-    bnbPrice ? (requiredUsd(deviceCount) / bnbPrice) * BNB_BUFFER : undefined;
+  const requiredUsd = (deviceCount: number, perDeviceUsd: number = PRICE_PER_DEVICE_USD) =>
+    Math.round(deviceCount * perDeviceUsd * 100) / 100;
+  const estimatedBnb = (deviceCount: number, perDeviceUsd: number = PRICE_PER_DEVICE_USD) =>
+    bnbPrice ? (requiredUsd(deviceCount, perDeviceUsd) / bnbPrice) * BNB_BUFFER : undefined;
 
-  async function pay(deviceCount: number, method: PaymentMethod, backend: VpnBackend, intent: PaymentIntent) {
+  async function pay(
+    deviceCount: number,
+    method: PaymentMethod,
+    backend: VpnBackend,
+    intent: PaymentIntent,
+    options: { dataPlanId?: string; locationId?: string; perDeviceUsd?: number } = {},
+  ) {
+    const perDeviceUsd = options.perDeviceUsd ?? PRICE_PER_DEVICE_USD;
     if (!address) {
       setError("Connect your wallet first");
       setPhase("error");
@@ -55,11 +65,12 @@ export function useVpnPayment() {
     }
 
     setError(null);
+    setProvisioningError(null);
     setPhase("paying");
     try {
       let hash: `0x${string}`;
       if (method === "usdt") {
-        const amount = parseUnits(String(requiredUsd(deviceCount)), 18);
+        const amount = parseUnits(String(requiredUsd(deviceCount, perDeviceUsd)), 18);
         hash = await writeContractAsync({
           address: USDT_ADDRESS,
           abi: erc20Abi,
@@ -67,7 +78,7 @@ export function useVpnPayment() {
           args: [VPN_PAYMENT_ADDRESS, amount],
         });
       } else {
-        const bnbAmount = estimatedBnb(deviceCount);
+        const bnbAmount = estimatedBnb(deviceCount, perDeviceUsd);
         if (!bnbAmount) throw new Error("BNB price unavailable - try USDT instead");
         hash = await sendTransactionAsync({ to: VPN_PAYMENT_ADDRESS, value: parseEther(bnbAmount.toFixed(8)) });
       }
@@ -79,10 +90,19 @@ export function useVpnPayment() {
       const res = await fetch("/api/vpn/verify-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ walletAddress: address, txHash: hash, method, deviceCount, backend, intent }),
+        body: JSON.stringify({
+          walletAddress: address,
+          txHash: hash,
+          method,
+          deviceCount,
+          backend,
+          intent,
+          ...(backend === "marzban" ? { dataPlanId: options.dataPlanId, locationId: options.locationId } : {}),
+        }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Verification failed");
+      if (json.provisioningError) setProvisioningError(json.provisioningError);
 
       setPhase("done");
     } catch (err) {
@@ -95,7 +115,8 @@ export function useVpnPayment() {
     setPhase("idle");
     setError(null);
     setTxHash(null);
+    setProvisioningError(null);
   }
 
-  return { pay, reset, phase, error, txHash, requiredUsd, estimatedBnb };
+  return { pay, reset, phase, error, txHash, provisioningError, requiredUsd, estimatedBnb };
 }

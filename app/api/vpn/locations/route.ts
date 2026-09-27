@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getVpnConfig, isMarzbanConfigured } from "@/lib/vpn/config";
+import { getVpnConfig, isMarzbanConfigured, isServerConfigured } from "@/lib/vpn/config";
 import { VPN_LOCATIONS } from "@/lib/vpn/types";
 
 export const runtime = "nodejs";
@@ -19,5 +19,5 @@ export async function GET() {
     ...location,
     available: isMarzbanConfigured(config, location.id),
   }));
-  return NextResponse.json({ ok: true, locations });
+  return NextResponse.json({ ok: true, locations, wireguardAvailable: isServerConfigured(config) });
 }

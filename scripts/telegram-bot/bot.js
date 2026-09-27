@@ -941,14 +941,15 @@ bot.on("message", async (msg) => {
     saveBotUser(chatId, session.walletAddress, account);
 
     const newDevices = account.devices.slice(-session.deviceCount);
-    if (newDevices.length > 0 && newDevices.every((d) => d.provisionedAt)) {
+    if (!json.provisioningError && newDevices.length > 0 && newDevices.every((d) => d.provisionedAt)) {
       bot.sendMessage(chatId, t(lang, "paymentConfirmedHeader"));
       await sendDeviceConfigs(chatId, lang, newDevices);
       bot.sendMessage(chatId, t(lang, "inviteFriendsPrompt"), { reply_markup: inviteReminderKeyboard(lang) });
     } else {
       bot.sendMessage(chatId, t(lang, "provisioningPending"));
       if (ADMIN_CHAT_ID) {
-        bot.sendMessage(ADMIN_CHAT_ID, t(getUserLang(ADMIN_CHAT_ID), "pendingProvisionAdminNotice", { wallet: session.walletAddress }));
+        const notice = t(getUserLang(ADMIN_CHAT_ID), "pendingProvisionAdminNotice", { wallet: session.walletAddress });
+        bot.sendMessage(ADMIN_CHAT_ID, json.provisioningError ? `${notice}\n\n${json.provisioningError}` : notice);
       }
     }
 

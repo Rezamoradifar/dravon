@@ -35,6 +35,13 @@ function marzbanUsername(walletAddress: string, deviceIndex: number | string): s
   return `w${walletAddress.slice(2, 12).toLowerCase()}d${deviceIndex}`;
 }
 
+/** Marzban returns an absolute link when its XRAY_SUBSCRIPTION_URL_PREFIX is
+ * set, and a path otherwise - only a path gets the API origin prepended. */
+export function toSubscriptionUrl(apiUrl: string, subscriptionUrl: string): string {
+  if (/^https?:\/\//i.test(subscriptionUrl)) return subscriptionUrl;
+  return `${apiUrl.replace(/\/+$/, "")}${subscriptionUrl.startsWith("/") ? "" : "/"}${subscriptionUrl}`;
+}
+
 export type MarzbanResult =
   | { ok: true; subscriptionUrl: string }
   | { ok: false; error: string };
@@ -104,14 +111,47 @@ export async function provisionMarzbanDevice(
         });
         if (existing.ok) {
           const json = await existing.json();
-          return { ok: true, subscriptionUrl: `${server.apiUrl}${json.subscription_url}` };
+          return { ok: true, subscriptionUrl: toSubscriptionUrl(server.apiUrl, json.subscription_url) };
         }
       }
       return { ok: false, error: `Marzban user creation failed (${res.status}): ${await res.text()}` };
     }
 
     const json = await res.json();
-    return { ok: true, subscriptionUrl: `${server.apiUrl}${json.subscription_url}` };
+    return { ok: true, subscriptionUrl: toSubscriptionUrl(server.apiUrl, json.subscription_url) };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Unknown Marzban error" };
+  }
+}
+
+/**
+ * Renewal: pushes an existing Marzban user's expiry out and resets its data
+ * usage for the new period, so a paid renewal actually keeps the config working.
+ */
+export async function renewMarzbanDevice(
+  walletAddress: string,
+  deviceIndex: number | string,
+  expireUnixSeconds: number,
+  locationId: string = DEFAULT_LOCATION_ID,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const config = getVpnConfig();
+  if (!isMarzbanConfigured(config, locationId)) return { ok: false, error: "Marzban is not configured yet for this location" };
+  const server = config.marzban[locationId]!;
+  const username = marzbanUsername(walletAddress, deviceIndex);
+  try {
+    const token = await getMarzbanToken(server);
+    const res = await fetch(`${server.apiUrl}/api/user/${username}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ expire: expireUnixSeconds, status: "active" }),
+    });
+    if (!res.ok) return { ok: false, error: `Marzban renewal failed (${res.status}): ${await res.text()}` };
+    const reset = await fetch(`${server.apiUrl}/api/user/${username}/reset`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!reset.ok) return { ok: false, error: `Marzban usage reset failed (${reset.status})` };
+    return { ok: true };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Unknown Marzban error" };
   }

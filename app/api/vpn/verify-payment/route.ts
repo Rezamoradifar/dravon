@@ -5,6 +5,7 @@ import { erc20Abi } from "@/contracts/erc20Abi";
 import { chainlinkAggregatorAbi } from "@/contracts/chainlinkAggregatorAbi";
 import { NATIVE_PRICE_FEEDS } from "@/lib/nativePriceFeeds";
 import { getVpnConfig, isPaymentConfigured, isServerConfigured, isMarzbanConfigured } from "@/lib/vpn/config";
+import { renewMarzbanDevice } from "@/lib/vpn/marzban";
 import { provisionDevice } from "@/lib/vpn/provision";
 import { vpnServerPublicClient } from "@/lib/vpn/serverPublicClient";
 import { addDevice, applyPayment, findByTxHash, getAccount } from "@/lib/vpn/store";
@@ -126,7 +127,9 @@ export async function POST(request: Request) {
   // GB data plans only change the price for Marzban; WireGuard always uses
   // the flat per-device rate, and Marzban with no plan given (or plan
   // "unlimited") also resolves to that same flat rate.
-  const perDevicePrice = backend === "marzban" ? getDataPlan(dataPlanId as string | undefined).priceUsd : config.pricePerDeviceUsd;
+  const planIdForPrice =
+    (dataPlanId as string | undefined) ?? (intent === "renew" ? existingAccount?.dataPlanId : undefined);
+  const perDevicePrice = backend === "marzban" ? getDataPlan(planIdForPrice).priceUsd : config.pricePerDeviceUsd;
   const requiredUsd = chargeDeviceCount * perDevicePrice;
   let paidUsd: number;
 
@@ -218,12 +221,18 @@ export async function POST(request: Request) {
   });
 
   // Provision whatever devices this payment brought the account up to,
-  // capped per-call - if the backend isn't configured, or a provisioning
-  // call fails partway through, the account simply stays under its
-  // paidDeviceCount and the admin panel's fallback list picks up the rest.
+  // capped per-call. A failure is reported back (and logged) rather than
+  // hidden: the payment is already recorded, the buyer needs to know their
+  // config is pending, and the admin panel's pending list can retry it.
+  let provisioningError: string | undefined;
   const backendReady =
     account.backend === "wireguard" ? isServerConfigured(config) : isMarzbanConfigured(config, account.locationId);
-  if (backendReady) {
+  if (!backendReady) {
+    provisioningError =
+      account.backend === "wireguard"
+        ? "The WireGuard server is not configured."
+        : `The ${account.locationId ?? "default"} server is not configured.`;
+  } else {
     while (account.devices.length < account.paidDeviceCount && account.devices.length < MAX_DEVICES_PER_CALL) {
       const result = await provisionDevice(
         walletAddress,
@@ -232,9 +241,33 @@ export async function POST(request: Request) {
         account.dataPlanId,
         account.locationId,
       );
-      if (!result.ok) break;
+      if (!result.ok) {
+        provisioningError = result.error;
+        break;
+      }
       account = await addDevice(walletAddress, result.device);
     }
+  }
+
+  // A renewal must also extend each existing Marzban user on its server,
+  // otherwise the config stops working at the old expiry despite payment.
+  if (intent === "renew" && account.backend === "marzban") {
+    const expireUnix = Math.floor(new Date(account.expiresAt).getTime() / 1000);
+    for (const [index, device] of account.devices.entries()) {
+      if (device.backend !== "marzban" || device.dataPlanId === "trial") continue;
+      const renewed = await renewMarzbanDevice(
+        walletAddress,
+        index + 1,
+        expireUnix,
+        device.locationId ?? account.locationId,
+      );
+      if (!renewed.ok) provisioningError = renewed.error;
+    }
+  }
+
+  if (provisioningError) {
+    console.error("[vpn] paid but provisioning failed", { walletAddress, txHash, provisioningError });
+    return NextResponse.json({ ok: true, account, provisioningError });
   }
 
   return NextResponse.json({ ok: true, account });

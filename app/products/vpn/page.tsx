@@ -15,27 +15,35 @@ import { useVpnPayment, type PaymentIntent, type PaymentMethod } from "@/hooks/u
 import { useVpnAccount } from "@/hooks/useVpnAccount";
 import { VPN_PAYMENTS_LIVE, PRICE_PER_DEVICE_USD, TELEGRAM_BOT_URL } from "@/lib/vpn/publicConfig";
 import { useTranslation } from "@/contexts/language-context";
-import { backendDisplayLabel, VPN_LOCATIONS, type VpnAccount, type VpnBackend } from "@/lib/vpn/types";
+import {
+  backendDisplayLabel,
+  DEFAULT_DATA_PLAN_ID,
+  getDataPlan,
+  MARZBAN_DATA_PLANS,
+  VPN_LOCATIONS,
+  type VpnAccount,
+  type VpnBackend,
+} from "@/lib/vpn/types";
 
 const MAX_DEVICES = 10;
 
-/** Purely decorative here (no click handler - picking a country doesn't
- * change anything about the purchase yet). `available` starts from the
- * marketed location list (only "US" assumed live) and is refined after
- * mount from /api/vpn/locations - the same real-config check the Telegram
- * bot's actual country picker uses - so a newly-configured server shows as
- * live here without another code change. */
+/** Marketed locations plus which are actually live (their Marzban server is
+ * configured) and whether the WireGuard server is set up - from
+ * /api/vpn/locations, the same check the Telegram bot's country picker uses. */
 function useVpnCountries() {
-  const [countries, setCountries] = React.useState(
-    VPN_LOCATIONS.map((location) => ({ ...location, available: location.id === "us" })),
-  );
+  const [state, setState] = React.useState({
+    countries: VPN_LOCATIONS.map((location) => ({ ...location, available: location.id === "us" })),
+    wireguardAvailable: false,
+  });
 
   React.useEffect(() => {
     let cancelled = false;
     fetch("/api/vpn/locations")
       .then((res) => res.json())
       .then((json) => {
-        if (!cancelled && json?.ok) setCountries(json.locations);
+        if (!cancelled && json?.ok) {
+          setState({ countries: json.locations, wireguardAvailable: Boolean(json.wireguardAvailable) });
+        }
       })
       .catch(() => {});
     return () => {
@@ -43,20 +51,28 @@ function useVpnCountries() {
     };
   }, []);
 
-  return countries;
+  return state;
 }
 
 function PurchaseCard({ account, onPaid }: { account: VpnAccount | null; onPaid: () => void }) {
-  const { pay, phase, error, reset, requiredUsd, estimatedBnb } = useVpnPayment();
+  const { pay, phase, error, reset, txHash, provisioningError, requiredUsd, estimatedBnb } = useVpnPayment();
   const { t } = useTranslation();
   const existingCount = account?.paidDeviceCount ?? 0;
   const hasAccount = existingCount > 0;
   const [mode, setMode] = React.useState<PaymentIntent>(hasAccount ? "renew" : "add");
   const [addCount, setAddCount] = React.useState(1);
   const [method, setMethod] = React.useState<PaymentMethod>("usdt");
-  const [backend, setBackend] = React.useState<VpnBackend>("wireguard");
+  const [backend, setBackend] = React.useState<VpnBackend>("marzban");
+  const [planId, setPlanId] = React.useState(DEFAULT_DATA_PLAN_ID);
+  const [locationId, setLocationId] = React.useState<string | undefined>(undefined);
   const isBusy = phase === "paying" || phase === "confirming" || phase === "verifying";
-  const countries = useVpnCountries();
+  const { countries, wireguardAvailable } = useVpnCountries();
+
+  // Default to the first live location once availability is known.
+  React.useEffect(() => {
+    if (locationId && countries.some((c) => c.id === locationId && c.available)) return;
+    setLocationId(countries.find((c) => c.available)?.id);
+  }, [countries, locationId]);
 
   // Once the account loads (e.g. right after this page mounts), default to
   // "renew" for an existing buyer instead of leaving the first-purchase
@@ -72,6 +88,12 @@ function PurchaseCard({ account, onPaid }: { account: VpnAccount | null; onPaid:
 
   const effectiveBackend = hasAccount ? account!.backend : backend;
   const chargeDeviceCount = mode === "renew" ? existingCount : addCount;
+  const isMarzban = effectiveBackend === "marzban";
+  // A renewal is priced on the account's own plan; a new device on the picked plan.
+  const effectivePlanId = mode === "renew" ? account?.dataPlanId : planId;
+  const perDeviceUsd = isMarzban ? getDataPlan(effectivePlanId).priceUsd : PRICE_PER_DEVICE_USD;
+  const canPickLocation = isMarzban && mode === "add";
+  const noLiveLocation = isMarzban && !countries.some((c) => c.available);
 
   return (
     <Card className="card-glow flex flex-col">
@@ -84,13 +106,18 @@ function PurchaseCard({ account, onPaid }: { account: VpnAccount | null; onPaid:
           <span className="text-sm text-muted-foreground">{t("vpnPage.serverLocation")}</span>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
             {countries.map((country) => (
-              <div
+              <button
                 key={country.id}
+                type="button"
+                disabled={!country.available || !canPickLocation || phase === "done"}
+                onClick={() => setLocationId(country.id)}
                 className={cn(
-                  "relative flex flex-col items-center gap-0.5 rounded-lg border px-2 py-2 text-center text-xs",
-                  country.available
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border text-muted-foreground opacity-50",
+                  "relative flex flex-col items-center gap-0.5 rounded-lg border px-2 py-2 text-center text-xs transition-colors",
+                  !country.available
+                    ? "border-border text-muted-foreground opacity-50"
+                    : country.id === (canPickLocation ? locationId : account?.locationId ?? locationId)
+                      ? "border-primary bg-primary/15 text-primary ring-1 ring-primary"
+                      : "border-border text-foreground",
                 )}
               >
                 <span className="text-lg leading-none">{country.flag}</span>
@@ -100,7 +127,7 @@ function PurchaseCard({ account, onPaid }: { account: VpnAccount | null; onPaid:
                     {t("vpnPage.comingSoon")}
                   </span>
                 )}
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -182,7 +209,7 @@ function PurchaseCard({ account, onPaid }: { account: VpnAccount | null; onPaid:
           <div className="space-y-1.5">
             <span className="text-sm text-muted-foreground">{t("vpnPage.backend")}</span>
             <div className="flex gap-2">
-              {(["wireguard", "marzban"] as const).map((b) => (
+              {(wireguardAvailable ? (["wireguard", "marzban"] as const) : (["marzban"] as const)).map((b) => (
                 <button
                   key={b}
                   type="button"
@@ -201,19 +228,47 @@ function PurchaseCard({ account, onPaid }: { account: VpnAccount | null; onPaid:
           </div>
         )}
 
+        {isMarzban && mode === "add" && (
+          <div className="space-y-1.5">
+            <span className="text-sm text-muted-foreground">{t("vpnPage.dataPlan")}</span>
+            <div className="grid grid-cols-2 gap-2">
+              {MARZBAN_DATA_PLANS.map((plan) => (
+                <button
+                  key={plan.id}
+                  type="button"
+                  disabled={phase === "done"}
+                  onClick={() => setPlanId(plan.id)}
+                  className={cn(
+                    "rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
+                    planId === plan.id ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground",
+                  )}
+                >
+                  {plan.label} · ${plan.priceUsd}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="rounded-lg border bg-muted/30 p-3 text-center">
           <p className="text-2xl font-bold">
-            ${requiredUsd(chargeDeviceCount)}
+            ${requiredUsd(chargeDeviceCount, perDeviceUsd)}
             <span className="text-sm font-normal text-muted-foreground"> / {t("vpnPage.perMonth")}</span>
           </p>
           {method === "bnb" && (
             <p className="mt-1 text-xs text-muted-foreground">
-              ≈ {estimatedBnb(chargeDeviceCount)?.toFixed(4) ?? "..."} BNB
+              ≈ {estimatedBnb(chargeDeviceCount, perDeviceUsd)?.toFixed(4) ?? "..."} BNB
             </p>
           )}
         </div>
 
-        {phase === "done" ? (
+        {phase === "done" && provisioningError ? (
+          <div className="space-y-1 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+            <p className="font-medium">{t("vpnPage.provisioningPending")}</p>
+            <p className="text-xs text-muted-foreground">{provisioningError}</p>
+            {txHash && <p className="break-all font-mono text-[11px] text-muted-foreground">{txHash}</p>}
+          </div>
+        ) : phase === "done" ? (
           <div className="flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 p-3 text-sm text-success">
             <CheckCircle2 className="h-4 w-4 shrink-0" />
             {t("vpnPage.paidSuccess")}
@@ -221,8 +276,14 @@ function PurchaseCard({ account, onPaid }: { account: VpnAccount | null; onPaid:
         ) : (
           <Button
             className="w-full gap-1.5"
-            disabled={isBusy}
-            onClick={() => pay(chargeDeviceCount, method, effectiveBackend, mode)}
+            disabled={isBusy || noLiveLocation}
+            onClick={() =>
+              pay(chargeDeviceCount, method, effectiveBackend, mode, {
+                dataPlanId: mode === "add" ? planId : account?.dataPlanId,
+                locationId: mode === "add" ? locationId : undefined,
+                perDeviceUsd,
+              })
+            }
           >
             {isBusy && <Loader2 className="h-4 w-4 animate-spin" />}
             {phase === "paying" && t("vpnPage.confirmInWallet")}
