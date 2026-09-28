@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isAddress } from "viem";
 
 import { verifyWalletSignature } from "@/lib/vpn/walletAuth";
+import { deliverNextDevice } from "@/lib/vpn/delivery";
 import { getAccount } from "@/lib/vpn/store";
 
 export const runtime = "nodejs";
@@ -19,7 +20,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { address, timestamp, signature } = (body ?? {}) as {
+  const { address, timestamp, signature, retryDelivery } = (body ?? {}) as {
+    retryDelivery?: unknown;
     address?: unknown;
     timestamp?: unknown;
     signature?: unknown;
@@ -30,6 +32,11 @@ export async function POST(request: Request) {
   }
   const auth = await verifyWalletSignature({ address, timestamp, signature: signature as `0x${string}` });
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: 401 });
+
+  if (retryDelivery === true) {
+    const result = await deliverNextDevice(address);
+    return NextResponse.json(result, { status: result.ok ? 200 : 502 });
+  }
 
   const account = await getAccount(address);
   return NextResponse.json({ ok: true, account: account ?? null });

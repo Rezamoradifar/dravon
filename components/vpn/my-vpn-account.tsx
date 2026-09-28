@@ -101,10 +101,12 @@ export function MyVpnAccount({
   account,
   isLoading,
   error,
+  onRetryDelivery,
 }: {
   account: VpnAccount | null;
   isLoading: boolean;
   error: string | null;
+  onRetryDelivery: () => void;
 }) {
   const { address, isConnected } = useAccount();
   const { t } = useTranslation();
@@ -153,7 +155,13 @@ export function MyVpnAccount({
         ))}
 
         {awaitingCount > 0 && (
-          <p className="text-xs text-muted-foreground">{t("myVpn.awaitingProvisioning", { count: awaitingCount })}</p>
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">{t("myVpn.awaitingProvisioning", { count: awaitingCount })}</p>
+            <Button disabled={isLoading} onClick={onRetryDelivery} variant="outline">
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {t("myVpn.retryDelivery")}
+            </Button>
+          </div>
         )}
       </CardContent>
     </Card>

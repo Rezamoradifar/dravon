@@ -325,7 +325,7 @@ function VpnAccountArea() {
       <div className="mx-auto max-w-md">
         <PurchaseCard account={account} onPaid={() => reload()} />
       </div>
-      <MyVpnAccount account={account} isLoading={isLoading} error={error} />
+      <MyVpnAccount account={account} isLoading={isLoading} error={error} onRetryDelivery={() => reload(true)} />
     </>
   );
 }
