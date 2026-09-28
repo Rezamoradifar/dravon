@@ -4,12 +4,15 @@ import * as React from "react";
 import { toast } from "sonner";
 import {
   useAccount,
+  useChainId,
   useReadContract,
   useWriteContract,
   usePublicClient,
 } from "wagmi";
 import { type Address, parseUnits, parseEther, maxUint256 } from "viem";
 
+import { CHAIN_ID, CONTRACTS_CONFIGURED, FACTORY_ADDRESS } from "@/contracts/addresses";
+import { factoryAbi } from "@/contracts/factoryAbi";
 import { erc20FullAbi } from "@/contracts/pancakeRouterAbi";
 import { useNativePrice } from "@/hooks/useNativePrice";
 import { parseContractError } from "@/lib/errors";
@@ -25,11 +28,12 @@ export type PaymentMethod = "usdt" | "bnb";
 export function useTokenPayment(
   costUsd: number | undefined,
   stableToken: Address | undefined,
-  spender: Address,
+  spender: Address | undefined,
   nativeBalance?: bigint,
 ) {
   const { address } = useAccount();
-  const publicClient = usePublicClient();
+  const publicClient = usePublicClient({ chainId: CHAIN_ID });
+  const chainId = useChainId();
   const [method, setMethod] = React.useState<PaymentMethod>("usdt");
   const [bnbAmount, setBnbAmount] = React.useState("");
   const [isApproving, setIsApproving] = React.useState(false);
@@ -41,10 +45,11 @@ export function useTokenPayment(
 
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: stableToken,
+    chainId: CHAIN_ID,
     abi: erc20FullAbi,
     functionName: "allowance",
-    args: address && stableToken ? [address, spender] : undefined,
-    query: { enabled: Boolean(address && stableToken) },
+    args: address && stableToken && spender ? [address, spender] : undefined,
+    query: { enabled: Boolean(address && stableToken && spender) },
   });
 
   const needsApproval =
@@ -74,17 +79,22 @@ export function useTokenPayment(
   }, [estimatedBnb !== undefined]);
 
   async function approve() {
-    if (!stableToken || requiredUsdt === undefined) return;
+    if (!CONTRACTS_CONFIGURED || !stableToken || !spender || requiredUsdt === undefined || !publicClient) return;
     setIsApproving(true);
     const toastId = toast.loading("Approve USDT spending in your wallet...");
     try {
+      if (chainId !== CHAIN_ID) throw new Error("Switch your wallet to the contract network first.");
+      const latest = await publicClient.readContract({ address: FACTORY_ADDRESS, abi: factoryAbi, functionName: "getLatestWindow" });
+      if (latest.toLowerCase() !== spender.toLowerCase()) throw new Error("The round changed. Refresh before approving USDT.");
       const txHash = await writeContractAsync({
+        chainId: CHAIN_ID,
         address: stableToken,
         abi: erc20FullAbi,
         functionName: "approve",
         args: [spender, maxUint256],
       });
-      await publicClient?.waitForTransactionReceipt({ hash: txHash });
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+      if (receipt.status !== "success") throw new Error("USDT approval reverted.");
       await refetchAllowance();
       toast.success("USDT approved", { id: toastId });
     } catch (error) {
@@ -122,6 +132,6 @@ export function useTokenPayment(
     setBnbAmount,
     estimatedBnb,
     value,
-    isPaymentValid,
+    isPaymentValid: isPaymentValid && CONTRACTS_CONFIGURED && Boolean(spender) && chainId === CHAIN_ID,
   };
 }

@@ -10,7 +10,10 @@ import {
   useChainId,
   useChains,
 } from "wagmi";
-import type { Abi } from "viem";
+import { zeroAddress, type Abi } from "viem";
+import { CHAIN_ID, CONTRACTS_CONFIGURED, FACTORY_ADDRESS } from "@/contracts/addresses";
+import { factoryAbi } from "@/contracts/factoryAbi";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { roundWindowAbi } from "@/contracts/roundWindowAbi";
 import { parseContractError } from "@/lib/errors";
@@ -35,7 +38,8 @@ export function useContractWrite(functionName: RoundWindowFunctionName) {
   const { address } = useAccount();
   const chainId = useChainId();
   const chains = useChains();
-  const publicClient = usePublicClient();
+  const publicClient = usePublicClient({ chainId: CHAIN_ID });
+  const queryClient = useQueryClient();
   const { address: windowAddress } = useLatestRoundWindow();
   const [estimatedGas, setEstimatedGas] = React.useState<bigint | null>(null);
   const [isEstimating, setIsEstimating] = React.useState(false);
@@ -51,12 +55,25 @@ export function useContractWrite(functionName: RoundWindowFunctionName) {
 
   const chain = chains.find((c) => c.id === chainId);
 
+  async function resolveWriteWindow() {
+    if (!CONTRACTS_CONFIGURED || !publicClient || !address) throw new Error("Contract v7.4 is not configured or wallet is disconnected.");
+    if (chainId !== CHAIN_ID) throw new Error("Switch your wallet to the contract network first.");
+    const latest = await publicClient.readContract({ address: FACTORY_ADDRESS, abi: factoryAbi, functionName: "getLatestWindow" });
+    if (latest === zeroAddress) throw new Error("The factory has no active round window.");
+    if (!windowAddress || latest.toLowerCase() !== windowAddress.toLowerCase()) {
+      await queryClient.invalidateQueries();
+      throw new Error("The round window changed. Refresh the payment approval and try again.");
+    }
+    return latest;
+  }
+
   async function estimateGas(args: readonly unknown[], value?: bigint) {
     if (!publicClient || !address) return null;
     setIsEstimating(true);
     try {
+      const latest = await resolveWriteWindow();
       const gas = await publicClient.estimateContractGas({
-        address: windowAddress,
+        address: latest,
         abi: roundWindowAbi as unknown as Abi,
         functionName,
         args,
@@ -77,8 +94,11 @@ export function useContractWrite(functionName: RoundWindowFunctionName) {
     reset();
     const toastId = toast.loading("Confirm the transaction in your wallet...");
     try {
+      const latest = await resolveWriteWindow();
+      await publicClient!.simulateContract({ address: latest, abi: roundWindowAbi as unknown as Abi, functionName, args, account: address, value });
       const txHash = await writeContractAsync({
-        address: windowAddress,
+        chainId: CHAIN_ID,
+        address: latest,
         abi: roundWindowAbi as unknown as Abi,
         functionName,
         args,
@@ -111,6 +131,7 @@ export function useContractWrite(functionName: RoundWindowFunctionName) {
         return null;
       }
 
+      await queryClient.invalidateQueries();
       updateActivityStatus(txHash, "confirmed");
       toast.success("Transaction confirmed", {
         id: toastId,

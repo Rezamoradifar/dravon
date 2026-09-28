@@ -50,7 +50,7 @@ export interface UserWeekInfo {
 
 export interface UserBulkInfo {
   roundPoints: string;
-  roundEnter: string;
+  unmatchedVolume: string;
   worth: string;
   users: string;
   dirEarned: string;

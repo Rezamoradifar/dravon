@@ -23,8 +23,8 @@ export interface NetworkActivityEntry {
 }
 
 /**
- * The Window contract's ABI defines no events, so there is no on-chain log to
- * subscribe to for real-time registrations. Instead, when a BscScan API key is
+ * v7.4 emits action events. This existing explorer adapter is also supported;
+ * when a BscScan API key is
  * configured (and the app's primary chain is BSC), this polls BscScan's public
  * txlist for the active window contract's own address - which returns every
  * incoming transaction from anyone, not just the connected wallet - and
@@ -35,7 +35,7 @@ export function useNetworkActivityFeed() {
   const { address: windowAddress } = useLatestRoundWindow();
   const [entries, setEntries] = React.useState<NetworkActivityEntry[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
-  const enabled = Boolean(BSCSCAN_API_KEY && PRIMARY_CHAIN_ID === bsc.id);
+  const enabled = Boolean(BSCSCAN_API_KEY && windowAddress && PRIMARY_CHAIN_ID === bsc.id);
 
   React.useEffect(() => {
     if (!enabled) {

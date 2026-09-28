@@ -1,6 +1,19 @@
 export const en = {
+  contractV74: {
+    "pendingTitle": "Contract v7.4 is ready for configuration",
+    "pendingBody": "Waiting for the new factory address. Contract payments are disabled until it is configured.",
+    "debt": "Entry debt: ${amount}. Direct bonuses are paid to your wallet in full; binary earnings repay this balance first. Weekly points stay at zero while debt remains.",
+    "upgradeDebt": "A $110 upgrade keeps the debt and sets earnable to $1,050. After upgrading, the $55 payoff is no longer available.",
+    "payoff": "Pay off installment — $55",
+    "pro": "Pro top-up — $110",
+    "payoffDetails": "Fixed $55 even if some debt was repaid. Clears debt and resets earnable to $350 (not an addition). Weekly points resume, capped at 1 per week. No direct bonus is paid.",
+    "proDetails": "Upgrade to the $110 box, or renew an existing $110 box when eligible. At most two renewals between flashes.",
+    "unavailable": "Not currently eligible, or account data could not be loaded. Renewals require earnable below the cap and fewer than two renewals since the last flash.",
+    "history": "Round numbering restarted at 0 on 28 September 2026, 12:00 UTC. Earlier history remains on v7.1; this view is limited to rounds available on v7.4.",
+    "clamped": "Requested history predates this deployment. Showing the earliest available round ({roundsAgo} rounds ago)."
+},
   nav: {
-    brand: "Round Dashboard",
+    brand: "Smart Contract Ecosystem",
     toggleNavigation: "Toggle navigation",
     backToLanding: "Back to Home",
     dashboard: "Dashboard",
@@ -333,7 +346,7 @@ export const en = {
     notAvailable: "Not available",
     selectThisPackage: "Select this package",
     debtWarningTitle: "Starts with $44 of debt",
-    debtWarningBody: "This tier is booked on-chain as a $50 box carrying a $44 installment debt. Every payout you'd otherwise earn is withheld against that debt first, so you'll see little or no real income until it's paid off. This is a limitation of the smart contract itself, not a site setting.",
+    debtWarningBody: "An $11 entry is recorded as a $50 box with $44 debt. Direct bonuses are paid in full; binary payouts repay the debt first. Weekly points are zero until debt clears. Eligible $50 boxes can pay a fixed $55 to clear debt and reset earnable to $350.",
   },
   paymentMethod: {
     payWithUsdt: "Pay with USDT",
@@ -387,6 +400,7 @@ export const en = {
     loadRound: "Load round",
   },
   userPage: {
+    unmatchedVolume: "Unmatched volume",
     title: "My Dashboard",
     description: "Look up a wallet's round performance.",
     walletPersists: "This wallet stays selected across My Dashboard, Round History and Genealogy.",

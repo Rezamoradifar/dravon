@@ -11,6 +11,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   FlashRequired: "You've used your renewals for this cycle. Earn your balance down to zero, then you can top up again.",
   InsufficientPayment: "The amount sent is not enough for this action.",
   InvalidAddress: "One of the addresses provided is invalid.",
+  InvalidTopupTarget: "This top-up is not available for this account. Refresh its debt and package status.",
   InvalidStartBox: "The start box you selected is invalid.",
   MaxReached: "Your balance has reached its earnable cap for now.",
   MinimumNodesRequired: "Not enough nodes to distribute matching bonuses.",

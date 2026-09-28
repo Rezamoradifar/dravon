@@ -10,6 +10,9 @@ import { useContractWrite } from "@/hooks/useContractWrite";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useTokenPayment } from "@/hooks/useTokenPayment";
 import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
+import { useUserRegistration } from "@/hooks/useUserRegistration";
+import { useEntranceCap } from "@/hooks/useEntranceCap";
+import { canTopUp } from "@/lib/contract-v74";
 import { tierCostUsd } from "@/lib/packages";
 import { useTranslation } from "@/contexts/language-context";
 
@@ -20,6 +23,9 @@ export function ChargeAccountForm({ entrance }: { entrance: number | undefined }
   const { address: windowAddress } = useLatestRoundWindow();
   const { t } = useTranslation();
 
+  const state = useUserRegistration(address);
+  const { cap } = useEntranceCap(100);
+  const eligible = entrance !== undefined && canTopUp(entrance, state.currentEntrance, state.debt, state.periodEarnable, cap, state.topupsSinceFlash);
   const costUsd = entrance ? tierCostUsd(entrance) : undefined;
   const payment = useTokenPayment(costUsd, stableToken, windowAddress, balance?.value);
 
@@ -34,7 +40,7 @@ export function ChargeAccountForm({ entrance }: { entrance: number | undefined }
     hash,
   } = useContractWrite("chargeAccount");
 
-  const canSubmit = Boolean(entrance) && payment.isPaymentValid;
+  const canSubmit = eligible && payment.isPaymentValid;
 
   async function handleEstimate() {
     if (!canSubmit || !entrance) return;

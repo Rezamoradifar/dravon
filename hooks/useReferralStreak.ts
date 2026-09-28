@@ -20,7 +20,7 @@ export interface ReferralStreakInfo {
 
 /**
  * Derives a "referral streak" purely from real on-chain history: dirEarn is
- * nonzero for a round only when someone registered or upgraded naming this
+ * nonzero for a round only when someone registered naming this
  * wallet as their direct sponsor and the bonus was actually paid. Counting
  * consecutive nonzero rounds from the most recent one gives an accurate,
  * verifiable streak with zero contract changes and no off-chain indexer.
@@ -33,7 +33,7 @@ export function useReferralStreak(address: Address | undefined) {
     let currentStreak = 0;
     let activeRounds = 0;
     let stillCounting = true;
-    for (const raw of info.dirEarn) {
+    for (const raw of [...info.dirEarn].reverse()) {
       const earned = parseFloat(raw) > 0;
       if (earned) activeRounds += 1;
       if (stillCounting) {

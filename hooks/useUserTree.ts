@@ -3,7 +3,7 @@
 import { useReadContract } from "wagmi";
 import type { Address } from "viem";
 
-import { FACTORY_ADDRESS } from "@/contracts/addresses";
+import { CHAIN_ID, CONTRACTS_CONFIGURED, FACTORY_ADDRESS } from "@/contracts/addresses";
 import { factoryAbi } from "@/contracts/factoryAbi";
 import { parseContractError } from "@/lib/errors";
 
@@ -11,12 +11,12 @@ import { parseContractError } from "@/lib/errors";
 // no longer needs an open round window, so this reads the factory directly.
 export function useUserTree(addr: Address | undefined, len: number) {
   const { data, isLoading, isFetching, isError, error, refetch } = useReadContract({
-    address: FACTORY_ADDRESS,
+    address: FACTORY_ADDRESS, chainId: CHAIN_ID,
     abi: factoryAbi,
     functionName: "getUserTree",
     args: addr ? [addr, BigInt(len)] : undefined,
     query: {
-      enabled: Boolean(addr),
+      enabled: CONTRACTS_CONFIGURED && Boolean(addr),
       refetchInterval: 20_000,
       retry: 2,
     },

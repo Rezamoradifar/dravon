@@ -2,7 +2,7 @@
 
 import { useReadContracts } from "wagmi";
 
-import { FACTORY_ADDRESS } from "@/contracts/addresses";
+import { CHAIN_ID, CONTRACTS_CONFIGURED, FACTORY_ADDRESS } from "@/contracts/addresses";
 import { factoryAbi } from "@/contracts/factoryAbi";
 import type { StageInfo } from "@/types/contract";
 
@@ -15,12 +15,12 @@ import type { StageInfo } from "@/types/contract";
 export function useStageInfo() {
   const { data, isLoading, isError, refetch } = useReadContracts({
     contracts: [
-      { address: FACTORY_ADDRESS, abi: factoryAbi, functionName: "stage" },
-      { address: FACTORY_ADDRESS, abi: factoryAbi, functionName: "lastCoverage" },
-      { address: FACTORY_ADDRESS, abi: factoryAbi, functionName: "goodStreak" },
-      { address: FACTORY_ADDRESS, abi: factoryAbi, functionName: "currentStageParams" },
+      { address: FACTORY_ADDRESS, chainId: CHAIN_ID, abi: factoryAbi, functionName: "stage" },
+      { address: FACTORY_ADDRESS, chainId: CHAIN_ID, abi: factoryAbi, functionName: "lastCoverage" },
+      { address: FACTORY_ADDRESS, chainId: CHAIN_ID, abi: factoryAbi, functionName: "goodStreak" },
+      { address: FACTORY_ADDRESS, chainId: CHAIN_ID, abi: factoryAbi, functionName: "currentStageParams" },
     ],
-    query: { refetchInterval: 30_000 },
+    query: { enabled: CONTRACTS_CONFIGURED, refetchInterval: 30_000 },
   });
 
   const stage = data?.[0]?.result as number | undefined;

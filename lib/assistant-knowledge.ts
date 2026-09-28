@@ -18,12 +18,12 @@ const EXTRA_EN: AssistantEntry[] = [
   {
     question: "What is FlashRequired?",
     answer:
-      "At stages 1-3, you get 2 top-ups between flashes (earning your balance down to zero). After that, chargeAccount reverts with FlashRequired until you flash. It's temporary and self-clearing - not the same as MaxReached, which means your balance is capped, not that you need to earn more first. Stage 4 has no such limit.",
+      "Only the $110 box can renew, at most twice between flashes (earning your balance down to zero). After that, chargeAccount reverts with FlashRequired until you flash. It's temporary and self-clearing - not the same as MaxReached, which means your balance is capped, not that you need to earn more first.",
   },
   {
     question: "What is the weekly $500 window?",
     answer:
-      "A separate pool funded by 15% of every registration plus 0-15% of every top-up (stage-dependent). If your left leg AND right leg each reach $500 of volume within one week, you earn 1 weekly point (no cap - $1000/$1000 earns 2, etc). The whole subtree counts, and the smaller leg is what matters. Of every 4 points earned, 3 are paid; the 4th returns to the round pool.",
+      "A separate pool funded by 15% of every registration plus 0-15% of every top-up (stage-dependent). If your left leg AND right leg each reach $500 of volume within one week, you earn 1 weekly point (weekly cap: 1 for the $55 box, 4 for the $110 box, 0 while in debt). The whole subtree counts, and the smaller leg is what matters. Of every 4 points earned, 3 are paid; the 4th returns to the round pool.",
   },
   {
     question: "What is the direct referral bonus percentage?",
@@ -38,7 +38,7 @@ const EXTRA_EN: AssistantEntry[] = [
   {
     question: "What is the Referral Streak badge?",
     answer:
-      "It counts consecutive rounds where you actually earned a direct bonus (someone registered or upgraded naming you as their direct sponsor), read straight from on-chain history via getUserRoundInfo. Tiers: Spark, Rising, Strong, Legendary.",
+      "It counts consecutive rounds where you actually earned a direct bonus (someone registered naming you as their direct sponsor), read straight from on-chain history via getUserRoundInfo. Tiers: Spark, Rising, Strong, Legendary.",
   },
   {
     question: "Where do I see the network's live stats?",
@@ -55,12 +55,12 @@ const EXTRA_FA: AssistantEntry[] = [
   {
     question: "خطای نیاز به فلش یعنی چی؟",
     answer:
-      "تو مراحل ۱ تا ۳، بین دو فلش (خالی‌شدن کامل موجودی) فقط ۲ بار می‌تونی شارژ حساب کنی. بعدش تا فلش نکنی، شارژ حساب با خطای «نیاز به فلش» برمی‌گرده. این موقتیه و خودش برطرف می‌شه - با «سقف رسیده» (MaxReached) فرق داره؛ اون یعنی موجودیت پره. مرحله‌ی ۴ این محدودیت رو نداره.",
+      "فقط باکس ۱۱۰ دلاری قابلیت تمدید دارد؛ حداکثر دو بار بین فلش‌ها. بعدش تا فلش نکنی، شارژ حساب با خطای «نیاز به فلش» برمی‌گرده. این موقتیه و خودش برطرف می‌شه - با «سقف رسیده» (MaxReached) فرق داره؛ اون یعنی موجودیت پره.",
   },
   {
     question: "استخر هفتگی ۵۰۰ دلاری چیه؟",
     answer:
-      "یه استخر جدا که از ۱۵٪ ثابت هر ثبت‌نام + بین ۰ تا ۱۵٪ هر شارژ حساب (بسته به مرحله) تأمین می‌شه. اگه پای چپ و راست زیرمجموعه‌ت هرکدوم تو یک هفته به ۵۰۰ دلار برسن، ۱ امتیاز هفتگی می‌گیری (بدون سقف). از هر ۴ امتیاز، ۳ تاش پرداخت می‌شه.",
+      "یه استخر جدا که از ۱۵٪ ثابت هر ثبت‌نام + بین ۰ تا ۱۵٪ هر شارژ حساب (بسته به مرحله) تأمین می‌شه. اگه پای چپ و راست زیرمجموعه‌ت هرکدوم تو یک هفته به ۵۰۰ دلار برسن، ۱ امتیاز هفتگی می‌گیری (سقف هفتگی باکس ۵۵ دلاری: ۱؛ باکس ۱۱۰ دلاری: ۴؛ حساب بدهکار: صفر). از هر ۴ امتیاز، ۳ تاش پرداخت می‌شه.",
   },
   {
     question: "درصد پاداش مستقیم چقدره؟",
