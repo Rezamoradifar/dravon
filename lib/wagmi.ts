@@ -48,7 +48,7 @@ function transportForChain(chainId: number) {
 }
 
 export const wagmiConfig = getDefaultConfig({
-  appName: "Round Dashboard",
+  appName: "Smart Contract Ecosystem",
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "",
   chains: orderedChains,
   transports: Object.fromEntries(orderedChains.map((chain) => [chain.id, transportForChain(chain.id)])),

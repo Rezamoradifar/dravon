@@ -1,4 +1,5 @@
 "use client";
+import { CHAIN_ID } from "@/contracts/addresses";
 
 import { useAccount, useReadContract } from "wagmi";
 import type { Address } from "viem";
@@ -24,10 +25,10 @@ export function useWeeklyWindowInfo(userAddr?: Address) {
     isError: isBulkError,
     refetch: refetchBulk,
   } = useReadContract({
-    address: windowAddress,
+    address: windowAddress, chainId: CHAIN_ID,
     abi: weeklyWindowAbi,
     functionName: "getWeekBulkInfo",
-    query: { refetchInterval: 20_000 },
+    query: { enabled: Boolean(windowAddress), refetchInterval: 20_000 },
   });
 
   const {
@@ -35,11 +36,11 @@ export function useWeeklyWindowInfo(userAddr?: Address) {
     isLoading: isUserLoading,
     refetch: refetchUser,
   } = useReadContract({
-    address: windowAddress,
+    address: windowAddress, chainId: CHAIN_ID,
     abi: weeklyWindowAbi,
     functionName: "getUserWeekInfo",
     args: userAddress ? [userAddress] : undefined,
-    query: { enabled: Boolean(userAddress), refetchInterval: 20_000 },
+    query: { enabled: Boolean(userAddress && windowAddress), refetchInterval: 20_000 },
   });
 
   const week: WeekBulkInfo | undefined = bulkData

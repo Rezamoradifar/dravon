@@ -12,8 +12,7 @@ import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
 const BSCSCAN_API_KEY = process.env.NEXT_PUBLIC_BSCSCAN_API_KEY;
 
 /**
- * The contract ABI defines no events, so there is no on-chain log to read a
- * real history from directly. When a BscScan API key is configured (and the
+ * This explorer adapter remains supported alongside the v7.4 event ABI. When a BscScan API key is configured (and the
  * app's primary chain is BSC), this pulls the wallet's real transaction
  * history from BscScan's public API and decodes calls made to the window
  * contract using our own ABI. Without a key, this simply returns nothing and
@@ -26,13 +25,14 @@ export function useExplorerHistory(address?: string) {
   const enabled = Boolean(BSCSCAN_API_KEY && address && PRIMARY_CHAIN_ID === bsc.id);
 
   React.useEffect(() => {
-    if (!enabled || !address) {
+    if (!enabled || !address || !windowAddress) {
       setEntries([]);
       return;
     }
 
     let cancelled = false;
     const walletAddress = address;
+    const activeWindow = windowAddress;
 
     async function load() {
       setIsLoading(true);
@@ -47,7 +47,7 @@ export function useExplorerHistory(address?: string) {
           Array.isArray(json.result) ? json.result : [];
 
         const decoded: ActivityEntry[] = results
-          .filter((tx) => tx.to?.toLowerCase() === windowAddress.toLowerCase() && tx.input !== "0x")
+          .filter((tx) => tx.to?.toLowerCase() === activeWindow.toLowerCase() && tx.input !== "0x")
           .map((tx) => {
             let functionName = "unknown";
             try {

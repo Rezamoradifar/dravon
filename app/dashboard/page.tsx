@@ -1,6 +1,7 @@
 "use client";
 
-import { PageHeader } from "@/components/shared/page-header";
+import { WorkspaceHero } from "@/components/experience/workspace-hero";
+import { QuickActions } from "@/components/experience/quick-actions";
 import { NetworkBanner } from "@/components/shared/network-banner";
 import { PriceTicker } from "@/components/shared/price-ticker";
 import { WalletInfoCard } from "@/components/dashboard/wallet-info-card";
@@ -19,14 +20,12 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <PageHeader
-        title={t("dashboardPage.title")}
-        description={t("dashboardPage.description")}
-      />
+      <WorkspaceHero />
+      <QuickActions />
       <NetworkBanner />
 
-      <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      <div className="mb-6 grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <div className="min-w-0">
           <PriceTicker />
         </div>
         <div className="space-y-4">
@@ -36,8 +35,12 @@ export default function DashboardPage() {
 
       <DashboardCards />
 
-      <h2 className="mb-3 mt-8 text-lg font-semibold">{t("dashboardPage.currentRoundOverview")}</h2>
-      <p className="mb-4 text-sm text-muted-foreground">{t("dashboardPage.currentRoundHint")}</p>
+      <h2 className="mb-3 mt-8 text-lg font-semibold">
+        {t("dashboardPage.currentRoundOverview")}
+      </h2>
+      <p className="mb-4 text-sm text-muted-foreground">
+        {t("dashboardPage.currentRoundHint")}
+      </p>
       <RoundOverviewCards roundsAgo={0} />
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">

@@ -9,7 +9,8 @@ import { PageHeader } from "@/components/shared/page-header";
 import { NetworkBanner } from "@/components/shared/network-banner";
 import { ConnectWalletGuard } from "@/components/shared/connect-wallet-guard";
 import { ChargeAccountForm } from "@/components/forms/charge-account-form";
-import { PackageTierCards, type TierStatus } from "@/components/registration/package-tier-cards";
+import { canPayOffInstallment, canTopUp } from "@/lib/contract-v74";
+import { formatUnits } from "viem";
 import { PriceTicker } from "@/components/shared/price-ticker";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,21 +40,15 @@ function NotRegisteredNotice() {
 
 export default function ChargeAccountPage() {
   const { address } = useAccount();
-  const { isRegistered, currentEntrance, periodEarnable, isLoading } = useUserRegistration(address);
+  const { isRegistered, currentEntrance, periodEarnable, debt, topupsSinceFlash, isLoading } = useUserRegistration(address);
   const { cap: cap100 } = useEntranceCap(100);
   const [selectedEntrance, setSelectedEntrance] = React.useState<number | undefined>(undefined);
   const { t } = useTranslation();
 
-  function getStatus(entrance: number): TierStatus {
-    if (currentEntrance === undefined) return { valid: false, reason: t("chargePage.loadingCurrentTier") };
-    if (entrance > currentEntrance) return { valid: true };
-    if (entrance === 100 && currentEntrance === 100) {
-      if (cap100 === undefined) return { valid: false, reason: t("chargePage.loadingCap") };
-      if (periodEarnable !== undefined && periodEarnable < cap100) return { valid: true };
-      return { valid: false, reason: t("chargePage.renewalLocked") };
-    }
-    return { valid: false, reason: t("chargePage.alreadyAtTier") };
-  }
+  const payoffEligible = canPayOffInstallment(currentEntrance, debt);
+  const eligible = (target: number) => canTopUp(target, currentEntrance, debt, periodEarnable, cap100, topupsSinceFlash);
+  const validSelection = selectedEntrance !== undefined && eligible(selectedEntrance) ? selectedEntrance : undefined;
+  const options = payoffEligible ? [50, 100] : [100];
 
   return (
     <div>
@@ -79,9 +74,29 @@ export default function ChargeAccountPage() {
                 </Badge>
               </p>
             )}
-            <PackageTierCards selectedEntrance={selectedEntrance} onSelect={setSelectedEntrance} getStatus={getStatus} />
+            {debt !== undefined && debt > 0n && (
+              <div role="status" className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm space-y-2">
+                <p>{t("contractV74.debt", { amount: formatUnits(debt, 18) })}</p>
+                <p>{t("contractV74.upgradeDebt")}</p>
+              </div>
+            )}
+            <div className="grid gap-4 sm:grid-cols-2">
+              {options.map((target) => (
+                <Card key={target} className={validSelection === target ? "ring-2 ring-primary" : ""}>
+                  <CardContent className="space-y-4 p-5">
+                    <h2 className="font-semibold">{t(target === 50 ? "contractV74.payoff" : "contractV74.pro")}</h2>
+                    <p className="text-sm text-muted-foreground">{t(target === 50 ? "contractV74.payoffDetails" : "contractV74.proDetails")}</p>
+                    <Button type="button" disabled={!eligible(target)} aria-pressed={validSelection === target}
+                      onClick={() => setSelectedEntrance(target)}>
+                      {t(validSelection === target ? "packageTierCards.selected" : "packageTierCards.selectThisPackage")}
+                    </Button>
+                    {!eligible(target) && <p className="text-xs text-muted-foreground">{t("contractV74.unavailable")}</p>}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
             <div className="max-w-xl">
-              <ChargeAccountForm entrance={selectedEntrance} />
+              <ChargeAccountForm key={`${address}-${validSelection}`} entrance={validSelection} />
             </div>
           </div>
         )}

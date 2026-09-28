@@ -26,9 +26,9 @@ const TOOLTIP_STYLE = {
   fontSize: 12,
 };
 
-function buildRows(info: UserRoundInfo) {
+function buildRows(info: UserRoundInfo, firstRound: bigint) {
   return info.points.map((point, i) => ({
-    round: `R${i + 1}`,
+    round: `R${firstRound + BigInt(i)}`,
     points: Number(point),
     directIncome: Number(info.dirEarn[i] ?? 0),
     binaryIncome: Number(info.binaryEarn[i] ?? 0),
@@ -37,8 +37,8 @@ function buildRows(info: UserRoundInfo) {
   }));
 }
 
-export function RoundHistoryCharts({ info }: { info: UserRoundInfo }) {
-  const rows = React.useMemo(() => buildRows(info), [info]);
+export function RoundHistoryCharts({ info, firstRound = 0n }: { info: UserRoundInfo; firstRound?: bigint }) {
+  const rows = React.useMemo(() => buildRows(info, firstRound), [info, firstRound]);
   const { t } = useTranslation();
 
   if (rows.length === 0) {

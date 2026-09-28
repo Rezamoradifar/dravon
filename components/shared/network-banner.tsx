@@ -5,6 +5,7 @@ import { AlertTriangle } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { CONTRACTS_CONFIGURED } from "@/contracts/addresses";
 import { PRIMARY_CHAIN_ID } from "@/lib/wagmi";
 import { useTranslation } from "@/contexts/language-context";
 
@@ -12,6 +13,14 @@ export function NetworkBanner() {
   const { isConnected, chainId } = useAccount();
   const { switchChain, isPending } = useSwitchChain();
   const { t } = useTranslation();
+
+  if (!CONTRACTS_CONFIGURED) return (
+    <Alert variant="warning" className="mb-6">
+      <AlertTriangle className="h-4 w-4" />
+      <AlertTitle>{t("contractV74.pendingTitle")}</AlertTitle>
+      <AlertDescription>{t("contractV74.pendingBody")}</AlertDescription>
+    </Alert>
+  );
 
   if (!isConnected || chainId === PRIMARY_CHAIN_ID) return null;
 

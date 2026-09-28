@@ -6,7 +6,7 @@ import { AlertTriangle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTranslation } from "@/contexts/language-context";
-import { tryRecoverFromChunkError } from "@/lib/chunkRecovery";
+import { tryRecoverFromChunkError, retryAfterError } from "@/lib/chunkRecovery";
 
 export default function ErrorBoundary({
   error,
@@ -35,7 +35,7 @@ export default function ErrorBoundary({
             {error.message || t("errorBoundary.unknown")}
             {error.digest && <div className="mt-1 opacity-60">digest: {error.digest}</div>}
           </div>
-          <Button onClick={() => reset()} className="mt-2 gap-1.5">
+          <Button onClick={() => retryAfterError(error, reset)} className="mt-2 gap-1.5">
             <RotateCcw className="h-4 w-4" />
             {t("errorBoundary.retry")}
           </Button>

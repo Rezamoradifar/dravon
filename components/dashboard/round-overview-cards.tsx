@@ -10,7 +10,7 @@ import { formatContractNumericString } from "@/lib/format";
 import { useTranslation } from "@/contexts/language-context";
 
 export function RoundOverviewCards({ roundsAgo = 0 }: { roundsAgo?: number }) {
-  const { info, isLoading, isError } = useMainBulkInfo(roundsAgo);
+  const { info, effectiveRoundsAgo, isClamped, isLoading, isError } = useMainBulkInfo(roundsAgo);
   const { t } = useTranslation();
 
   if (isLoading) return <StatGridSkeleton count={8} />;
@@ -19,10 +19,11 @@ export function RoundOverviewCards({ roundsAgo = 0 }: { roundsAgo?: number }) {
   // stage_ comes from this round's own getMainBulkInfo, so it labels the round
   // being viewed (roundsAgo) correctly even when it differs from today's live
   // factory.stage() - a stage never changes mid-round.
-  const stage = info.stage >= 1 && info.stage <= 4 ? info.stage : 4;
+  const stage = info.stage >= 1 && info.stage <= 4 ? info.stage : undefined;
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {isClamped && <p role="status" className="col-span-full text-sm text-muted-foreground">{t("contractV74.clamped", { roundsAgo: effectiveRoundsAgo.toString() })}</p>}
       <StatCard
         index={0}
         label={t("roundOverview.roundWindow")}
@@ -60,7 +61,7 @@ export function RoundOverviewCards({ roundsAgo = 0 }: { roundsAgo?: number }) {
         index={7}
         label={t("roundOverview.stageLabel")}
         icon={ShieldCheck}
-        value={t("roundOverview.stage", { stage: String(stage), label: t(`stageIndicator.stage${stage}.label`) })}
+        value={stage ? t("roundOverview.stage", { stage: String(stage), label: t(`stageIndicator.stage${stage}.label`) }) : "—"}
         hint={t("roundOverview.stageHint")}
       />
     </div>

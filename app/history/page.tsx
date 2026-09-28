@@ -21,7 +21,7 @@ export default function RoundHistoryPage() {
   const [roundsAgo, setRoundsAgo] = React.useState("9");
   const [range, setRange] = React.useState({ from: 0, to: 9 });
 
-  const { info, isLoading, isError } = useUserRoundInfo(viewedAddress, range.from, range.to);
+  const { info, firstRound, isLoading, isError } = useUserRoundInfo(viewedAddress, range.from, range.to);
 
   function handleApply() {
     const from = Number(fromRoundsAgo);
@@ -35,6 +35,7 @@ export default function RoundHistoryPage() {
     <div>
       <PageHeader title={t("historyPage.title")} description={t("historyPage.description")} />
 
+      <p className="mb-4 text-sm text-muted-foreground">{t("contractV74.history")}</p>
       <div className="mb-6 space-y-4 rounded-xl border bg-card p-4">
         <WalletSearch value={searchedAddress} onChange={setSearchedAddress} />
         <div className="flex flex-wrap items-end gap-3">
@@ -78,7 +79,7 @@ export default function RoundHistoryPage() {
         <p className="text-sm text-destructive">{t("historyPage.loadFailed")}</p>
       )}
 
-      {viewedAddress && !isLoading && !isError && info && <RoundHistoryCharts info={info} />}
+      {viewedAddress && !isLoading && !isError && info && <RoundHistoryCharts info={info} firstRound={firstRound} />}
     </div>
   );
 }

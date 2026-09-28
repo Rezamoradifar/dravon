@@ -1,4 +1,5 @@
 "use client";
+import { CHAIN_ID } from "@/contracts/addresses";
 
 import { useReadContracts } from "wagmi";
 
@@ -7,7 +8,7 @@ import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
 
 export function useDashboardData() {
   const { address: windowAddress } = useLatestRoundWindow();
-  const contract = { address: windowAddress, abi: roundWindowAbi } as const;
+  const contract = { address: windowAddress, chainId: CHAIN_ID, abi: roundWindowAbi } as const;
 
   const { data, isLoading, isError, refetch } = useReadContracts({
     contracts: [
@@ -18,7 +19,7 @@ export function useDashboardData() {
       { ...contract, functionName: "wrappedToken" },
       { ...contract, functionName: "isClosed" },
     ],
-    query: { refetchInterval: 20_000 },
+    query: { enabled: Boolean(windowAddress), refetchInterval: 20_000 },
   });
 
   const [roundId, latestWindow, stabilizedPointValue, stableToken, wrappedToken, isClosed] =

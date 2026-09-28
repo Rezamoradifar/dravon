@@ -3,7 +3,7 @@
 import { useAccount, useReadContract } from "wagmi";
 import type { Address } from "viem";
 
-import { FACTORY_ADDRESS } from "@/contracts/addresses";
+import { CHAIN_ID, CONTRACTS_CONFIGURED, FACTORY_ADDRESS } from "@/contracts/addresses";
 import { factoryAbi } from "@/contracts/factoryAbi";
 import { useUserRegistration } from "@/hooks/useUserRegistration";
 
@@ -32,11 +32,11 @@ export function useWeekProgress(address?: Address, week?: bigint) {
   const enabled = Boolean(userId && userId > 0 && week !== undefined);
 
   const { data, isLoading, isError, refetch } = useReadContract({
-    address: FACTORY_ADDRESS,
+    address: FACTORY_ADDRESS, chainId: CHAIN_ID,
     abi: factoryAbi,
     functionName: "getWeekProgress",
     args: enabled ? [userId as number, week as bigint] : undefined,
-    query: { enabled, refetchInterval: 20_000 },
+    query: { enabled: CONTRACTS_CONFIGURED && enabled, refetchInterval: 20_000 },
   });
 
   const progress: WeekProgress | undefined = data

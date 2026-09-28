@@ -1,62 +1,45 @@
 "use client";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
-
+import { ArrowUpRight, LifeBuoy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NAV_GROUPS } from "./nav-links";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useTranslation } from "@/contexts/language-context";
-
+import { useExperienceCopy } from "@/lib/experience-copy";
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const isAdmin = useIsAdmin();
   const { t } = useTranslation();
-
+  const c = useExperienceCopy();
   return (
-    <nav className="flex flex-col gap-4 p-3">
+    <nav className="dr-sidebar" aria-label={c.navLabel}>
       {NAV_GROUPS.map((group) => {
         const links = group.links.filter((link) => !link.adminOnly || isAdmin);
-        if (links.length === 0) return null;
+        if (!links.length) return null;
         return (
-          <div key={group.labelKey} className="flex flex-col gap-0.5">
-            <span className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/50">
-              {t(group.labelKey)}
-            </span>
+          <div key={group.labelKey} className="space-y-1">
+            <span className="sidebar-label">{t(group.labelKey)}</span>
             {links.map((link) => {
-              const active = pathname === link.href;
+              const active =
+                pathname === link.href ||
+                (link.href !== "/products" &&
+                  link.href !== "/learn" &&
+                  link.href !== "/games" &&
+                  pathname.startsWith(`${link.href}/`));
               const Icon = link.icon;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
                   onClick={onNavigate}
-                  className={cn(
-                    "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                    active
-                      ? "text-primary-foreground"
-                      : "text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground",
-                  )}
+                  aria-current={active ? "page" : undefined}
+                  className={cn("sidebar-link", active && "is-active")}
                 >
-                  {active && (
-                    <motion.span
-                      layoutId="active-nav-pill"
-                      className="nav-active-glow absolute inset-0 rounded-xl bg-primary"
-                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                    />
-                  )}
-                  <span
-                    className={cn(
-                      "relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors",
-                      active ? "bg-primary-foreground/15" : "bg-muted/60",
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <span className="relative z-10">{t(link.labelKey)}</span>
+                  <Icon className="h-[18px] w-[18px] shrink-0" />
+                  <span>{t(link.labelKey)}</span>
                   {link.adminOnly && (
-                    <span className="relative z-10 ml-auto rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-500">
+                    <span className="ms-auto text-[10px]">
                       {t("nav.owner")}
                     </span>
                   )}
@@ -66,6 +49,14 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           </div>
         );
       })}
+      <Link href="/help" onClick={onNavigate} className="sidebar-help">
+        <LifeBuoy className="mb-3 h-5 w-5 text-primary" />
+        <strong className="text-sm">{c.supportTitle}</strong>
+        <span className="mt-2 block text-xs leading-6 text-muted-foreground">
+          {c.supportBody}
+        </span>
+        <ArrowUpRight className="mt-3 h-4 w-4 text-primary rtl:-rotate-90" />
+      </Link>
     </nav>
   );
 }
