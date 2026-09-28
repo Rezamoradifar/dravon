@@ -19,8 +19,8 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
-      <div className="flex h-16 items-center justify-between px-4 md:px-6">
-        <div className="flex items-center gap-3">
+      <div className="flex h-16 items-center justify-between gap-2 px-3 sm:px-4 md:px-6">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-3">
           <Button
             variant="ghost"
             size="icon"
@@ -38,8 +38,8 @@ export function Navbar() {
           </Link>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button asChild variant="ghost" size="icon" className="sm:hidden" aria-label={t("nav.backToLanding")}>
+        <div className="flex min-w-0 items-center gap-1 sm:gap-2">
+          <Button asChild variant="ghost" size="icon" className="max-[359px]:hidden sm:hidden" aria-label={t("nav.backToLanding")}>
             <Link href="/">
               <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
             </Link>
@@ -53,7 +53,14 @@ export function Navbar() {
           <LanguageToggle />
           <ThemeToggle />
           <NotificationBell />
-          <ConnectButton showBalance={false} chainStatus="icon" accountStatus="full" />
+          {/* On phones: avatar only once connected, and keep "Connect Wallet" on one line. */}
+          <div className="shrink-0 whitespace-nowrap">
+            <ConnectButton
+              showBalance={false}
+              chainStatus={{ smallScreen: "none", largeScreen: "icon" }}
+              accountStatus={{ smallScreen: "avatar", largeScreen: "full" }}
+            />
+          </div>
         </div>
       </div>
 
