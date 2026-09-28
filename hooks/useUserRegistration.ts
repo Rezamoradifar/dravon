@@ -9,7 +9,8 @@ import { factoryAbi } from "@/contracts/factoryAbi";
 /**
  * Reads real registration state for a wallet directly from the factory contract:
  * whether it's registered (userAddrExists), its internal userId (addrToId), current
- * entrance tier (getUserData) and remaining period-earnable cap (getUserPeriodEarnable).
+ * entrance tier (getUserData), remaining period-earnable cap (getUserPeriodEarnable)
+ * and outstanding installment debt (userDebt).
  * Nothing here is inferred or hardcoded - every field is a live contract read.
  */
 export function useUserRegistration(address?: Address) {
@@ -43,14 +44,28 @@ export function useUserRegistration(address?: Address) {
     query: { enabled: hasUserId, refetchInterval: 20_000 },
   });
 
+  const { data: debt, isLoading: isDebtLoading } = useReadContract({
+    address: FACTORY_ADDRESS,
+    abi: factoryAbi,
+    functionName: "userDebt",
+    args: hasUserId ? [userId as number] : undefined,
+    query: { enabled: hasUserId, refetchInterval: 20_000 },
+  });
+
   const currentEntrance = userData ? Number(userData[8]) : undefined;
+  // v7.4: an $11 installment account (booked as entrance 50) still in debt can
+  // clear it with chargeAccount(50) for $55. Any other chargeAccount(50) reverts
+  // with InvalidTopupTarget(), so only offer it when both conditions hold.
+  const canPayOffDebt = currentEntrance === 50 && debt !== undefined && debt > 0n;
 
   return {
     isRegistered,
     userId,
     currentEntrance,
     periodEarnable,
-    isLoading: isStatusLoading || (hasUserId && (isUserDataLoading || isEarnableLoading)),
+    debt,
+    canPayOffDebt,
+    isLoading: isStatusLoading || (hasUserId && (isUserDataLoading || isEarnableLoading || isDebtLoading)),
     refetch: refetchStatus,
   };
 }

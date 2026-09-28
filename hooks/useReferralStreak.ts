@@ -33,7 +33,8 @@ export function useReferralStreak(address: Address | undefined) {
     let currentStreak = 0;
     let activeRounds = 0;
     let stillCounting = true;
-    for (const raw of info.dirEarn) {
+    // The contract returns rounds oldest-first; walk newest-first for the streak.
+    for (const raw of [...info.dirEarn].reverse()) {
       const earned = parseFloat(raw) > 0;
       if (earned) activeRounds += 1;
       if (stillCounting) {

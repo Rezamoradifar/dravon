@@ -324,6 +324,11 @@ export const en = {
     loadingCap: "Loading cap...",
     renewalLocked: "Renewal locked until your current $110 cap is reached",
     alreadyAtTier: "Already at or above this tier",
+    debtTitle: "Your installment isn't paid off yet",
+    debtBody:
+      "You still owe ${amount} on your entry. Direct bonuses are paid to your wallet in full; binary earnings go to that balance first until it clears. You can also clear it at once with a $55 payment here.",
+    payOffButton: "Pay off installment — $55",
+    upgradeProButton: "Upgrade to Pro — $110",
   },
   packageTierCards: {
     popular: "Popular",
@@ -333,7 +338,7 @@ export const en = {
     notAvailable: "Not available",
     selectThisPackage: "Select this package",
     debtWarningTitle: "Starts with $44 of debt",
-    debtWarningBody: "This tier is booked on-chain as a $50 box carrying a $44 installment debt. Every payout you'd otherwise earn is withheld against that debt first, so you'll see little or no real income until it's paid off. This is a limitation of the smart contract itself, not a site setting.",
+    debtWarningBody: "This tier is booked on-chain as a $50 box carrying a $44 installment debt. Direct bonuses are paid to your wallet in full, but binary earnings go to that debt first until it clears. You can clear it at any time with a one-off $55 payment from the Top Up page.",
   },
   paymentMethod: {
     payWithUsdt: "Pay with USDT",
@@ -379,6 +384,10 @@ export const en = {
     description: "Upgrade by calling chargeAccount(targetBox) with your selected package.",
     selectUpgradePrompt: "Select an available upgrade above to continue.",
     submit: "Top Up",
+    payOffTitle: "Pay off installment",
+    payOffDescription:
+      "chargeAccount(50) for a flat $55: clears your debt, resets your earnable to $350 and restores weekly points. One time only.",
+    payOffSubmit: "Pay $55 and clear debt",
   },
   statisticsPage: {
     title: "Statistics",

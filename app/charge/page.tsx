@@ -3,7 +3,8 @@
 import * as React from "react";
 import { useAccount } from "wagmi";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { AlertTriangle, ArrowRight } from "lucide-react";
+import { formatUnits } from "viem";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { NetworkBanner } from "@/components/shared/network-banner";
@@ -39,7 +40,7 @@ function NotRegisteredNotice() {
 
 export default function ChargeAccountPage() {
   const { address } = useAccount();
-  const { isRegistered, currentEntrance, periodEarnable, isLoading } = useUserRegistration(address);
+  const { isRegistered, currentEntrance, periodEarnable, debt, canPayOffDebt, isLoading } = useUserRegistration(address);
   const { cap: cap100 } = useEntranceCap(100);
   const [selectedEntrance, setSelectedEntrance] = React.useState<number | undefined>(undefined);
   const { t } = useTranslation();
@@ -47,6 +48,7 @@ export default function ChargeAccountPage() {
   function getStatus(entrance: number): TierStatus {
     if (currentEntrance === undefined) return { valid: false, reason: t("chargePage.loadingCurrentTier") };
     if (entrance > currentEntrance) return { valid: true };
+    if (entrance === 50 && canPayOffDebt) return { valid: true };
     if (entrance === 100 && currentEntrance === 100) {
       if (cap100 === undefined) return { valid: false, reason: t("chargePage.loadingCap") };
       if (periodEarnable !== undefined && periodEarnable < cap100) return { valid: true };
@@ -79,9 +81,38 @@ export default function ChargeAccountPage() {
                 </Badge>
               </p>
             )}
+            {canPayOffDebt && debt !== undefined && (
+              <div className="flex gap-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm">
+                <AlertTriangle className="h-5 w-5 shrink-0 text-amber-500" />
+                <div className="space-y-2">
+                  <p className="font-semibold">{t("chargePage.debtTitle")}</p>
+                  <p className="text-muted-foreground">
+                    {t("chargePage.debtBody", { amount: Number(formatUnits(debt, 18)).toFixed(2) })}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={selectedEntrance === 50 ? "default" : "outline"}
+                      onClick={() => setSelectedEntrance(50)}
+                    >
+                      {t("chargePage.payOffButton")}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={selectedEntrance === 100 ? "default" : "outline"}
+                      onClick={() => setSelectedEntrance(100)}
+                    >
+                      {t("chargePage.upgradeProButton")}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
             <PackageTierCards selectedEntrance={selectedEntrance} onSelect={setSelectedEntrance} getStatus={getStatus} />
             <div className="max-w-xl">
-              <ChargeAccountForm entrance={selectedEntrance} />
+              <ChargeAccountForm entrance={selectedEntrance} isDebtPayoff={selectedEntrance === 50 && canPayOffDebt} />
             </div>
           </div>
         )}

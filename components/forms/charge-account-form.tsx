@@ -13,7 +13,14 @@ import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
 import { tierCostUsd } from "@/lib/packages";
 import { useTranslation } from "@/contexts/language-context";
 
-export function ChargeAccountForm({ entrance }: { entrance: number | undefined }) {
+export function ChargeAccountForm({
+  entrance,
+  isDebtPayoff = false,
+}: {
+  entrance: number | undefined;
+  /** chargeAccount(50) on an installment account in debt: always $55, clears the debt. */
+  isDebtPayoff?: boolean;
+}) {
   const { address } = useAccount();
   const { data: balance } = useBalance({ address });
   const { stableToken } = useDashboardData();
@@ -55,8 +62,8 @@ export function ChargeAccountForm({ entrance }: { entrance: number | undefined }
     <Card className="card-glow">
       <CardHeader className="flex-row items-start justify-between gap-4 space-y-0">
         <div>
-          <CardTitle>{t("chargeForm.title")}</CardTitle>
-          <CardDescription>{t("chargeForm.description")}</CardDescription>
+          <CardTitle>{isDebtPayoff ? t("chargeForm.payOffTitle") : t("chargeForm.title")}</CardTitle>
+          <CardDescription>{isDebtPayoff ? t("chargeForm.payOffDescription") : t("chargeForm.description")}</CardDescription>
         </div>
         {balance && (
           <div className="shrink-0 text-right text-xs text-muted-foreground">
@@ -95,7 +102,9 @@ export function ChargeAccountForm({ entrance }: { entrance: number | undefined }
             {isEstimating ? t("registerForm.estimating") : t("registerForm.estimateGas")}
           </Button>
           <Button type="submit" className="ml-auto" disabled={!canSubmit || !address || isSigning || isConfirming}>
-            {isSigning || isConfirming ? t("registerForm.processing") : t("chargeForm.submit")}
+            {isSigning || isConfirming ? t("registerForm.processing") : isDebtPayoff
+                ? t("chargeForm.payOffSubmit")
+                : t("chargeForm.submit")}
           </Button>
         </CardFooter>
       </form>

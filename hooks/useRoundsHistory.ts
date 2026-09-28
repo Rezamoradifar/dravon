@@ -6,6 +6,7 @@ import type { Address } from "viem";
 import { roundWindowAbi } from "@/contracts/roundWindowAbi";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
+import { useRoundCounter } from "@/hooks/useRoundCounter";
 
 export interface RoundHistoryPoint {
   roundsAgo: number;
@@ -17,10 +18,12 @@ export interface RoundHistoryPoint {
 }
 
 export function useRoundsHistory(maxRounds = 8) {
-  const { roundId, isLoading: isRoundIdLoading } = useDashboardData();
+  const { isLoading: isRoundIdLoading } = useDashboardData();
   const { address: windowAddress } = useLatestRoundWindow();
+  const { roundCounter } = useRoundCounter();
 
-  const available = roundId !== undefined ? Math.min(Number(roundId) + 1, maxRounds) : 0;
+  // roundsAgo 0..roundCounter are valid; one more reverts with an underflow.
+  const available = roundCounter !== undefined ? Math.min(roundCounter + 1, maxRounds) : 0;
   const roundsAgoList = Array.from({ length: available }, (_, i) => i);
 
   const { data, isLoading } = useReadContracts({

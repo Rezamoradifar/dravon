@@ -245,4 +245,27 @@ export const factoryAbi = [
     name: "WeeklyWindowCreated",
     type: "event",
   },
+  {
+    // Installment ($11 entry) debt still owed. v7.4: direct bonuses are paid in
+    // full regardless; only binary payouts are withheld until this reaches zero.
+    inputs: [{ internalType: "uint48", name: "userId", type: "uint48" }],
+    name: "userDebt",
+    outputs: [{ internalType: "uint256", name: "amount", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "roundCounter",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint48", name: "", type: "uint48" }],
+    name: "_userTopupsSinceFlash",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
 ] as const;

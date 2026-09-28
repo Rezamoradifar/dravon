@@ -7,7 +7,7 @@ import type { Address } from "viem";
 import { FACTORY_ADDRESS, WINDOW_ADDRESS } from "@/contracts/addresses";
 import { factoryAbi } from "@/contracts/factoryAbi";
 
-const STORAGE_KEY = "round-dashboard:latest-window:v1";
+const STORAGE_KEY = "round-dashboard:latest-window:v7_4";
 
 function readCachedWindow(): Address | undefined {
   if (typeof window === "undefined") return undefined;

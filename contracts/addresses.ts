@@ -6,9 +6,13 @@ import { isAddress, type Address } from "viem";
 // required to pick up a fresh redeploy of this file. Set the matching
 // NEXT_PUBLIC_* var (see .env.example) only when pointing at a different
 // deployment (e.g. a future contract migration, or a local testnet).
-const DEFAULT_FACTORY_ADDRESS: Address = "0x4c7c8060580b6b5Eb50dA04Ad06Fb26B4E7159C3";
-const DEFAULT_WINDOW_ADDRESS: Address = "0x12F43550819f6D7e9D9f180d77059d760b9ef9c9";
-const DEFAULT_WEEKLY_WINDOW_ADDRESS: Address = "0x5A375cF2888eDda9D198caD8E8DAf01a613275a5";
+// SmartContract v7.4 (migrated 28 Sep 2026). v7.1 at 0x4c7c...59C3 is shut down:
+// its views still answer but every write reverts with WindowClosed().
+// The window/weekly defaults are only first-paint fallbacks - both are
+// resolved live from the factory (latestWindow / weeklyWindow).
+const DEFAULT_FACTORY_ADDRESS: Address = "0x344438c4d038Ccd30104a64FF51DD07AC223795E";
+const DEFAULT_WINDOW_ADDRESS: Address = "0xaF1feFb042dc3DfF223eB2160A600853096D74B8";
+const DEFAULT_WEEKLY_WINDOW_ADDRESS: Address = "0x71947a4468B9Dcb78c91AD45A5D95492cDD78E7b";
 
 function readAddressEnv(value: string | undefined, fallback: Address, label: string): Address {
   if (!value) return fallback;

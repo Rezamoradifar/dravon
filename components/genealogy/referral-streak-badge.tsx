@@ -56,10 +56,9 @@ export function ReferralStreakBadge({ address }: { address?: Address }) {
   }
 
   if (!streak) {
-    // getUserRoundInfo can revert on-chain for a real, registered wallet when
-    // the contract's own round arithmetic has too little history to work
-    // with yet (observed directly against the live window) - show that as a
-    // clear "not yet available" state instead of silently rendering nothing.
+    // No streak yet (or the read failed) - show a clear state instead of
+    // rendering nothing. useUserRoundInfo clamps the range to roundCounter,
+    // so the old underflow revert on a young contract no longer happens.
     return (
       <Card className="card-glow">
         <CardHeader>
