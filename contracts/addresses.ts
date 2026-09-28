@@ -11,8 +11,8 @@ import { isAddress, type Address } from "viem";
 // The window/weekly defaults are only first-paint fallbacks - both are
 // resolved live from the factory (latestWindow / weeklyWindow).
 const DEFAULT_FACTORY_ADDRESS: Address = "0x344438c4d038Ccd30104a64FF51DD07AC223795E";
-const DEFAULT_WINDOW_ADDRESS: Address = "0xaF1feFb042dc3DfF223eB2160A600853096D74B8";
-const DEFAULT_WEEKLY_WINDOW_ADDRESS: Address = "0x71947a4468B9Dcb78c91AD45A5D95492cDD78E7b";
+const DEFAULT_WINDOW_ADDRESS: Address = "0xc8E37E23293011d03788Df5f3C530BC4C2500850";
+const DEFAULT_WEEKLY_WINDOW_ADDRESS: Address = "0x895687dd47d903A61297DefF64A8678DEA23a2Fd";
 
 function readAddressEnv(value: string | undefined, fallback: Address, label: string): Address {
   if (!value) return fallback;
