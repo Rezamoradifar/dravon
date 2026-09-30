@@ -1,3 +1,5 @@
+> Superseded at the operator's request on 2026-09-30: the visible frontend now uses the classic landing, palette, navigation and panels. Contract v7.4 behavior, installment status, unmatched-volume labeling and chunk-error recovery remain intact. The classic navbar includes main's narrow-phone layout fix. Newer main-branch contract/deployment and VPN changes are not reverted or modified by this frontend-only branch; integrate this change into the v7.4 branch separately from production deployment.
+
 # Dravon experience upgrade
 
 ## Scope

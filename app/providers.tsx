@@ -45,8 +45,8 @@ function RainbowKitWithTheme({ children }: { children: React.ReactNode }) {
     <RainbowKitProvider
       theme={
         isDark
-          ? darkTheme({ accentColor: "#4e79f8", borderRadius: "medium" })
-          : lightTheme({ accentColor: "#315ddd", borderRadius: "medium" })
+          ? darkTheme({ accentColor: "hsl(187 95% 55%)", borderRadius: "medium" })
+          : lightTheme({ accentColor: "hsl(187 90% 38%)", borderRadius: "medium" })
       }
       avatar={CustomAvatar}
       modalSize="compact"

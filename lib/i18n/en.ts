@@ -213,7 +213,7 @@ export const en = {
     viewAllFaq: "View All FAQs",
     closingTitle: "Ready to see it live?",
     closingSubtitle: "Connect your wallet and explore the dashboard - no account, no password, just your wallet.",
-    footer: "Round Dashboard - on-chain, verifiable, always live.",
+    footer: "Smart Contract Ecosystem — on-chain, verifiable, always live.",
     footerTagline: "A binary rewards network running entirely on BNB Smart Chain - live, verifiable, always on.",
     footerDisclaimer: "Educational content only where marked - not financial advice.",
     footerCol: {

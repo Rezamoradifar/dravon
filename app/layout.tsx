@@ -4,6 +4,7 @@ import Script from "next/script";
 
 import "./globals.css";
 import { Providers } from "./providers";
+import { FloatingLights } from "@/components/layout/floating-lights";
 import { AppShell } from "@/components/layout/app-shell";
 import { AskAssistant } from "@/components/assistant/ask-assistant";
 import { RegisterServiceWorker } from "@/components/pwa/register-service-worker";
@@ -153,6 +154,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Script>
         <RegisterServiceWorker />
         <Providers>
+          <FloatingLights />
           <AppShell maintenanceMode={MAINTENANCE_MODE}>{children}</AppShell>
           {!MAINTENANCE_MODE && <AskAssistant />}
         </Providers>
