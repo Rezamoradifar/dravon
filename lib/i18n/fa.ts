@@ -2,7 +2,7 @@ import type { Dictionary } from "./en";
 
 export const fa: Dictionary = {
   nav: {
-    brand: "داشبورد راند",
+    brand: "اکوسیستم قرارداد هوشمند",
     toggleNavigation: "نمایش/پنهان کردن منو",
     backToLanding: "بازگشت به صفحه‌ی اصلی",
     dashboard: "داشبورد",

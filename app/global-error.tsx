@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { tryRecoverFromChunkError } from "@/lib/chunkRecovery";
+import { tryRecoverFromChunkError, retryAfterError } from "@/lib/chunkRecovery";
 
 /**
  * Only renders if the root layout itself throws - at that point the
@@ -59,7 +59,7 @@ export default function GlobalError({
             {error.digest ? `\ndigest: ${error.digest}` : ""}
           </pre>
           <button
-            onClick={() => reset()}
+            onClick={() => retryAfterError(error, reset)}
             style={{
               marginTop: "1rem",
               padding: "0.5rem 1.25rem",
