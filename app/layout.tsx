@@ -12,9 +12,9 @@ import { RegisterServiceWorker } from "@/components/pwa/register-service-worker"
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const vazirmatn = Vazirmatn({ subsets: ["arabic"], variable: "--font-vazirmatn", display: "swap" });
 
-const title = "Round Dashboard - Web3 Round Window Control Center";
+const title = "Dravon — The Connected Web3 Ecosystem";
 const description =
-  "Manage registration, top-ups, statistics, referrals and account actions for the round-window smart contract, with live on-chain data and a built-in BNB Chain swap.";
+  "Explore the Dravon ecosystem: your network, live crypto markets, BNB Chain swaps and a clear roadmap for what comes next.";
 
 export const metadata: Metadata = {
   title,
