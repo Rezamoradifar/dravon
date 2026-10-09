@@ -27,3 +27,9 @@ The supplied server observations identify `/root/dravon-main`, PM2 process `drav
 Before deploying this reviewed revision, snapshot the existing source and `.next` outside the application directory. Build the reviewed source in a staging directory using the same dependencies and production environment; if the build fails, leave the running process unchanged. Then update the application source and build and restart only `pm2 restart dravon`. Verify `http://127.0.0.1:3000/`, `/dashboard`, `/register`, and `/charge`, and inspect `pm2 logs dravon --lines 50 --nostream`. On failure restore both source and `.next` from the snapshot and restart only that process.
 
 If the rejected showcase is still deployed, restore `app/page.tsx`, `app/layout.tsx` and `app/globals.css` from this revision as part of the source update, in addition to the focused fixes. Those three files are identical to the original main revision.
+
+## Installer
+
+`scripts/update-existing-dravon.sh` installs the pinned application revision `56f536ded9d09d7ba02b79d44cd50d248615dbc1` into the observed existing PM2 installation. Run it as root on that server. It checks the process name and working directory, installs dependencies and builds outside the running application, retains `.env*` and `data`, backs up source/build/dependencies, then briefly stops and restarts only `dravon`. Failed post-install checks trigger rollback. The backup path is saved to `/root/dravon-last-update-backup.txt` after success. Manual rollback: `bash "$(cat /root/dravon-last-update-backup.txt)/rollback.sh"`.
+
+Installer verification: `bash -n scripts/update-existing-dravon.sh` and `python3 scripts/tests/existing-installer.py`. Fixture tests cover successful installation, manual rollback, health-check failure rollback, preservation of environment/data and exclusive use of the `dravon` process. Build, PM2 and network are mocked in these fixtures; the script has not been executed against production.
