@@ -4,7 +4,7 @@ set -Eeuo pipefail
 umask 077
 app=/root/dravon-main
 revision=56f536ded9d09d7ba02b79d44cd50d248615dbc1
-for executable in node npm pm2 curl tar python3; do command -v "$executable" >/dev/null; done
+for executable in node npm pm2 curl tar python3 awk flock; do command -v "$executable" >/dev/null; done
 [[ -d "$app" && -f "$app/package.json" ]] || { echo "Missing $app"; exit 1; }
 verify_process() {
   pm2 jlist | node -e '
@@ -16,6 +16,10 @@ verify_process() {
     });'
 }
 verify_process
+exec 9>/root/dravon-update.lock
+flock -n 9 || { echo "Another Dravon update is already running."; exit 1; }
+free_kb=$(df -Pk "$app" | awk 'NR==2 {print $4}')
+[[ "$free_kb" -ge 3145728 ]] || { echo "LOW_SPACE: at least 3 GiB free is required; production was not changed."; exit 1; }
 work=$(mktemp -d /root/dravon-update-XXXXXXXX)
 stage="$work/release"
 backup="$work/backup"
@@ -30,7 +34,16 @@ for file in .env .env.local .env.production .env.production.local; do
   if [[ -f "$app/$file" ]]; then cp -p "$app/$file" "$stage/$file"; fi
 done
 cd "$stage"
-npm ci --include=dev --no-audit --no-fund
+reuse_dependencies=false
+if [[ -f "$app/node_modules/next/dist/bin/next" ]] && cmp -s "$stage/package-lock.json" "$app/package-lock.json" && cmp -s "$stage/package.json" "$app/package.json"; then
+  echo "Using the existing dependencies: package manifests and lockfiles match."
+  ln -s "$app/node_modules" "$stage/node_modules"
+  reuse_dependencies=true
+else
+  free_kb=$(df -Pk "$app" | awk 'NR==2 {print $4}')
+  [[ "$free_kb" -ge 4194304 ]] || { echo "LOW_SPACE: different dependencies require 4 GiB free; production was not changed."; exit 1; }
+  npm ci --include=dev --no-audit --no-fund
+fi
 # Public build-time settings can also be configured directly on the PM2 process.
 pm2 jlist > "$work/pm2.json"
 node - "$work/pm2.json" <<'NODE'
@@ -90,7 +103,9 @@ rollback_on_error() {
 trap rollback_on_error ERR
 # Downtime starts only after the staging build and tests have passed.
 pm2 stop dravon
-for directory in .next node_modules; do
+directories=(.next)
+if [[ "$reuse_dependencies" == false ]]; then directories+=(node_modules); fi
+for directory in "${directories[@]}"; do
   if [[ -e "$app/$directory" ]]; then mv "$app/$directory" "$backup/$directory"; fi
   mv "$stage/$directory" "$app/$directory"
 done
