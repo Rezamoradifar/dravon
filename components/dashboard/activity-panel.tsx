@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { useAccount, useChainId, useChains } from "wagmi";
+import { useAccount, useChains } from "wagmi";
 import { CheckCircle2, Clock, XCircle } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useActivityLog } from "@/hooks/useActivityLog";
 import { useExplorerHistory } from "@/hooks/useExplorerHistory";
+import { mergeActivity } from "@/lib/activity-history";
 import { explorerTxLink } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/contexts/language-context";
@@ -26,20 +27,14 @@ const STATUS_VARIANT = {
 
 export function ActivityPanel() {
   const { address } = useAccount();
-  const chainId = useChainId();
   const chains = useChains();
-  const chain = chains.find((c) => c.id === chainId);
 
   const localEntries = useActivityLog(address);
-  const { entries: explorerEntries, isConfigured } = useExplorerHistory(address);
-  const { t } = useTranslation();
+  const { entries: explorerEntries, isConfigured, isLoading, isError } = useExplorerHistory(address);
+  const { t, locale } = useTranslation();
 
   const merged = React.useMemo(() => {
-    const map = new Map<string, (typeof localEntries)[number]>();
-    for (const entry of [...explorerEntries, ...localEntries]) {
-      map.set(entry.hash, entry);
-    }
-    return Array.from(map.values()).sort((a, b) => b.timestamp - a.timestamp).slice(0, 10);
+    return mergeActivity(localEntries, explorerEntries);
   }, [localEntries, explorerEntries]);
 
   return (
@@ -51,17 +46,19 @@ export function ActivityPanel() {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {address && isError && <p role="status" className="mb-3 text-xs text-muted-foreground">{t("improvements.historyError")}</p>}
         {!address ? (
           <p className="text-sm text-muted-foreground">{t("activityPanel.connectPrompt")}</p>
         ) : merged.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t("activityPanel.noTransactions")}</p>
+          <p className="text-sm text-muted-foreground">{t(isLoading ? "improvements.loading" : "activityPanel.noTransactions")}</p>
         ) : (
           <ul className="divide-y divide-border">
             {merged.map((entry) => {
               const Icon = STATUS_ICON[entry.status];
-              const link = explorerTxLink(chainId, chain?.blockExplorers?.default.url, entry.hash);
+              const chain = chains.find((c) => c.id === entry.chainId);
+              const link = entry.chainId ? explorerTxLink(entry.chainId, chain?.blockExplorers?.default.url, entry.hash) : undefined;
               return (
-                <li key={entry.hash} className="flex items-center justify-between gap-3 py-3 text-sm">
+                <li key={`${entry.chainId ?? "unknown"}:${entry.hash}`} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
                   <div className="flex items-center gap-3">
                     <Icon
                       className={cn(
@@ -74,12 +71,12 @@ export function ActivityPanel() {
                     <div>
                       <p className="font-medium">{entry.functionName}</p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(entry.timestamp).toLocaleString()}
+                        {new Date(entry.timestamp).toLocaleString(locale)}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={STATUS_VARIANT[entry.status]}>{entry.status}</Badge>
+                    <Badge variant={STATUS_VARIANT[entry.status]}>{t(`improvements.${entry.status}`)}</Badge>
                     {link && (
                       <a href={link} target="_blank" rel="noreferrer noopener" className="text-xs text-primary hover:underline">
                         {t("common.view")}

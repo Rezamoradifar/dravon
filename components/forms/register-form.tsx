@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { isAddress, type Address } from "viem";
+import { isAddress, zeroAddress, type Address } from "viem";
 import { useAccount, useBalance, useChainId } from "wagmi";
 import { Wand2 } from "lucide-react";
 import { toast } from "sonner";
@@ -33,7 +33,7 @@ export function RegisterForm({
   const chainId = useChainId();
   const { data: balance } = useBalance({ address });
   const { stableToken } = useDashboardData();
-  const { address: windowAddress } = useLatestRoundWindow();
+  const { address: windowAddress, isConfirmed: isWindowConfirmed, isError: isWindowError } = useLatestRoundWindow();
   const { t } = useTranslation();
   const [direct, setDirect] = React.useState(initialDirect ?? "");
   const [referral, setReferral] = React.useState("");
@@ -55,9 +55,12 @@ export function RegisterForm({
   const { referral: bestReferral, isLoading: isFindingReferral, refetch: refetchBestReferral } =
     useBestReferral(isAddress(direct) ? (direct as Address) : undefined);
 
-  const isDirectValid = isAddress(direct);
-  const isReferralValid = isAddress(referral);
-  const canSubmit = Boolean(entrance) && isDirectValid && isReferralValid && payment.isPaymentValid;
+  const isDirectValid = isAddress(direct) && direct.toLowerCase() !== zeroAddress && direct.toLowerCase() !== address?.toLowerCase();
+  const isReferralValid = isAddress(referral) && referral.toLowerCase() !== zeroAddress && referral.toLowerCase() !== address?.toLowerCase();
+  const canSubmit = Boolean(entrance) && isDirectValid && isReferralValid && payment.isPaymentValid && chainId === PRIMARY_CHAIN_ID && isWindowConfirmed && !isWindowError && !isSigning && !isConfirming;
+
+  const directRef = React.useRef(direct);
+  directRef.current = direct;
 
   const currentStep: RegistrationStep = !address
     ? "connect"
@@ -76,8 +79,10 @@ export function RegisterForm({
       toast.error(t("registerForm.enterDirectFirst"));
       return;
     }
+    const requestedDirect = direct;
     const result = await refetchBestReferral();
-    if (result.data) {
+    if (directRef.current !== requestedDirect) return;
+    if (result.data && result.data.toLowerCase() !== zeroAddress) {
       setReferral(result.data);
     } else {
       toast.error(t("registerForm.noReferralFound"));
@@ -132,7 +137,9 @@ export function RegisterForm({
               id="direct"
               placeholder="0x..."
               value={direct}
-              onChange={(e) => setDirect(e.target.value)}
+              dir="ltr"
+              aria-invalid={direct !== "" && !isDirectValid}
+              onChange={(e) => { setDirect(e.target.value.trim()); setReferral(""); }}
             />
             {direct !== "" && !isDirectValid && (
               <p className="text-xs text-destructive">{t("registerForm.invalidAddress")}</p>
@@ -158,7 +165,9 @@ export function RegisterForm({
               id="referral"
               placeholder="0x..."
               value={referral}
-              onChange={(e) => setReferral(e.target.value)}
+              dir="ltr"
+              aria-invalid={referral !== "" && !isReferralValid}
+              onChange={(e) => setReferral(e.target.value.trim())}
             />
             {referral !== "" && !isReferralValid && (
               <p className="text-xs text-destructive">{t("registerForm.invalidAddress")}</p>
@@ -168,6 +177,7 @@ export function RegisterForm({
             )}
           </div>
 
+          {(!isWindowConfirmed || isWindowError) && <p role="status" className="text-sm text-muted-foreground">{t("improvements.windowUnavailable")}</p>}
           {entrance && <PaymentMethodPanel payment={payment} costUsd={costUsd} />}
 
           <TxProgress

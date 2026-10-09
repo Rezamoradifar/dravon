@@ -4,6 +4,7 @@ import * as React from "react";
 
 export interface ActivityEntry {
   hash: string;
+  chainId?: number;
   functionName: string;
   from: string;
   timestamp: number;

@@ -7,7 +7,7 @@ import { zeroAddress } from "viem";
  * the genealogy tree, no extra reads.
  */
 export function countSubtreeMembers(addresses: string[], rootIndex: number): number {
-  if (rootIndex >= addresses.length) return 0;
+  if (!Number.isInteger(rootIndex) || rootIndex < 0 || rootIndex >= addresses.length) return 0;
   const address = addresses[rootIndex];
   const isEmpty = !address || address.toLowerCase() === zeroAddress;
   const self = isEmpty ? 0 : 1;

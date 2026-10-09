@@ -40,7 +40,7 @@ export function PaymentMethodPanel({
                 {payment.allowance !== undefined ? formatUnits(payment.allowance, 18) : "0"} USDT.{" "}
                 {t("paymentMethod.approveNote")}
               </p>
-              <Button type="button" variant="outline" onClick={() => payment.approve()} disabled={payment.isApproving}>
+              <Button type="button" variant="outline" onClick={() => { void payment.approve().catch(() => { /* hook reports the error */ }); }} disabled={payment.isApproving || !payment.canApprove}>
                 {payment.isApproving ? t("paymentMethod.approving") : t("paymentMethod.approveUsdt")}
               </Button>
             </div>
