@@ -4,15 +4,21 @@ import * as React from "react";
 import { toast } from "sonner";
 import {
   useAccount,
+  useChainId,
   useReadContract,
   useWriteContract,
   usePublicClient,
 } from "wagmi";
-import { type Address, parseUnits, parseEther, maxUint256 } from "viem";
+import { type Address, parseUnits } from "viem";
 
+import { parseNativeAmount } from "@/lib/payment-validation";
+import { PRIMARY_CHAIN_ID } from "@/lib/wagmi";
 import { erc20FullAbi } from "@/contracts/pancakeRouterAbi";
+import { useLatestRoundWindow } from "@/hooks/useLatestRoundWindow";
 import { useNativePrice } from "@/hooks/useNativePrice";
 import { parseContractError } from "@/lib/errors";
+
+function requiredCost(cost: number | undefined) { return cost !== undefined && Number.isFinite(cost) && cost > 0; }
 
 export type PaymentMethod = "usdt" | "bnb";
 
@@ -29,17 +35,24 @@ export function useTokenPayment(
   nativeBalance?: bigint,
 ) {
   const { address } = useAccount();
-  const publicClient = usePublicClient();
+  const publicClient = usePublicClient({ chainId: PRIMARY_CHAIN_ID });
+  const chainId = useChainId();
+  const activeWindow = useLatestRoundWindow();
+  const canApprove = Boolean(address && publicClient && chainId === PRIMARY_CHAIN_ID && activeWindow.isConfirmed && !activeWindow.isError && spender.toLowerCase() === activeWindow.address.toLowerCase() && stableToken && requiredCost(costUsd));
+  const approving = React.useRef(false);
   const [method, setMethod] = React.useState<PaymentMethod>("usdt");
-  const [bnbAmount, setBnbAmount] = React.useState("");
+  const [bnbAmount, setBnbAmountState] = React.useState("");
+  const manualAmount = React.useRef(false);
+  const setBnbAmount = (value: string) => { manualAmount.current = true; setBnbAmountState(value); };
   const [isApproving, setIsApproving] = React.useState(false);
 
   const { writeContractAsync } = useWriteContract();
   const { price: bnbPrice } = useNativePrice();
 
-  const requiredUsdt = costUsd !== undefined ? parseUnits(costUsd.toFixed(6), 18) : undefined;
+  const requiredUsdt = requiredCost(costUsd) ? parseUnits(costUsd!.toFixed(6), 18) : undefined;
 
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
+    chainId: PRIMARY_CHAIN_ID,
     address: stableToken,
     abi: erc20FullAbi,
     functionName: "allowance",
@@ -66,31 +79,35 @@ export function useTokenPayment(
     costUsd !== undefined && bnbPrice ? (costUsd + PAYMENT_BUFFER_USD) / bnbPrice : undefined;
 
   React.useEffect(() => {
-    if (estimatedBnb !== undefined && bnbAmount === "") {
-      setBnbAmount((estimatedBnb * 1.05).toFixed(6));
-    }
-    // Only seed the default once an estimate first becomes available.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [estimatedBnb !== undefined]);
+    manualAmount.current = false;
+    setBnbAmountState("");
+  }, [costUsd, address, spender]);
+  React.useEffect(() => {
+    if (estimatedBnb !== undefined && !manualAmount.current) setBnbAmountState((estimatedBnb * 1.05).toFixed(6));
+  }, [estimatedBnb, costUsd, address, spender]);
 
   async function approve() {
-    if (!stableToken || requiredUsdt === undefined) return;
+    if (!canApprove || approving.current || !address || !publicClient || chainId !== PRIMARY_CHAIN_ID || !stableToken || requiredUsdt === undefined) return;
+    approving.current = true;
     setIsApproving(true);
     const toastId = toast.loading("Approve USDT spending in your wallet...");
     try {
       const txHash = await writeContractAsync({
+        chainId: PRIMARY_CHAIN_ID,
         address: stableToken,
         abi: erc20FullAbi,
         functionName: "approve",
-        args: [spender, maxUint256],
+        args: [spender, requiredUsdt],
       });
-      await publicClient?.waitForTransactionReceipt({ hash: txHash });
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+      if (receipt.status !== "success") throw new Error("Approval reverted on-chain.");
       await refetchAllowance();
       toast.success("USDT approved", { id: toastId });
     } catch (error) {
       toast.error("Approval failed", { id: toastId, description: parseContractError(error) });
       throw error;
     } finally {
+      approving.current = false;
       setIsApproving(false);
     }
   }
@@ -102,7 +119,7 @@ export function useTokenPayment(
     isPaymentValid = !needsApproval && requiredUsdt !== undefined;
     value = undefined;
   } else {
-    const parsedBnb = bnbAmount !== "" && Number(bnbAmount) > 0 ? parseEther(bnbAmount) : undefined;
+    const parsedBnb = parseNativeAmount(bnbAmount);
     hasInsufficientBnbBalance =
       parsedBnb !== undefined && nativeBalance !== undefined && parsedBnb > nativeBalance;
     isPaymentValid = parsedBnb !== undefined && !hasInsufficientBnbBalance;
@@ -110,6 +127,7 @@ export function useTokenPayment(
   }
 
   return {
+    canApprove,
     method,
     setMethod,
     requiredUsdt,
@@ -122,6 +140,6 @@ export function useTokenPayment(
     setBnbAmount,
     estimatedBnb,
     value,
-    isPaymentValid,
+    isPaymentValid: isPaymentValid && chainId === PRIMARY_CHAIN_ID && !isApproving,
   };
 }

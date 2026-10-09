@@ -4,7 +4,7 @@ import * as React from "react";
 import dynamic from "next/dynamic";
 import { AnimatePresence } from "framer-motion";
 import { RefreshCw } from "lucide-react";
-import type { Address } from "viem";
+import { zeroAddress, type Address } from "viem";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { WalletSearch } from "@/components/user/wallet-search";
@@ -30,6 +30,9 @@ const TreeGraph = dynamic(() => import("@/components/genealogy/tree-graph").then
 export default function GenealogyPage() {
   const { searchedAddress, setSearchedAddress, viewedAddress } = useWalletView();
 
+  const [viewMode, setViewMode] = React.useState<"tree" | "list">("tree");
+  const [sizeError, setSizeError] = React.useState(false);
+  const [memberSearch, setMemberSearch] = React.useState("");
   const [lenInput, setLenInput] = React.useState("15");
   const [len, setLen] = React.useState(15);
   const [selectedIndex, setSelectedIndex] = React.useState<number | null>(null);
@@ -37,18 +40,21 @@ export default function GenealogyPage() {
   const { addresses, isLoading, isFetching, isError, errorMessage, refetch } = useUserTree(viewedAddress, len);
   const { t } = useTranslation();
 
+  React.useEffect(() => { setSelectedIndex(null); setMemberSearch(""); }, [viewedAddress, len]);
+
   function handleApply() {
     const parsed = Number(lenInput);
-    if (Number.isInteger(parsed) && parsed > 0) setLen(parsed);
+    if (Number.isInteger(parsed) && parsed >= 1 && parsed <= 255) { setLen(parsed); setSizeError(false); }
+    else setSizeError(true);
   }
 
   function handleNodeClick(index: number, address: string) {
-    if (!address) return;
+    if (!address || address.toLowerCase() === zeroAddress) return;
     setSelectedIndex(index);
   }
 
   const selectedAddress =
-    selectedIndex !== null && addresses ? (addresses[selectedIndex] as Address | undefined) : undefined;
+    selectedIndex !== null && addresses && addresses[selectedIndex]?.toLowerCase() !== zeroAddress ? (addresses[selectedIndex] as Address | undefined) : undefined;
   const selectedMemberCount =
     selectedIndex !== null && addresses ? countSubtreeMembers(addresses, selectedIndex) : 0;
 
@@ -82,14 +88,18 @@ export default function GenealogyPage() {
               id="len"
               className="w-32"
               inputMode="numeric"
+              aria-invalid={sizeError}
+              aria-describedby={sizeError ? "tree-size-error" : undefined}
               value={lenInput}
               onChange={(e) => setLenInput(e.target.value)}
             />
           </div>
+          {[15, 31, 63].map((size) => <Button key={size} variant="outline" aria-pressed={len === size} onClick={() => { setLen(size); setLenInput(String(size)); setSizeError(false); }}>{size}</Button>)}
           <Button variant="outline" onClick={handleApply}>
             {t("genealogyPage.loadTree")}
           </Button>
         </div>
+        {sizeError && <p id="tree-size-error" role="alert" className="text-sm text-destructive">{t("improvements.treeLimit")}</p>}
       </div>
 
       {!viewedAddress && <p className="text-sm text-muted-foreground">{t("genealogyPage.connectOrSearch")}</p>}
@@ -101,9 +111,25 @@ export default function GenealogyPage() {
       )}
       {viewedAddress && !isLoading && !isError && addresses && (
         <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            <Button variant={viewMode === "tree" ? "default" : "outline"} aria-pressed={viewMode === "tree"} onClick={() => setViewMode("tree")}>{t("improvements.tree")}</Button>
+            <Button variant={viewMode === "list" ? "default" : "outline"} aria-pressed={viewMode === "list"} onClick={() => setViewMode("list")}>{t("improvements.list")}</Button>
+          </div>
           <p className="text-xs text-muted-foreground">{t("genealogyPage.nodeHint")}</p>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
-            <TreeGraph addresses={addresses} onNodeClick={handleNodeClick} />
+            {viewMode === "tree" ? <TreeGraph key={`${viewedAddress}-${len}`} addresses={addresses} onNodeClick={handleNodeClick} /> : (
+              <div className="space-y-3 rounded-xl border p-4">
+                <Label htmlFor="member-search">{t("improvements.members")}</Label>
+                <Input id="member-search" dir="ltr" placeholder="0x…" value={memberSearch} onChange={(e) => setMemberSearch(e.target.value.trim())} />
+                <ul className="max-h-[480px] space-y-2 overflow-y-auto">
+                  {addresses.map((member, index) => member.toLowerCase() !== zeroAddress && member.toLowerCase().includes(memberSearch.toLowerCase()) ? (
+                    <li key={index}><button type="button" aria-pressed={selectedIndex === index} className="w-full rounded-lg border p-3 text-start hover:bg-muted" onClick={() => handleNodeClick(index, member)}>
+                      <span className="text-xs text-muted-foreground">#{index + 1}</span><span dir="ltr" className="block break-all font-mono text-xs">{member}</span>
+                    </button></li>
+                  ) : null)}
+                </ul>
+              </div>
+            )}
             <AnimatePresence mode="wait">
               {selectedAddress && (
                 <NodeDetailPanel

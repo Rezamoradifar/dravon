@@ -16,6 +16,7 @@ import { PackageTierCards } from "@/components/registration/package-tier-cards";
 import { PriceTicker } from "@/components/shared/price-ticker";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { AccountReadError } from "@/components/shared/account-read-error";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserRegistration } from "@/hooks/useUserRegistration";
 import { useTranslation } from "@/contexts/language-context";
@@ -63,9 +64,10 @@ function RegisterPageContent() {
   const initialDirect = refParam && isAddress(refParam) ? refParam : undefined;
 
   const { address } = useAccount();
-  const { isRegistered, isLoading } = useUserRegistration(address);
+  const { isRegistered, isLoading, isError, refetch } = useUserRegistration(address);
   const [selectedEntrance, setSelectedEntrance] = React.useState<number | undefined>(undefined);
   const { t } = useTranslation();
+  React.useEffect(() => setSelectedEntrance(undefined), [address]);
 
   return (
     <div>
@@ -79,13 +81,15 @@ function RegisterPageContent() {
       <ConnectWalletGuard>
         {isLoading ? (
           <Skeleton className="h-40 w-full" />
+        ) : isError || isRegistered === undefined ? (
+          <AccountReadError onRetry={() => { void refetch(); }} />
         ) : isRegistered ? (
           <AlreadyRegisteredNotice />
         ) : (
           <div className="space-y-6">
             <PackageTierCards selectedEntrance={selectedEntrance} onSelect={setSelectedEntrance} />
             <div className="max-w-xl">
-              <RegisterForm entrance={selectedEntrance} initialDirect={initialDirect} />
+              <RegisterForm key={address} entrance={selectedEntrance} initialDirect={initialDirect} />
             </div>
             <VpnPromoCard />
           </div>

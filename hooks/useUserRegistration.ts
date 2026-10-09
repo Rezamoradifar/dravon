@@ -3,6 +3,8 @@
 import { useReadContracts, useReadContract } from "wagmi";
 import type { Address } from "viem";
 
+import { registrationStatus } from "@/lib/payment-validation";
+import { PRIMARY_CHAIN_ID } from "@/lib/wagmi";
 import { FACTORY_ADDRESS } from "@/contracts/addresses";
 import { factoryAbi } from "@/contracts/factoryAbi";
 
@@ -14,21 +16,23 @@ import { factoryAbi } from "@/contracts/factoryAbi";
  * Nothing here is inferred or hardcoded - every field is a live contract read.
  */
 export function useUserRegistration(address?: Address) {
-  const { data, isLoading: isStatusLoading, refetch: refetchStatus } = useReadContracts({
+  const { data, isError: isStatusError, isLoading: isStatusLoading, refetch: refetchStatus } = useReadContracts({
     contracts: address
       ? [
-          { address: FACTORY_ADDRESS, abi: factoryAbi, functionName: "userAddrExists", args: [address] },
-          { address: FACTORY_ADDRESS, abi: factoryAbi, functionName: "addrToId", args: [address] },
+          { chainId: PRIMARY_CHAIN_ID, address: FACTORY_ADDRESS, abi: factoryAbi, functionName: "userAddrExists", args: [address] },
+          { chainId: PRIMARY_CHAIN_ID, address: FACTORY_ADDRESS, abi: factoryAbi, functionName: "addrToId", args: [address] },
         ]
       : [],
     query: { enabled: Boolean(address), refetchInterval: 20_000 },
   });
 
-  const isRegistered = Boolean(data?.[0]?.result);
+  const isRegistered = registrationStatus(data?.[0]?.result);
+  const statusFailed = isStatusError || data?.some((item) => item.status === "failure");
   const userId = data?.[1]?.result as number | undefined;
   const hasUserId = userId !== undefined && userId > 0;
 
-  const { data: userData, isLoading: isUserDataLoading } = useReadContract({
+  const { data: userData, isLoading: isUserDataLoading, isError: isUserDataError, refetch: refetchUserData } = useReadContract({
+    chainId: PRIMARY_CHAIN_ID,
     address: FACTORY_ADDRESS,
     abi: factoryAbi,
     functionName: "getUserData",
@@ -36,7 +40,8 @@ export function useUserRegistration(address?: Address) {
     query: { enabled: hasUserId, refetchInterval: 20_000 },
   });
 
-  const { data: periodEarnable, isLoading: isEarnableLoading } = useReadContract({
+  const { data: periodEarnable, isLoading: isEarnableLoading, isError: isEarnableError, refetch: refetchEarnable } = useReadContract({
+    chainId: PRIMARY_CHAIN_ID,
     address: FACTORY_ADDRESS,
     abi: factoryAbi,
     functionName: "getUserPeriodEarnable",
@@ -44,7 +49,8 @@ export function useUserRegistration(address?: Address) {
     query: { enabled: hasUserId, refetchInterval: 20_000 },
   });
 
-  const { data: debt, isLoading: isDebtLoading } = useReadContract({
+  const { data: debt, isLoading: isDebtLoading, isError: isDebtError, refetch: refetchDebt } = useReadContract({
+    chainId: PRIMARY_CHAIN_ID,
     address: FACTORY_ADDRESS,
     abi: factoryAbi,
     functionName: "userDebt",
@@ -66,6 +72,7 @@ export function useUserRegistration(address?: Address) {
     debt,
     canPayOffDebt,
     isLoading: isStatusLoading || (hasUserId && (isUserDataLoading || isEarnableLoading || isDebtLoading)),
-    refetch: refetchStatus,
+    isError: Boolean(statusFailed || (hasUserId && (isUserDataError || isEarnableError || isDebtError))),
+    refetch: () => Promise.all([refetchStatus(), ...(hasUserId ? [refetchUserData(), refetchEarnable(), refetchDebt()] : [])]),
   };
 }

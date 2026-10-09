@@ -24,7 +24,7 @@ export function ChargeAccountForm({
   const { address } = useAccount();
   const { data: balance } = useBalance({ address });
   const { stableToken } = useDashboardData();
-  const { address: windowAddress } = useLatestRoundWindow();
+  const { address: windowAddress, isConfirmed: isWindowConfirmed, isError: isWindowError } = useLatestRoundWindow();
   const { t } = useTranslation();
 
   const costUsd = entrance ? tierCostUsd(entrance) : undefined;
@@ -41,7 +41,7 @@ export function ChargeAccountForm({
     hash,
   } = useContractWrite("chargeAccount");
 
-  const canSubmit = Boolean(entrance) && payment.isPaymentValid;
+  const canSubmit = Boolean(entrance) && payment.isPaymentValid && isWindowConfirmed && !isWindowError && !isSigning && !isConfirming;
 
   async function handleEstimate() {
     if (!canSubmit || !entrance) return;
@@ -82,6 +82,7 @@ export function ChargeAccountForm({
             </p>
           )}
 
+          {(!isWindowConfirmed || isWindowError) && <p role="status" className="text-sm text-muted-foreground">{t("improvements.windowUnavailable")}</p>}
           {entrance && <PaymentMethodPanel payment={payment} costUsd={costUsd} />}
 
           <TxProgress

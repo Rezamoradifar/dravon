@@ -4,6 +4,7 @@ import * as React from "react";
 import { useReadContract, useWatchContractEvent } from "wagmi";
 import type { Address } from "viem";
 
+import { PRIMARY_CHAIN_ID } from "@/lib/wagmi";
 import { FACTORY_ADDRESS, WINDOW_ADDRESS } from "@/contracts/addresses";
 import { factoryAbi } from "@/contracts/factoryAbi";
 
@@ -49,6 +50,7 @@ export function useLatestRoundWindow() {
   const [cached, setCached] = React.useState<Address | undefined>(() => readCachedWindow());
 
   const { data, isLoading, isError, refetch } = useReadContract({
+    chainId: PRIMARY_CHAIN_ID,
     address: FACTORY_ADDRESS,
     abi: factoryAbi,
     functionName: "latestWindow",
@@ -56,6 +58,7 @@ export function useLatestRoundWindow() {
   });
 
   useWatchContractEvent({
+    chainId: PRIMARY_CHAIN_ID,
     address: FACTORY_ADDRESS,
     abi: factoryAbi,
     eventName: "LatestWindowChanged",

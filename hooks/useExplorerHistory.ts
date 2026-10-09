@@ -21,6 +21,7 @@ const BSCSCAN_API_KEY = process.env.NEXT_PUBLIC_BSCSCAN_API_KEY;
  */
 export function useExplorerHistory(address?: string) {
   const [entries, setEntries] = React.useState<ActivityEntry[]>([]);
+  const [isError, setIsError] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const { address: windowAddress } = useLatestRoundWindow();
   const enabled = Boolean(BSCSCAN_API_KEY && address && PRIMARY_CHAIN_ID === bsc.id);
@@ -28,21 +29,28 @@ export function useExplorerHistory(address?: string) {
   React.useEffect(() => {
     if (!enabled || !address) {
       setEntries([]);
+      setIsLoading(false);
+      setIsError(false);
       return;
     }
 
+    setEntries([]);
     let cancelled = false;
+    const controller = new AbortController();
     const walletAddress = address;
 
     async function load() {
       setIsLoading(true);
+      setIsError(false);
       try {
         // BscScan's old api.bscscan.com/api (v1) is deprecated - all chains,
         // including BSC, now go through Etherscan's unified v2 gateway with
         // an explicit chainid. Same API key, same response shape.
         const url = `https://api.etherscan.io/v2/api?chainid=${PRIMARY_CHAIN_ID}&module=account&action=txlist&address=${walletAddress}&startblock=0&endblock=99999999&sort=desc&apikey=${BSCSCAN_API_KEY}`;
-        const res = await fetch(url);
+        const res = await fetch(url, { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(12_000)]) });
+        if (!res.ok) throw new Error("Explorer unavailable");
         const json = await res.json();
+        if (!Array.isArray(json.result) && json.message !== "No transactions found") throw new Error("Explorer unavailable");
         const results: Array<{ hash: string; to: string; input: string; timeStamp: string; isError: string }> =
           Array.isArray(json.result) ? json.result : [];
 
@@ -57,6 +65,7 @@ export function useExplorerHistory(address?: string) {
               // leave as "unknown" if it doesn't match our ABI
             }
             return {
+              chainId: PRIMARY_CHAIN_ID,
               hash: tx.hash,
               functionName,
               from: walletAddress,
@@ -67,7 +76,7 @@ export function useExplorerHistory(address?: string) {
 
         if (!cancelled) setEntries(decoded);
       } catch {
-        if (!cancelled) setEntries([]);
+        if (!cancelled) setIsError(true);
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -76,8 +85,9 @@ export function useExplorerHistory(address?: string) {
     load();
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, [enabled, address, windowAddress]);
 
-  return { entries, isLoading, isConfigured: Boolean(BSCSCAN_API_KEY) };
+  return { entries: entries.filter((entry) => entry.from.toLowerCase() === address?.toLowerCase()), isLoading, isError, isConfigured: enabled };
 }

@@ -14,6 +14,7 @@ import { PackageTierCards, type TierStatus } from "@/components/registration/pac
 import { PriceTicker } from "@/components/shared/price-ticker";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { AccountReadError } from "@/components/shared/account-read-error";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useUserRegistration } from "@/hooks/useUserRegistration";
@@ -40,10 +41,12 @@ function NotRegisteredNotice() {
 
 export default function ChargeAccountPage() {
   const { address } = useAccount();
-  const { isRegistered, currentEntrance, periodEarnable, debt, canPayOffDebt, isLoading } = useUserRegistration(address);
+  const { isRegistered, currentEntrance, periodEarnable, debt, canPayOffDebt, isLoading, isError, refetch } = useUserRegistration(address);
   const { cap: cap100 } = useEntranceCap(100);
   const [selectedEntrance, setSelectedEntrance] = React.useState<number | undefined>(undefined);
   const { t } = useTranslation();
+
+  React.useEffect(() => setSelectedEntrance(undefined), [address]);
 
   function getStatus(entrance: number): TierStatus {
     if (currentEntrance === undefined) return { valid: false, reason: t("chargePage.loadingCurrentTier") };
@@ -69,6 +72,8 @@ export default function ChargeAccountPage() {
       <ConnectWalletGuard>
         {isLoading ? (
           <Skeleton className="h-40 w-full" />
+        ) : isError || isRegistered === undefined ? (
+          <AccountReadError onRetry={() => { void refetch(); }} />
         ) : !isRegistered ? (
           <NotRegisteredNotice />
         ) : (
@@ -112,7 +117,7 @@ export default function ChargeAccountPage() {
             )}
             <PackageTierCards selectedEntrance={selectedEntrance} onSelect={setSelectedEntrance} getStatus={getStatus} />
             <div className="max-w-xl">
-              <ChargeAccountForm entrance={selectedEntrance} isDebtPayoff={selectedEntrance === 50 && canPayOffDebt} />
+              <ChargeAccountForm key={address} entrance={selectedEntrance !== undefined && getStatus(selectedEntrance).valid ? selectedEntrance : undefined} isDebtPayoff={selectedEntrance === 50 && canPayOffDebt} />
             </div>
           </div>
         )}

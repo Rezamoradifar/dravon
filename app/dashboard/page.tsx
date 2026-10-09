@@ -1,5 +1,7 @@
 "use client";
 
+import { AccountSummary } from "@/components/dashboard/account-summary";
+import { MarketPrices } from "@/components/dashboard/market-prices";
 import { PageHeader } from "@/components/shared/page-header";
 import { NetworkBanner } from "@/components/shared/network-banner";
 import { PriceTicker } from "@/components/shared/price-ticker";
@@ -34,7 +36,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      <AccountSummary />
       <DashboardCards />
+      <MarketPrices />
 
       <h2 className="mb-3 mt-8 text-lg font-semibold">{t("dashboardPage.currentRoundOverview")}</h2>
       <p className="mb-4 text-sm text-muted-foreground">{t("dashboardPage.currentRoundHint")}</p>
