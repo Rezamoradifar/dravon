@@ -39,7 +39,7 @@ if [[ ! -e "$SHARED/.env.local" && ! -L "$SHARED/.env.local" ]]; then
   [[ "${FRESH_INSTALL:-0}" == "1" ]] || die "Missing private settings. Pass FRESH_INSTALL=1 to initialize a new instance without old data or secrets."
   [[ -f "$release/.env.example" ]] || die "Missing .env.example in new release"
   cp "$release/.env.example" "$SHARED/.env.local"
-  site_origin="${SITE_ORIGIN:-http://103.208.84.28}"
+  site_origin="${SITE_ORIGIN:-https://smartchainnetwork.online}"
   [[ "$site_origin" =~ ^https?://[a-zA-Z0-9._:-]+$ ]] || die "Invalid SITE_ORIGIN"
   sed -i "s|^NEXT_PUBLIC_SITE_URL=.*|NEXT_PUBLIC_SITE_URL=$site_origin|" "$SHARED/.env.local"
   log "Created fresh environment with v7.4 addresses; old VPS data and secrets are not restored."
