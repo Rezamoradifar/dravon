@@ -22,14 +22,25 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-      - name: Prepare test-only public configuration
-        run: |
-          cp .env.example .env.local
-          echo 'NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=ci-placeholder' >> .env.local
+      - name: Prepare first-install configuration (no restored credentials)
+        run: cp .env.example .env.local
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
       - name: Production build
         run: npm run build
+      - name: Smoke-test public website without old server data or WalletConnect credentials
+        run: |
+          npm run start -- -p 3399 -H 127.0.0.1 >/tmp/dravon-smoke.log 2>&1 &
+          PID=$!
+          trap 'kill "$PID" 2>/dev/null || true' EXIT
+          for i in $(seq 1 35); do
+            if curl -fsS --max-time 3 http://127.0.0.1:3399/api/health | grep -q '"status":"ok"'; then
+              break
+            fi
+            sleep 2
+          done
+          curl -fsS --max-time 10 http://127.0.0.1:3399/api/health | grep -F '"service":"smart-contract-platform"'
+          curl -fsS --max-time 20 http://127.0.0.1:3399/ >/dev/null
       - name: VPN delivery unit tests
         run: node --test tests/vpn-delivery.test.cjs
       - name: Validate install script syntax
