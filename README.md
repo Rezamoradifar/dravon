@@ -169,3 +169,26 @@ types/          shared TypeScript types for parsed contract structs
 npm run build
 npm run start
 ```
+
+## Fresh installation without old VPS
+
+If the previous VPS is unavailable, you can deploy the new **Smart Contract
+Platform** website from the current source without its credentials:
+
+```bash
+# On the newly provisioned Ubuntu VPS with Node.js 22+, Git and PM2 installed:
+git clone --depth=1 --branch codex/dravon-vps-premium-20261111 \
+  https://github.com/Rezamoradifar/dravon.git /opt/smart-contract-installer
+cd /opt/smart-contract-installer
+FRESH_INSTALL=1 bash scripts/install-new-vps.sh
+curl -fsS http://127.0.0.1:3000/api/health
+```
+
+This mode initializes `.env.local` from the project's updated **v7.4 BNB
+mainnet** example. It does *not* recover private keys, Telegram bot credentials,
+VPN access, original VPS data, or off-chain history. Existing live BNB Smart
+Chain registration and wallet state remains on-chain and is not affected by
+the website reinstall. Configure a real Reown Project ID, admin wallet and
+HTTPS before enabling wallet/financial flows. See
+[docs/fresh-vps-103.208.84.28.md](docs/fresh-vps-103.208.84.28.md)
+for the target-server preparation and Nginx setup.
