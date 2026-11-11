@@ -9,8 +9,8 @@ the deployed BNB Smart Chain contracts remain on chain.
 
 - Known OLD VPS: `104.167.16.102`, application `/root/dravon-main`,
   PM2 names `dravon` and `dravon-bot` (verify these at cutover).
-- NEW VPS: `<NEW_IP>` — not specified yet. Do **not** assume any existing
-  server running a different project is available.
+- NEW VPS: `103.208.84.28` — user-selected target. Direct SSH access and OS
+  are not yet verified. Do **not** overwrite existing services on this host.
 - New code and runtime: `/opt/smart-contract-platform`.
 - Frontend default: bound to `127.0.0.1:3000` behind Nginx + HTTPS.
 - Source branch: `codex/dravon-vps-premium-20261111`.
@@ -43,7 +43,7 @@ Git, curl, Node.js **22+**, npm and PM2 from their trusted distributions.
 The deploy script checks these tools and stops if any are missing.
 
 ```bash
-ssh root@<NEW_IP>
+ssh root@103.208.84.28
 apt-get update
 apt-get install -y git curl rsync nginx ca-certificates
 node --version             # should be v22 or newer
@@ -106,7 +106,7 @@ server and place the following in a Nginx server block (replace the placeholder)
 ```nginx
 server {
     listen 80;
-    server_name <YOUR_DOMAIN>;
+    server_name 103.208.84.28;  # IP-only HTTP preview; use a real domain for HTTPS
 
     location / {
         proxy_pass http://127.0.0.1:3000;
