@@ -1,5 +1,7 @@
 # Moving Smart Contract Platform to another VPS (safe cutover)
 
+**No access to the previous VPS?** Use [fresh-vps-103.208.84.28.md](fresh-vps-103.208.84.28.md) instead. That path initializes current contract addresses from GitHub with blank secrets.
+
 This plan moves the **Next.js website** first, with a reversible release on the new VPS.
 It deliberately does **not** shut down the current site, switch DNS, change contract
 addresses, or start a second Telegram bot. No blockchain contract migration is implied:
