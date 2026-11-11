@@ -1,5 +1,8 @@
 # Fresh install without access to old server (103.208.84.28)
 
+Production host: **smartchainnetwork.online** and **www.smartchainnetwork.online**.
+Both DNS names must resolve to `103.208.84.28` before issuing TLS.
+
 This is an **independent fresh website installation**, not recovery of the
 previous VPS, and it does not erase or move existing blockchain state.
 Source: `Rezamoradifar/dravon`, branch `codex/dravon-vps-premium-20261111`.
@@ -86,7 +89,7 @@ Only if there is no conflict, create a new site:
 cat >/etc/nginx/sites-available/smart-contract-platform <<'NGINX'
 server {
     listen 80;
-    server_name 103.208.84.28;
+    server_name smartchainnetwork.online www.smartchainnetwork.online;
     location / {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
@@ -102,7 +105,7 @@ ln -s /etc/nginx/sites-available/smart-contract-platform \
 nginx -t && systemctl reload nginx
 ```
 
-Open `http://103.208.84.28/` for a temporary preview once network/firewall
+Open `http://smartchainnetwork.online/` for a temporary preview once network/firewall
 allows inbound port 80. HTTPS on a real domain is recommended before any
 wallet or transaction feature is enabled.
 
