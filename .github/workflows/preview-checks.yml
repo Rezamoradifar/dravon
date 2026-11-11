@@ -1,0 +1,36 @@
+name: Smart Contract Platform preview checks
+
+on:
+  push:
+    branches:
+      - codex/dravon-vps-premium-20261111
+  pull_request:
+    paths:
+      - "app/**"
+      - "components/**"
+      - "lib/**"
+      - "scripts/install-new-vps.sh"
+      - "package*.json"
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Prepare test-only public configuration
+        run: |
+          cp .env.example .env.local
+          echo 'NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=ci-placeholder' >> .env.local
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Production build
+        run: npm run build
+      - name: VPN delivery unit tests
+        run: node --test tests/vpn-delivery.test.cjs
+      - name: Validate install script syntax
+        run: bash -n scripts/install-new-vps.sh
