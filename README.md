@@ -105,7 +105,7 @@ Open http://localhost:3000.
 
 See `.env.example` for the full list. At minimum you need:
 
-- `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` - get one for free at https://cloud.reown.com
+- `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` - enables QR/WalletConnect pairing; without it fresh installs use injected browser wallets only (get one from https://cloud.reown.com)
 - `NEXT_PUBLIC_FACTORY_ADDRESS` / `NEXT_PUBLIC_WINDOW_ADDRESS` - already pre-filled with the
   addresses this project was built for, override if you redeploy.
 - `NEXT_PUBLIC_CHAIN_ID` - defaults to BNB Smart Chain (56).
@@ -188,7 +188,7 @@ This mode initializes `.env.local` from the project's updated **v7.4 BNB
 mainnet** example. It does *not* recover private keys, Telegram bot credentials,
 VPN access, original VPS data, or off-chain history. Existing live BNB Smart
 Chain registration and wallet state remains on-chain and is not affected by
-the website reinstall. Configure a real Reown Project ID, admin wallet and
-HTTPS before enabling wallet/financial flows. See
+the website reinstall. Configure a real Reown Project ID for QR/mobile wallet pairing, the correct
+admin wallet address for admin UI, and HTTPS before public financial flows. See
 [docs/fresh-vps-103.208.84.28.md](docs/fresh-vps-103.208.84.28.md)
 for the target-server preparation and Nginx setup.
