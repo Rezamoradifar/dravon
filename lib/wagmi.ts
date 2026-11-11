@@ -1,5 +1,6 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
-import { http, fallback } from "wagmi";
+import { http, fallback, createConfig } from "wagmi";
+import { injected } from "wagmi/connectors";
 import {
   mainnet,
   bsc,
@@ -47,12 +48,30 @@ function transportForChain(chainId: number) {
   );
 }
 
-export const wagmiConfig = getDefaultConfig({
-  appName: "Round Dashboard",
-  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "",
-  chains: orderedChains,
-  transports: Object.fromEntries(orderedChains.map((chain) => [chain.id, transportForChain(chain.id)])),
-  ssr: true,
-});
+const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID?.trim();
+const transports = Object.fromEntries(
+  orderedChains.map((chain) => [chain.id, transportForChain(chain.id)]),
+);
+
+// RainbowKit's getDefaultConfig() throws during Next.js prerender when
+// WalletConnect Project ID is empty. A fresh VPS installation must remain
+// buildable without inheriting old credentials. In this case keep the app's
+// existing public RPC reads and permit only injected browser wallets; full
+// WalletConnect/QR support resumes after setting a real Reown Project ID
+// and rebuilding the app. Never fabricate a supposedly valid project ID.
+export const wagmiConfig = walletConnectProjectId
+  ? getDefaultConfig({
+      appName: "Smart Contract Platform",
+      projectId: walletConnectProjectId,
+      chains: orderedChains,
+      transports,
+      ssr: true,
+    })
+  : createConfig({
+      chains: orderedChains,
+      connectors: [injected()],
+      transports,
+      ssr: true,
+    });
 
 export const PRIMARY_CHAIN_ID = CHAIN_ID;
