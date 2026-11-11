@@ -59,6 +59,17 @@ elif [[ -e "$CURRENT" ]]; then
   die "$CURRENT is not a symlink; refusing to replace it"
 fi
 
+# An unrelated service may already use the default port on this VPS.
+# Never mistake its HTTP 200 response for our own successful deployment.
+if [[ -z "$previous" ]]; then
+  if pm2 describe "$APP_NAME" >/dev/null 2>&1; then
+    die "PM2 already manages $APP_NAME but no matching current symlink exists; inspect before proceeding"
+  fi
+  if (echo >/dev/tcp/127.0.0.1/"$PORT") >/dev/null 2>&1; then
+    die "Port $PORT already has a listener; select a free PORT without stopping other apps"
+  fi
+fi
+
 # This file lives outside releases and is not clobbered by future code updates.
 cat > "$ECOSYSTEM" <<EOF
 module.exports = {
@@ -100,7 +111,7 @@ fi
 
 healthy=0
 for _ in $(seq 1 30); do
-  if curl --silent --show-error --fail --max-time 5 "http://$BIND_HOST:$PORT/" >/dev/null 2>&1; then
+  if curl --silent --show-error --fail --max-time 5 "http://127.0.0.1:$PORT/api/health" 2>/dev/null | grep -Fq '"service":"smart-contract-platform"'; then
     healthy=1
     break
   fi
