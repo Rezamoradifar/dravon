@@ -108,10 +108,11 @@ wallet or transaction feature is enabled.
 
 ## 5. Restore integration capabilities individually
 
-- Create/get a real Reown WalletConnect Project ID from https://cloud.reown.com
+- To enable QR/mobile WalletConnect pairing, get a real Reown Project ID from https://cloud.reown.com
   and configure `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` in the **private**
   `/opt/smart-contract-platform/shared/.env.local`. Then rerun the installer
-  to rebuild the public bundle.
+  to rebuild the public bundle. Without this ID, only injected browser wallets
+  such as installed MetaMask may be available.
 - Set `NEXT_PUBLIC_ADMIN_ADDRESS` to the **public wallet address** that is
   authorized by the actual on-chain contracts. This only affects UI visibility;
   the contracts enforce authority.
