@@ -15,7 +15,7 @@ import { useTranslation } from "@/contexts/language-context";
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const { t, locale } = useTranslation();
+  const { t } = useTranslation();
 
   return (
     <header className="scn-app-navbar">
