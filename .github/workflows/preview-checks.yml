@@ -5,6 +5,7 @@ on:
     branches:
       - codex/dravon-vps-premium-20261111
       - codex/dravon-aurora-global-landing-20261112
+      - codex/dravon-aurora-user-panel-20261112
   pull_request:
     paths:
       - "app/**"
@@ -48,12 +49,20 @@ jobs:
           npx playwright install --with-deps chromium
           node scripts/test-wallet-connect.cjs
           node scripts/test-aurora-landing.cjs
+          node scripts/test-aurora-user-panel.cjs
       - name: Upload Aurora visual screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: aurora-landing-screenshots
           path: /tmp/scn-aurora-preview/*.png
+          if-no-files-found: ignore
+      - name: Upload Aurora user-panel screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aurora-user-panel-screenshots
+          path: /tmp/scn-aurora-panel/*.png
           if-no-files-found: ignore
       - name: VPN delivery unit tests
         run: node --test tests/vpn-delivery.test.cjs

@@ -3,6 +3,7 @@ import { Inter, Vazirmatn } from "next/font/google";
 import Script from "next/script";
 
 import "./globals.css";
+import "./aurora-panel.css";
 import { Providers } from "./providers";
 import { AppShell } from "@/components/layout/app-shell";
 import { FloatingLights } from "@/components/layout/floating-lights";

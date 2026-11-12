@@ -43,9 +43,9 @@ export function NetworkGrowthChart() {
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data}>
               <defs>
-                <linearGradient id="usersFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(244 75% 59%)" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="hsl(244 75% 59%)" stopOpacity={0} />
+                <linearGradient id="auroraUsersFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#456AF4" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="#456AF4" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -67,7 +67,7 @@ export function NetworkGrowthChart() {
                 type="monotone"
                 dataKey="users"
                 name={t("networkGrowth.usersLegend")}
-                stroke="hsl(244 75% 59%)"
+                stroke="#456AF4"
                 fill="url(#usersFill)"
                 strokeWidth={2}
               />
@@ -76,7 +76,7 @@ export function NetworkGrowthChart() {
                 type="monotone"
                 dataKey="volume"
                 name={t("networkGrowth.volumeLegend")}
-                stroke="hsl(38 92% 50%)"
+                stroke="#0BAFC4"
                 strokeWidth={2}
                 dot={false}
               />
@@ -85,7 +85,7 @@ export function NetworkGrowthChart() {
                 type="monotone"
                 dataKey="pointValue"
                 name={t("networkGrowth.pointValueLegend")}
-                stroke="hsl(142 71% 45%)"
+                stroke="#997CF2"
                 strokeWidth={2}
                 dot={false}
               />

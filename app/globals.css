@@ -8,55 +8,57 @@ html[dir="rtl"] body {
 
 @layer base {
   :root {
-    --background: 40 26% 98%;
-    --foreground: 226 19% 12%;
+    /* Shared semantic colors for portaled dialogs and functional pages.
+       The Aurora landing keeps its independent editorial color system. */
+    --background: 219 100% 98%;
+    --foreground: 225 47% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 226 19% 12%;
+    --card-foreground: 225 47% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 226 19% 12%;
-    --primary: 39 66% 44%;
+    --popover-foreground: 225 47% 15%;
+    --primary: 230 88% 59%;
     --primary-foreground: 0 0% 100%;
-    --accent-2: 36 59% 48%;
-    --accent-3: 41 41% 61%;
-    --secondary: 38 24% 93%;
-    --secondary-foreground: 226 19% 12%;
-    --muted: 42 16% 93%;
-    --muted-foreground: 224 10% 41%;
-    --accent: 42 16% 93%;
-    --accent-foreground: 226 19% 12%;
+    --accent-2: 191 84% 42%;
+    --accent-3: 257 79% 67%;
+    --secondary: 224 73% 95%;
+    --secondary-foreground: 226 47% 24%;
+    --muted: 219 61% 95%;
+    --muted-foreground: 218 21% 43%;
+    --accent: 223 80% 95%;
+    --accent-foreground: 230 68% 39%;
     --destructive: 0 74% 50%;
     --destructive-foreground: 0 0% 100%;
-    --success: 156 56% 36%;
+    --success: 165 72% 35%;
     --success-foreground: 0 0% 100%;
-    --border: 40 18% 85%;
-    --input: 40 18% 85%;
-    --ring: 39 66% 44%;
+    --border: 221 53% 88%;
+    --input: 221 53% 88%;
+    --ring: 229 88% 60%;
     --radius: 1rem;
   }
   .dark {
-    --background: 225 17% 4%;
-    --foreground: 42 24% 95%;
-    --card: 225 13% 8%;
-    --card-foreground: 42 24% 95%;
-    --popover: 225 13% 8%;
-    --popover-foreground: 42 24% 95%;
-    --primary: 40 76% 69%;
-    --primary-foreground: 225 18% 6%;
-    --accent-2: 37 60% 53%;
-    --accent-3: 44 55% 79%;
-    --secondary: 224 11% 13%;
-    --secondary-foreground: 42 24% 95%;
-    --muted: 224 11% 13%;
-    --muted-foreground: 38 12% 66%;
-    --accent: 224 11% 13%;
-    --accent-foreground: 42 24% 95%;
+    --background: 223 38% 8%;
+    --foreground: 213 70% 94%;
+    --card: 223 31% 12%;
+    --card-foreground: 213 70% 94%;
+    --popover: 223 31% 12%;
+    --popover-foreground: 213 70% 94%;
+    --primary: 224 92% 69%;
+    --primary-foreground: 222 46% 10%;
+    --accent-2: 188 82% 52%;
+    --accent-3: 257 84% 77%;
+    --secondary: 221 30% 18%;
+    --secondary-foreground: 210 70% 95%;
+    --muted: 221 30% 18%;
+    --muted-foreground: 218 24% 70%;
+    --accent: 219 33% 20%;
+    --accent-foreground: 210 70% 95%;
     --destructive: 0 66% 43%;
     --destructive-foreground: 0 0% 100%;
-    --success: 156 55% 49%;
-    --success-foreground: 225 18% 6%;
-    --border: 38 13% 19%;
-    --input: 38 13% 19%;
-    --ring: 40 76% 69%;
+    --success: 165 59% 48%;
+    --success-foreground: 222 46% 10%;
+    --border: 217 28% 23%;
+    --input: 217 28% 23%;
+    --ring: 224 90% 70%;
   }
 }
 
@@ -482,10 +484,10 @@ html[dir="rtl"] body {
   background: linear-gradient(135deg, rgba(237,202,133,.08), rgba(255,255,255,.01) 52%, rgba(237,202,133,.035));
 }
 .dark .card-glow {
-  box-shadow: 0 0 0 1px hsl(var(--border)), 0 18px 42px -22px rgba(193,137,61,.25);
+  box-shadow: 0 0 0 1px hsl(var(--border)), 0 18px 42px -22px rgba(64,113,238,.25);
 }
 .dark .card-glow:hover {
-  box-shadow: 0 0 0 1px rgba(237,202,133,.36), 0 20px 48px -18px rgba(193,137,61,.25);
+  box-shadow: 0 0 0 1px rgba(88,144,243,.36), 0 20px 48px -18px rgba(64,113,238,.25);
 }
 @keyframes premium-orbit-one {
   from { transform: translate(-50%, -50%) rotate(-27deg); }

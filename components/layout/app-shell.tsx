@@ -5,30 +5,31 @@ import { usePathname } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import { Sidebar } from "@/components/layout/sidebar";
 import { PageTransition } from "@/components/layout/page-transition";
+import { useLanguage } from "@/contexts/language-context";
 
 /**
- * The dashboard app's navbar/sidebar chrome only makes sense once someone is
- * actually inside the app. The landing page ("/") is a full-bleed marketing
- * page with its own header, so it (like /maintenance, handled by the caller)
- * renders children directly instead of wrapping them in the app shell.
+ * The landing is a standalone editorial experience.
+ * Every signed-in/functional route shares the Aurora workspace shell.
+ * Contract hooks, wallet providers and route implementations remain intact.
  */
 export function AppShell({ maintenanceMode, children }: { maintenanceMode: boolean; children: React.ReactNode }) {
   const pathname = usePathname();
+  const { dir } = useLanguage();
   const bare = maintenanceMode || pathname === "/";
 
   if (bare) return <>{children}</>;
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="scn-app flex min-h-screen flex-col" dir={dir}>
       <Navbar />
-      <div className="flex flex-1">
-        <aside className="premium-sidebar hidden w-64 shrink-0 border-r border-border/60 md:block">
-          <div className="sticky top-16">
+      <div className="flex min-h-0 flex-1">
+        <aside className="scn-app-sidebar hidden w-[268px] shrink-0 md:block">
+          <div className="sticky top-[76px] max-h-[calc(100vh-76px)] overflow-y-auto scrollbar-thin">
             <Sidebar />
           </div>
         </aside>
-        <main className="min-w-0 flex-1 px-4 py-6 md:px-8 md:py-8">
-          <div className="mx-auto w-full max-w-7xl">
+        <main id="app-main-content" className="scn-app-content">
+          <div className="scn-app-container">
             <PageTransition>{children}</PageTransition>
           </div>
         </main>
