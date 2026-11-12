@@ -40,7 +40,7 @@ async function main() {
     await desktop.goto(origin + "/dashboard", { waitUntil: "domcontentloaded", timeout: 30000 });
     await desktop.locator(".scn-dashboard-hero h1").waitFor({ state: "visible", timeout: 25000 });
     assert((await desktop.locator(".scn-dashboard-hero h1").innerText()).includes("Your network."));
-    assert(await desktop.locator(".scn-app-sidebar").isVisible());
+    assert(await desktop.locator("aside.scn-app-sidebar").isVisible());
     assert(await desktop.locator(".scn-quick-card").count() === 4);
     const actualBg = await desktop.locator(".scn-app").evaluate(el => getComputedStyle(el).backgroundColor);
     assert.notEqual(actualBg, "rgb(0, 0, 0)");
