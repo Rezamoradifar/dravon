@@ -35,7 +35,7 @@ export default function RoundHistoryPage() {
     <div>
       <PageHeader title={t("historyPage.title")} description={t("historyPage.description")} />
 
-      <div className="mb-6 space-y-4 rounded-xl border bg-card p-4">
+      <div className="scn-user-search-card mb-6 space-y-4">
         <WalletSearch value={searchedAddress} onChange={setSearchedAddress} />
         <div className="flex flex-wrap items-end gap-3">
           <div className="space-y-1.5">
