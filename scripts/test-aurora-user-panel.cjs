@@ -41,6 +41,10 @@ async function main() {
     await desktop.locator(".scn-dashboard-hero h1").waitFor({ state: "visible", timeout: 25000 });
     assert((await desktop.locator(".scn-dashboard-hero h1").innerText()).includes("Your network."));
     assert(await desktop.locator("aside.scn-app-sidebar").isVisible());
+    await desktop.waitForTimeout(200);
+    const themeName = await desktop.locator("html").getAttribute("class");
+    assert(!themeName?.split(/\s+/).includes("dark"), "New accounts should load the light Aurora default");
+
     assert(await desktop.locator(".scn-quick-card").count() === 4);
     const actualBg = await desktop.locator(".scn-app").evaluate(el => getComputedStyle(el).backgroundColor);
     assert.notEqual(actualBg, "rgb(0, 0, 0)");
@@ -56,6 +60,8 @@ async function main() {
     const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
     await mobile.goto(origin + "/dashboard", { waitUntil: "domcontentloaded", timeout: 30000 });
     await mobile.locator(".scn-dashboard-hero h1").waitFor({ state: "visible", timeout: 25000 });
+    assert(!(await mobile.locator(".scn-app-brand-name").isVisible()), "Mobile header should hide the long brand name");
+    assert(!(await mobile.locator(".scn-app-header-pill").isVisible()), "Mobile header should hide the BNB network pill");
     const menu = mobile.getByRole("button", { name: "Toggle navigation" });
     await menu.waitFor({ state: "visible" });
     await menu.click();
