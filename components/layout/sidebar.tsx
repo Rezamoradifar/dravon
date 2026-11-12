@@ -33,10 +33,10 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                   href={link.href}
                   onClick={onNavigate}
                   className={cn(
-                    "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                    "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
                     active
                       ? "text-primary-foreground"
-                      : "text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground",
+                      : "text-muted-foreground hover:bg-primary/10 hover:text-foreground",
                   )}
                 >
                   {active && (

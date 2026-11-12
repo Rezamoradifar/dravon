@@ -1,6 +1,6 @@
 export const en = {
   nav: {
-    brand: "Round Dashboard",
+    brand: "Smart Contract Platform",
     toggleNavigation: "Toggle navigation",
     backToLanding: "Back to Home",
     dashboard: "Dashboard",

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { WalletConnectControl } from "@/components/shared/wallet-connect-control";
 import { Menu, Layers, ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ export function Navbar() {
   const { t } = useTranslation();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
+    <header className="premium-app-navbar sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
       <div className="flex h-16 items-center justify-between gap-2 px-3 sm:px-4 md:px-6">
         <div className="flex shrink-0 items-center gap-1 sm:gap-3">
           <Button
@@ -31,7 +31,7 @@ export function Navbar() {
             <Menu />
           </Button>
           <Link href="/dashboard" className="flex items-center gap-2 font-semibold tracking-tight">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <span className="premium-brand-mark flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               <Layers className="h-4 w-4" />
             </span>
             <span className="hidden sm:inline">{t("nav.brand")}</span>
@@ -55,7 +55,7 @@ export function Navbar() {
           <NotificationBell />
           {/* On phones: avatar only once connected, and keep "Connect Wallet" on one line. */}
           <div className="shrink-0 whitespace-nowrap">
-            <ConnectButton
+            <WalletConnectControl
               showBalance={false}
               chainStatus={{ smallScreen: "none", largeScreen: "icon" }}
               accountStatus={{ smallScreen: "avatar", largeScreen: "full" }}

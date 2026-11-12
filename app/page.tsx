@@ -167,10 +167,10 @@ export default function LandingPage() {
       </div>
 
       {/* Marketing header with nav menu */}
-      <header className="sticky top-0 z-40 border-b border-border/40 bg-background/70 backdrop-blur-md">
+      <header className="premium-site-header sticky top-0 z-40 border-b border-border/40 bg-background/90 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:px-8">
           <div className="flex items-center gap-2 font-semibold tracking-tight">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <span className="premium-brand-mark flex h-9 w-9 items-center justify-center rounded-xl text-primary-foreground">
               <Layers className="h-4 w-4" />
             </span>
             {t("nav.brand")}
@@ -197,60 +197,96 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-[color:var(--fx-bg)]">
-        <div className="pointer-events-none absolute inset-0 -z-10">
-          <NetworkCanvas className="h-full w-full" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[color:var(--fx-bg)]/50 to-background" />
-        </div>
-        <div className="mx-auto max-w-5xl px-4 pb-16 pt-20 text-center md:px-8 md:pt-28">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-5 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium"
-          style={{
-            borderColor: "color-mix(in srgb, var(--fx-primary) 30%, transparent)",
-            backgroundColor: "color-mix(in srgb, var(--fx-primary) 10%, transparent)",
-            color: "var(--fx-primary)",
-          }}
-        >
-          <Sparkles className="h-3.5 w-3.5" />
-          {t("landing.badge")}
-        </motion.div>
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.05 }}
-          className="text-gradient-fx text-4xl font-bold uppercase leading-tight tracking-tight md:text-6xl"
-        >
-          {t("landing.heroTitle")}
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="mx-auto mt-5 max-w-2xl text-base md:text-lg"
-          style={{ color: "var(--fx-text-muted)" }}
-        >
-          {t("landing.heroSubtitle")}
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.15 }}
-          className="mt-8 flex flex-wrap items-center justify-center gap-3"
-        >
-          <Button asChild size="lg" className="gap-2">
-            <Link href="/pulse">
-              {t("landing.ctaPrimary")}
-              <ArrowRight className="h-4 w-4 rtl:rotate-180" />
-            </Link>
-          </Button>
-          <Button asChild size="lg" variant="outline">
-            <Link href="/register">{t("landing.ctaSecondary")}</Link>
-          </Button>
-        </motion.div>
+      {/* Premium hero - only the presentation layer changes; existing routes and
+          on-chain interactions continue to use their established components. */}
+      <section className="premium-hero relative isolate overflow-hidden border-b border-[#e9c787]/15">
+        <NetworkCanvas className="pointer-events-none absolute inset-0 h-full w-full opacity-25" />
+        <div className="premium-hero-grid pointer-events-none absolute inset-0" aria-hidden="true" />
+        <div className="relative mx-auto grid max-w-7xl items-center gap-8 px-5 pb-16 pt-14 md:px-8 lg:min-h-[620px] lg:grid-cols-[1.08fr_0.92fr] lg:gap-5 lg:pb-24 lg:pt-24">
+          <div className="relative z-10 text-center lg:text-start">
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55 }}
+              className="premium-hero-badge mb-7 inline-flex items-center gap-2 rounded-full px-4 py-2 text-[11px] font-semibold tracking-wide"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              {t("landing.badge")}
+            </motion.div>
+            <motion.h1
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.08 }}
+              className="premium-hero-title max-w-3xl text-4xl font-bold leading-[1.12] tracking-[-0.035em] sm:text-5xl md:text-6xl xl:text-[4.45rem]"
+            >
+              {t("landing.heroTitle")}
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.16 }}
+              className="mx-auto mt-7 max-w-xl text-sm leading-8 sm:text-base lg:mx-0 lg:text-lg"
+              style={{ color: "var(--fx-text-muted)" }}
+            >
+              {t("landing.heroSubtitle")}
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.24 }}
+              className="mt-9 flex flex-wrap items-center justify-center gap-3 lg:justify-start"
+            >
+              <Button asChild size="lg" className="btn-sheen min-h-12 gap-2 rounded-xl px-7 font-semibold shadow-[0_8px_30px_rgba(215,165,85,.17)]">
+                <Link href="/pulse">
+                  {t("landing.ctaPrimary")}
+                  <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="min-h-12 rounded-xl border-[#e5c587]/30 bg-white/5 px-7 text-[#f4e7c9] hover:border-[#e5c587]/60 hover:bg-white/10 hover:text-white">
+                <Link href="/register">{t("landing.ctaSecondary")}</Link>
+              </Button>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.7, delay: 0.36 }}
+              className="mt-11 flex flex-wrap justify-center gap-x-8 gap-y-4 text-xs lg:justify-start"
+            >
+              <div className="premium-hero-proof flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-[#edca85]" />
+                {t("landing.smartContract.eyebrow")}
+              </div>
+              <div className="premium-hero-proof flex items-center gap-2">
+                <Globe2 className="h-4 w-4 text-[#edca85]" />
+                BNB Smart Chain
+              </div>
+            </motion.div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.15 }}
+            className="premium-orb-stage"
+            aria-hidden="true"
+          >
+            <div className="premium-orb-aura" />
+            <div className="premium-orb-ring premium-orb-ring-one" />
+            <div className="premium-orb-ring premium-orb-ring-two" />
+            <div className="premium-orb-ring premium-orb-ring-three" />
+            <div className="premium-orb-core">
+              <div className="premium-orb-core-inner">
+                <Layers className="h-16 w-16 drop-shadow-[0_8px_22px_rgba(0,0,0,.65)]" strokeWidth={1.3} />
+                <span className="font-mono text-[10px] font-semibold tracking-[.28em]">SMART CONTRACT</span>
+                <span className="font-mono text-[9px] tracking-[.23em] text-[#f6e3b8]/75">PLATFORM</span>
+              </div>
+            </div>
+            <div className="premium-orb-node premium-orb-node-one"><ShieldCheck className="h-5 w-5" /></div>
+            <div className="premium-orb-node premium-orb-node-two"><Cpu className="h-5 w-5" /></div>
+            <div className="premium-orb-node premium-orb-node-three"><Lock className="h-5 w-5" /></div>
+            <div className="premium-orb-label premium-orb-label-top">DECENTRALIZED WEB3</div>
+            <div className="premium-orb-label premium-orb-label-bottom">BNB SMART CHAIN</div>
+          </motion.div>
         </div>
       </section>
 
@@ -544,7 +580,7 @@ export default function LandingPage() {
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.4, delay: i * 0.05 }}
             >
-              <Link href={href} className="card-glow block rounded-2xl p-6 transition-transform hover:-translate-y-1">
+              <Link href={href} className="card-glow premium-feature-card block rounded-2xl p-6 transition-transform hover:-translate-y-1">
                 <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                   <Icon className="h-5 w-5" />
                 </div>
@@ -567,7 +603,7 @@ export default function LandingPage() {
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           <Link
             href="/games/backgammon"
-            className="card-glow group block overflow-hidden rounded-2xl p-8 transition-transform hover:-translate-y-1"
+            className="card-glow premium-feature-card group block overflow-hidden rounded-2xl p-8 transition-transform hover:-translate-y-1"
           >
             <Dice5 className="mb-4 h-8 w-8 text-primary" />
             <h3 className="mb-2 text-lg font-semibold">{t("landing.gameFree.title")}</h3>
@@ -579,7 +615,7 @@ export default function LandingPage() {
           </Link>
           <Link
             href="/games/backgammon-onchain"
-            className="card-glow group block overflow-hidden rounded-2xl p-8 transition-transform hover:-translate-y-1"
+            className="card-glow premium-feature-card group block overflow-hidden rounded-2xl p-8 transition-transform hover:-translate-y-1"
           >
             <Trophy className="mb-4 h-8 w-8 text-[hsl(var(--accent-2))]" />
             <h3 className="mb-2 text-lg font-semibold">{t("landing.gameOnchain.title")}</h3>

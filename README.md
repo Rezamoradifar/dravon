@@ -105,7 +105,7 @@ Open http://localhost:3000.
 
 See `.env.example` for the full list. At minimum you need:
 
-- `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` - get one for free at https://cloud.reown.com
+- `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` - enables QR/WalletConnect pairing; without it fresh installs use injected browser wallets only (get one from https://cloud.reown.com)
 - `NEXT_PUBLIC_FACTORY_ADDRESS` / `NEXT_PUBLIC_WINDOW_ADDRESS` - already pre-filled with the
   addresses this project was built for, override if you redeploy.
 - `NEXT_PUBLIC_CHAIN_ID` - defaults to BNB Smart Chain (56).
@@ -169,3 +169,26 @@ types/          shared TypeScript types for parsed contract structs
 npm run build
 npm run start
 ```
+
+## Fresh installation without old VPS
+
+If the previous VPS is unavailable, you can deploy the new **Smart Contract
+Platform** website from the current source without its credentials:
+
+```bash
+# On the newly provisioned Ubuntu VPS with Node.js 22+, Git and PM2 installed:
+git clone --depth=1 --branch codex/dravon-vps-premium-20261111 \
+  https://github.com/Rezamoradifar/dravon.git /opt/smart-contract-installer
+cd /opt/smart-contract-installer
+FRESH_INSTALL=1 bash scripts/install-new-vps.sh
+curl -fsS http://127.0.0.1:3000/api/health
+```
+
+This mode initializes `.env.local` from the project's updated **v7.4 BNB
+mainnet** example. It does *not* recover private keys, Telegram bot credentials,
+VPN access, original VPS data, or off-chain history. Existing live BNB Smart
+Chain registration and wallet state remains on-chain and is not affected by
+the website reinstall. Configure a real Reown Project ID for QR/mobile wallet pairing, the correct
+admin wallet address for admin UI, and HTTPS before public financial flows. See
+[docs/fresh-vps-103.208.84.28.md](docs/fresh-vps-103.208.84.28.md)
+for the target-server preparation and Nginx setup.

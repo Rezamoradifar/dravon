@@ -22,7 +22,7 @@ export function AppShell({ maintenanceMode, children }: { maintenanceMode: boole
     <div className="flex min-h-screen flex-col">
       <Navbar />
       <div className="flex flex-1">
-        <aside className="hidden w-64 shrink-0 border-r border-border/60 md:block">
+        <aside className="premium-sidebar hidden w-64 shrink-0 border-r border-border/60 md:block">
           <div className="sticky top-16">
             <Sidebar />
           </div>

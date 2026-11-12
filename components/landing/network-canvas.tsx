@@ -11,7 +11,7 @@ interface Node {
   color: string;
 }
 
-const COLORS = ["#3EFFE9", "#3EFFE9", "#3EFFE9", "#4880FF", "#9C48FF"];
+const COLORS = ["#E8BF73", "#E8BF73", "#BE9451", "#D6B97E", "#89704B"];
 const LINK_DIST = 150;
 
 function seededRandom(seed: number) {
@@ -83,7 +83,7 @@ export function NetworkCanvas({ className }: { className?: string }) {
           const dy = a.y - b.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < LINK_DIST) {
-            ctx!.strokeStyle = `rgba(62, 255, 233, ${0.12 * (1 - dist / LINK_DIST)})`;
+            ctx!.strokeStyle = `rgba(232, 191, 115, ${0.12 * (1 - dist / LINK_DIST)})`;
             ctx!.lineWidth = 0.6;
             ctx!.beginPath();
             ctx!.moveTo(a.x, a.y);
@@ -109,8 +109,8 @@ export function NetworkCanvas({ className }: { className?: string }) {
           const x = p.from.x + (p.to.x - p.from.x) * p.t;
           const y = p.from.y + (p.to.y - p.from.y) * p.t;
           ctx!.beginPath();
-          ctx!.fillStyle = "#3EFFE9";
-          ctx!.shadowColor = "#3EFFE9";
+          ctx!.fillStyle = "#E8BF73";
+          ctx!.shadowColor = "#E8BF73";
           ctx!.shadowBlur = 6;
           ctx!.arc(x, y, 1.8, 0, Math.PI * 2);
           ctx!.fill();
