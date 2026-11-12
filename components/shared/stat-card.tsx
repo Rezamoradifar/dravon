@@ -30,23 +30,23 @@ export function StatCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: index * 0.05 }}
     >
-      <Card className={cn("card-glow h-full", className)}>
+      <Card className={cn("card-glow scn-stat-card h-full", className)}>
         <CardContent className="flex items-start justify-between gap-4 p-5">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className="scn-stat-label text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {label}
             </p>
             {loading ? (
               <Skeleton className="mt-2 h-7 w-24" />
             ) : (
-              <p className="mt-1 truncate text-xl font-semibold">{value}</p>
+              <p className="scn-stat-value mt-2 min-w-0 truncate text-xl font-semibold">{value}</p>
             )}
             {hint && !loading && (
               <p className="mt-1 truncate text-xs text-muted-foreground">{hint}</p>
             )}
           </div>
           {Icon && (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <div className="scn-stat-icon flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Icon className="h-5 w-5" />
             </div>
           )}
