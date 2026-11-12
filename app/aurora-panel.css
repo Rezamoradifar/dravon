@@ -89,15 +89,17 @@
   border-radius: 15px;
   box-shadow: 0 10px 21px rgba(49,88,214,.19), inset 0 1px 0 rgba(255,255,255,.43);
 }
-.scn-app-brand-name { display: flex; flex-direction: column; gap: 3px; line-height: 1.1; }
+.scn-app-brand-name { display: none; flex-direction: column; gap: 3px; line-height: 1.1; }
+@media (min-width: 450px) { .scn-app-brand-name { display: flex; } }
 .scn-app-brand-name strong { font-size: 12px; font-weight: 800; letter-spacing: .09em; color: #1d315f; }
 .scn-app-brand-name small { color: #7c91b3; font-size: 9px; font-weight: 800; letter-spacing: .23em; }
 .scn-app .scn-app-header-pill {
-  display: inline-flex; gap: 8px; align-items: center; padding: 10px 13px;
+  display: none; gap: 8px; align-items: center; padding: 10px 13px;
   border: 1px solid #dce6ff; border-radius: 12px;
   color: #48618e; background: #eef4ff; font-size: 11px; font-weight: 750;
 }
 .scn-app .scn-app-header-pill svg { color: #3760e9; }
+@media (min-width: 1024px) { .scn-app .scn-app-header-pill { display: inline-flex; } }
 .scn-app .scn-app-header-action {
   border-color: #dce7f9; background: #fff; color: #43608e;
   border-radius: 11px;
@@ -227,7 +229,7 @@
 }
 .scn-app .scn-hero-mini-metrics div { border: 1px solid rgba(211,236,255,.21); border-radius: 11px; padding: 10px 12px; background: rgba(24,49,123,.26); backdrop-filter: blur(8px); }
 .scn-app .scn-hero-mini-metrics span { color: #bad7f8; display: block; font-size: 9px; line-height: 1.5; }
-.scn-app .scn-hero-mini-metrics strong { display: block; color: #fff; font-size: 16px; line-height: 1.8; word-break: break-all; }
+.scn-app .scn-hero-mini-metrics strong { display: block; color: #fff; font-size: 16px; line-height: 1.8; overflow-wrap: break-word; }
 .scn-app .scn-quick-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 13px; }
 .scn-app .scn-quick-card {
   display: flex; flex-direction: column; min-height: 148px; padding: 20px; gap: 9px;
