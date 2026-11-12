@@ -120,7 +120,7 @@ export function WalletConnectControl(props: Props) {
               {msg.qr}
             </Button>
           ) : (
-            <p role="status" className="flex gap-2 rounded-xl border border-amber-400/30 bg-amber-500/10 p-3 text-sm text-amber-200" data-testid="wallet-connect-missing-id">
+            <p role="status" className="flex gap-2 rounded-xl border border-amber-400/30 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-200" data-testid="wallet-connect-missing-id">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
               {msg.missing}
             </p>
