@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 import { MessageCircleQuestion, X, Send, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ interface Turn {
 
 export function AskAssistant() {
   const { t, locale } = useTranslation();
+  const isAuroraLanding = usePathname() === "/";
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const [turns, setTurns] = React.useState<Turn[]>([]);
@@ -34,7 +36,7 @@ export function AskAssistant() {
   return (
     <div className="fixed bottom-5 end-5 z-50">
       {open && (
-        <Card className="card-glow mb-3 flex h-[28rem] w-[22rem] max-w-[90vw] flex-col overflow-hidden">
+        <Card className={cn("card-glow mb-3 flex h-[28rem] w-[22rem] max-w-[90vw] flex-col overflow-hidden", isAuroraLanding && "scn-assistant-card")}>
           <CardHeader className="flex-row items-center justify-between gap-2 space-y-0 border-b border-border/60">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
@@ -96,6 +98,7 @@ export function AskAssistant() {
         aria-label={t("assistant.title")}
         className={cn(
           "h-14 w-14 rounded-full shadow-lg shadow-primary/30 transition-transform hover:scale-105",
+          isAuroraLanding && "!bg-[#3457f3] !text-white !shadow-[#3457f3]/30 hover:!bg-[#2543d6]",
           open && "rotate-90",
         )}
       >
