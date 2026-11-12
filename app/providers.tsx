@@ -69,7 +69,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <LanguageProvider>
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} storageKey="scn-aurora-theme-v1" disableTransitionOnChange>
         <WagmiProvider config={wagmiConfig}>
           <QueryClientProvider client={queryClient}>
             <RainbowKitWithTheme>
