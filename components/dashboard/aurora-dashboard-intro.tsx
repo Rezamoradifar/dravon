@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useAccount } from "wagmi";
 import {
   Activity, ArrowRight, ArrowUpRight, BookOpen, GitBranch,
-  History, Layers3, Network, ShieldCheck, UsersRound, Wallet2,
+  History, Layers3, Network, ShieldCheck, Wallet2,
   type LucideIcon,
 } from "lucide-react";
 
