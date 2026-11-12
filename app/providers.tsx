@@ -31,7 +31,7 @@ function CustomAvatar({ address, size }: { address: string; ensImage?: string | 
  * client's very first paint. That's a hydration mismatch (React error #418) -
  * some browsers silently recover from it, others (several wallet in-app
  * browsers, confirmed) hard-crash. Default to the dark theme (matching
- * ThemeProvider's defaultTheme="dark") until mounted, then switch to the real
+ * ThemeProvider's defaultTheme="light") until mounted, then switch to the real
  * resolved theme - identical on server and first client render either way.
  */
 function RainbowKitWithTheme({ children }: { children: React.ReactNode }) {
@@ -39,14 +39,14 @@ function RainbowKitWithTheme({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
 
-  const isDark = !mounted || resolvedTheme === "dark";
+  const isDark = mounted && resolvedTheme === "dark";
 
   return (
     <RainbowKitProvider
       theme={
         isDark
-          ? darkTheme({ accentColor: "#E8BF73", borderRadius: "medium" })
-          : lightTheme({ accentColor: "#B5812C", borderRadius: "medium" })
+          ? darkTheme({ accentColor: "#7198FF", borderRadius: "medium" })
+          : lightTheme({ accentColor: "#3457F3", borderRadius: "medium" })
       }
       avatar={CustomAvatar}
       modalSize="compact"
