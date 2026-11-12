@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { ArrowUpRight, Layers3, ShieldCheck } from "lucide-react";
 
-import { cn } from "@/lib/utils";
 import { NAV_GROUPS } from "./nav-links";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useTranslation } from "@/contexts/language-context";
@@ -12,60 +11,50 @@ import { useTranslation } from "@/contexts/language-context";
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const isAdmin = useIsAdmin();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
   return (
-    <nav className="flex flex-col gap-4 p-3">
-      {NAV_GROUPS.map((group) => {
-        const links = group.links.filter((link) => !link.adminOnly || isAdmin);
-        if (links.length === 0) return null;
-        return (
-          <div key={group.labelKey} className="flex flex-col gap-0.5">
-            <span className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/50">
-              {t(group.labelKey)}
-            </span>
-            {links.map((link) => {
-              const active = pathname === link.href;
-              const Icon = link.icon;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={onNavigate}
-                  className={cn(
-                    "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                    active
-                      ? "text-primary-foreground"
-                      : "text-muted-foreground hover:bg-primary/10 hover:text-foreground",
-                  )}
-                >
-                  {active && (
-                    <motion.span
-                      layoutId="active-nav-pill"
-                      className="nav-active-glow absolute inset-0 rounded-xl bg-primary"
-                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                    />
-                  )}
-                  <span
-                    className={cn(
-                      "relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors",
-                      active ? "bg-primary-foreground/15" : "bg-muted/60",
-                    )}
+    <div className="flex min-h-0 flex-col">
+      <div className="scn-side-header">
+        <span className="scn-side-eyebrow">SMART CONTRACT / WEB3</span>
+        <h2>{locale === "fa" ? "فضای کار شما" : "Your Workspace"}</h2>
+        <p>{locale === "fa" ? "دسترسی روشن به حساب، شبکه و ابزارهای قرارداد." : "Your account, network and contract tools in one place."}</p>
+      </div>
+      <nav className="scn-side-nav" aria-label={t("nav.toggleNavigation")}>
+        {NAV_GROUPS.map(group => {
+          const links = group.links.filter(link => !link.adminOnly || isAdmin);
+          if (!links.length) return null;
+          return (
+            <div key={group.labelKey} className="scn-side-group">
+              <span className="scn-side-group-label">{t(group.labelKey)}</span>
+              {links.map(link => {
+                const active = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href + "/"));
+                const Icon = link.icon;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={onNavigate}
+                    data-active={active}
+                    aria-current={active ? "page" : undefined}
+                    className="scn-side-link"
                   >
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <span className="relative z-10">{t(link.labelKey)}</span>
-                  {link.adminOnly && (
-                    <span className="relative z-10 ml-auto rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-500">
-                      {t("nav.owner")}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-        );
-      })}
-    </nav>
+                    <span className="scn-side-link-icon"><Icon className="h-4 w-4" /></span>
+                    <span className="min-w-0 flex-1">{t(link.labelKey)}</span>
+                    {link.adminOnly && <span className="scn-side-owner">{t("nav.owner")}</span>}
+                  </Link>
+                );
+              })}
+            </div>
+          );
+        })}
+      </nav>
+      <div className="scn-side-footer">
+        <ShieldCheck size={18} className="text-[#7be2f2]" />
+        <strong>{locale === "fa" ? "پیش از امضا، بررسی کنید" : "Verify before you sign"}</strong>
+        <p>{locale === "fa" ? "هر تراکنش را در کیف پول خود بررسی کنید. برای مشاهده کد قرارداد به اکسپلورر بروید." : "Review every wallet transaction. Inspect the contract independently on BscScan."}</p>
+        <Link onClick={onNavigate} href="/help">{locale === "fa" ? "راهنمای استفاده" : "Read the guide"}<ArrowUpRight size={15} /></Link>
+      </div>
+    </div>
   );
 }
