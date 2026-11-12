@@ -49,6 +49,7 @@ function transportForChain(chainId: number) {
 }
 
 const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID?.trim();
+export const isWalletConnectConfigured = Boolean(walletConnectProjectId);
 const transports = Object.fromEntries(
   orderedChains.map((chain) => [chain.id, transportForChain(chain.id)]),
 );
