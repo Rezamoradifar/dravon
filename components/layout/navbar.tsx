@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { WalletConnectControl } from "@/components/shared/wallet-connect-control";
-import { Menu, Layers, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Globe2, Layers3, Menu, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
@@ -15,46 +15,43 @@ import { useTranslation } from "@/contexts/language-context";
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
   return (
-    <header className="premium-app-navbar sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
-      <div className="flex h-16 items-center justify-between gap-2 px-3 sm:px-4 md:px-6">
-        <div className="flex shrink-0 items-center gap-1 sm:gap-3">
+    <header className="scn-app-navbar">
+      <div className="scn-app-header-inner flex items-center justify-between gap-2 px-3 sm:px-5 md:px-8">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
-            className="md:hidden"
+            className="scn-app-header-action shrink-0 md:hidden"
             aria-label={t("nav.toggleNavigation")}
-            onClick={() => setMobileOpen((v) => !v)}
+            aria-expanded={mobileOpen}
+            aria-controls="scn-app-mobile-navigation"
+            onClick={() => setMobileOpen(value => !value)}
           >
-            <Menu />
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
-          <Link href="/dashboard" className="flex items-center gap-2 font-semibold tracking-tight">
-            <span className="premium-brand-mark flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-              <Layers className="h-4 w-4" />
+          <Link href="/dashboard" className="flex shrink-0 items-center gap-2.5" aria-label="Smart Contract Platform Dashboard">
+            <span className="scn-app-mark"><Layers3 className="h-5 w-5" /></span>
+            <span className="scn-app-brand-name hidden min-[450px]:flex">
+              <strong>SMART CONTRACT</strong>
+              <small>PLATFORM</small>
             </span>
-            <span className="hidden sm:inline">{t("nav.brand")}</span>
           </Link>
+          <span className="scn-app-header-pill ms-4 hidden lg:inline-flex">
+            <Globe2 className="h-4 w-4" />
+            BNB SMART CHAIN
+          </span>
         </div>
-
-        <div className="flex min-w-0 items-center gap-1 sm:gap-2">
-          <Button asChild variant="ghost" size="icon" className="max-[359px]:hidden sm:hidden" aria-label={t("nav.backToLanding")}>
-            <Link href="/">
-              <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
-            </Link>
-          </Button>
-          <Button asChild variant="ghost" size="sm" className="hidden gap-1.5 sm:inline-flex">
-            <Link href="/">
-              <ArrowLeft className="h-3.5 w-3.5 rtl:rotate-180" />
-              {t("nav.backToLanding")}
-            </Link>
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <Button asChild variant="outline" size="sm" className="scn-app-header-action hidden gap-2 lg:inline-flex">
+            <Link href="/"><ArrowLeft className="h-4 w-4 rtl:rotate-180" />{t("nav.backToLanding")}</Link>
           </Button>
           <LanguageToggle />
           <ThemeToggle />
           <NotificationBell />
-          {/* On phones: avatar only once connected, and keep "Connect Wallet" on one line. */}
-          <div className="shrink-0 whitespace-nowrap">
+          <div className="scn-app-nav-wallet min-w-0 whitespace-nowrap">
             <WalletConnectControl
               showBalance={false}
               chainStatus={{ smallScreen: "none", largeScreen: "icon" }}
@@ -63,14 +60,14 @@ export function Navbar() {
           </div>
         </div>
       </div>
-
       <div
+        id="scn-app-mobile-navigation"
         className={cn(
-          "overflow-hidden border-t border-primary/20 bg-background/95 backdrop-blur-md transition-[max-height] duration-300 md:hidden",
+          "scn-app-menu overflow-hidden transition-[max-height] duration-300 md:hidden",
           mobileOpen ? "max-h-[80vh]" : "max-h-0",
         )}
       >
-        <div className="max-h-[80vh] overflow-y-auto scrollbar-thin">
+        <div className="scn-app-sidebar max-h-[80vh] overflow-y-auto scrollbar-thin">
           <Sidebar onNavigate={() => setMobileOpen(false)} />
         </div>
       </div>
