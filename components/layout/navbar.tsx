@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { WalletConnectControl } from "@/components/shared/wallet-connect-control";
 import { Menu, Layers, ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -55,7 +55,7 @@ export function Navbar() {
           <NotificationBell />
           {/* On phones: avatar only once connected, and keep "Connect Wallet" on one line. */}
           <div className="shrink-0 whitespace-nowrap">
-            <ConnectButton
+            <WalletConnectControl
               showBalance={false}
               chainStatus={{ smallScreen: "none", largeScreen: "icon" }}
               accountStatus={{ smallScreen: "avatar", largeScreen: "full" }}
