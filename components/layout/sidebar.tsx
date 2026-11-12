@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowUpRight, Layers3, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, ShieldCheck } from "lucide-react";
 
 import { NAV_GROUPS } from "./nav-links";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
