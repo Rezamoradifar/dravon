@@ -828,3 +828,17 @@
     transition-duration: .01ms !important;
   }
 }
+
+/* The shared assistant sits outside the route subtree; match its floating
+   control to the Aurora page only without recoloring the dashboard. */
+.scn-assistant-card {
+  background: #fff !important;
+  color: #162344 !important;
+  border-color: #cbd8f5 !important;
+}
+.scn-assistant-card .text-primary { color: #3457f3 !important; }
+.scn-assistant-card input {
+  color: #172344 !important;
+  background: #f2f7ff !important;
+  border-color: #d4dff7 !important;
+}
