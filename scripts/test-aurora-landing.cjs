@@ -62,6 +62,11 @@ async function main() {
       viewport: document.documentElement.clientWidth,
     }));
     assert(widths.scroll <= widths.viewport + 2, "Mobile horizontal overflow: " + JSON.stringify(widths));
+    // Full-page screenshots of sticky headers can otherwise capture only the
+    // header background when the browser is still scrolled to a tab.
+    await mobile.evaluate(() => window.scrollTo(0, 0));
+    await mobile.waitForTimeout(300);
+    assert(await mobile.locator(".scn-header").isVisible(), "Mobile header hidden");
     await mobile.screenshot({ path: outputDir + "/mobile-fa.png", fullPage: true, animations: "disabled" });
     console.log("PASS mobile navigation, interactive walkthrough, Persian toggle and no horizontal overflow");
   } finally {
