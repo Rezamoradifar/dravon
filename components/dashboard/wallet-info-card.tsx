@@ -1,7 +1,7 @@
 "use client";
 
 import { useAccount, useBalance, useChainId, useChains } from "wagmi";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { WalletConnectControl } from "@/components/shared/wallet-connect-control";
 import { Wallet2 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -28,7 +28,7 @@ export function WalletInfoCard() {
         {!isConnected || !address ? (
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">{t("walletCard.connectPrompt")}</p>
-            <ConnectButton />
+            <WalletConnectControl />
           </div>
         ) : (
           <div className="flex items-center justify-between gap-3">
